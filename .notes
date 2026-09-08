@@ -1,0 +1,53 @@
+npm create vite@latest client -- --template react-ts
+(Which linter to use? - ESLint
+Install with npm and start now? -Yes)
+
+Остановить терминал(Ctrl + C)
+
+cd client
+npm install
+npm install -D tailwindcss@3.4.1 postcss autoprefixer
+npx tailwindcss init -p
+---
+tailwind.config.js:
+content: [
+  "./index.html",
+  "./src/**/*.{js,ts,jsx,tsx}",
+],
+
+src/index.css:
+в файле только
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+В client\src\App.tsx удалить import './App.css' и удалить client\src\App.css
+
+---
+
+npm install axios react-router-dom
+npm run dev
+
+
+---
+Shadcn:
+дополнить \client\tsconfig.json
+дополнить \client\tsconfig.app.json
+дополнить  \client\vite.config.ts
+
+
+npm install -D @types/node
+
+npx shadcn@latest init
+Select a component library » Radix UI
+Which preset would you like to use? » Nova
+
+npx shadcn@latest add button
+
+изменить \client\src\App.tsx
+
+---
+
+npm install tailwindcss-animate
+
+---

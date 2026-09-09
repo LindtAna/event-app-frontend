@@ -1,12 +1,12 @@
-import { Button } from "@/components/ui/button"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import Home from "./pages/Home"
 
 export default function App() {
   return (
-    <main>
-      <div className="p-8">
-        <Button>Peng</Button>
-      </div>
-    </main>
-
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   )
 }

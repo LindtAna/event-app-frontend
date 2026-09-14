@@ -51,3 +51,10 @@ npx shadcn@latest add button
 npm install tailwindcss-animate
 
 ---
+
+MobileNav:
+npx shadcn@latest add sheet
+✔ Checking registry.
+√ The file button.tsx already exists. Would you like to overwrite? ... no
+
+npx shadcn@latest add separator

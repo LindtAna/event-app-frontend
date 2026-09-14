@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -15,8 +15,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%; */
+    --primary: 262 83% 58%; /* #624CF5 */
+    --primary-foreground: 0 0% 100%;
+    --ring: 262 83% 58%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -36,7 +39,7 @@
 
     --radius: 0.5rem;
 
-    --font-poppins: 'Poppins', sans-serif;
+    --font-poppins: "Poppins", sans-serif;
   }
 
   .dark {
@@ -49,7 +52,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    /* --primary: 210 40% 98%; */
+    --primary: 263 70% 60%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -78,7 +82,7 @@
 }
 
 body {
-  font-family: var(--font-poppins)
+  font-family: var(--font-poppins);
 }
 
 .filter-grey {
@@ -254,7 +258,7 @@ body {
 .cl-formButtonPrimary:hover,
 .cl-formButtonPrimary:focus,
 .cl-formButtonPrimary:active {
-  background-color: #705CF7
+  background-color: #705cf7;
 }
 
 /* ========================================== REACT-DATEPICKER STYLES */

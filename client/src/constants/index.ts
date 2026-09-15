@@ -12,3 +12,10 @@ export const headerLinks = [
     route: '/profile',
   },
 ]
+
+export const footerLinks = [
+  { label: "Datenschutzerklärung", route: "#" },
+  { label: "Datenschutzeinstellungen", route: "#" },
+  { label: "Nutzungsbedingungen", route: "#" },
+  { label: "Impressum", route: "#" },
+]

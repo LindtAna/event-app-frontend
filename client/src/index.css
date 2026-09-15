@@ -15,8 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%; */
+
     --primary: 262 83% 58%; /* #624CF5 */
     --primary-foreground: 0 0% 100%;
     --ring: 262 83% 58%;
@@ -52,7 +51,6 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    /* --primary: 210 40% 98%; */
     --primary: 263 70% 60%;
     --primary-foreground: 222.2 47.4% 11.2%;
 

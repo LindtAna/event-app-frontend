@@ -58,3 +58,5 @@ npx shadcn@latest add sheet
 √ The file button.tsx already exists. Would you like to overwrite? ... no
 
 npx shadcn@latest add separator
+
+для utils.ts npm i tailwind-merge query-string

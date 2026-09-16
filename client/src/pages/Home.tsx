@@ -30,17 +30,17 @@ export default function Home() {
       <section className="wrapper my-8 md:my-10 flex flex-col gap-12">
         <h2 className="h2-bold text-center">Wie funktioniert PlanFuchs?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="border rounded-xl p-6">
+          <div className="border  border-primary-500/40 rounded-xl p-6">
             <h3 className="font-semibold text-lg mb-2">1. Event erstellen</h3>
-            <p className="text-muted-foreground text-sm">Alle Infos und Bilder im Handumdrehen hinzufügen.</p>
+            <p className="text-sm">Alle Infos und Bilder im Handumdrehen hinzufügen.</p>
           </div>
-          <div className="border rounded-xl p-6">
+          <div className="border border-primary-500/40 rounded-xl p-6">
             <h3 className="font-semibold text-lg mb-2">2. Team einladen</h3>
-            <p className="text-muted-foreground text-sm">Kollegen einladen und Zusagen im Blick behalten.</p>
+            <p className="text-sm">Kollegen einladen und Zusagen im Blick behalten.</p>
           </div>
-          <div className="border rounded-xl p-6">
+          <div className="border border-primary-500/40 rounded-xl p-6">
             <h3 className="font-semibold text-lg mb-2">3. Überblick behalten</h3>
-            <p className="text-muted-foreground text-sm">Alle Aufgaben und Termine zentral an einem Ort.</p>
+            <p className="text-sm">Alle Aufgaben und Termine zentral an einem Ort.</p>
           </div>
         </div>
         

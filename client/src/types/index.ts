@@ -21,7 +21,7 @@ export type Event = {
   date: string;
   location: string;
   imageUrl?: string;
-  category?: Category;
+  categories: Category[];
   owner?: User;  
 };
 

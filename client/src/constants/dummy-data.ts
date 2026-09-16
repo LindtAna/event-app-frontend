@@ -19,31 +19,33 @@ export const dummyEvents: Event[] = [
     id: 1, ownerId: 1, title: "Q1 Planning Meeting",
     description: "Strategische Planung für das erste Quartal. Ziele, Budgets und Roadmap werden besprochen.",
     date: "2026-10-15", location: "Konferenzraum A, Cologne",
-    imageUrl: "https://picsum.photos/seed/event1/600/400", category: dummyCategories[3], owner: dummyUsers[0]
+    imageUrl: "https://picsum.photos/seed/event1/600/400",
+    categories: [dummyCategories[3], dummyCategories[0]],
+    owner: dummyUsers[0]
   },
   {
     id: 2, ownerId: 2, title: "Team Building im Park",
     description: "Lockeres Team-Event an der frischen Luft. Grillen und Kennenlernspiele für das neue Team.",
     date: "2026-09-28", location: "Herkulesberg, Cologne",
-    imageUrl: "https://picsum.photos/seed/event2/600/400", category: dummyCategories[2], owner: dummyUsers[1]
+    imageUrl: "https://picsum.photos/seed/event2/600/400", categories: [dummyCategories[2]], owner: dummyUsers[1]
   },
   {
     id: 3, ownerId: 1, title: "React & Go Workshop",
     description: "Interner Workshop: Wie verbinden wir unser React-Frontend mit dem Go-Backend sauber und sicher.",
     date: "2026-10-02", location: "Online - Google Meet",
-    imageUrl: "https://picsum.photos/seed/event3/600/400", category: dummyCategories[1], owner: dummyUsers[0]
+    imageUrl: "https://picsum.photos/seed/event3/600/400", categories: [dummyCategories[1]], owner: dummyUsers[0]
   },
   {
     id: 4, ownerId: 3, title: "Monatliches All-Hands",
     description: "Alle Mitarbeiter treffen sich für Updates aus allen Abteilungen und offene Fragerunde.",
     date: "2026-10-05", location: "Hauptsaal",
-    imageUrl: "https://picsum.photos/seed/event4/600/400", category: dummyCategories[0], owner: dummyUsers[2]
+    imageUrl: "https://picsum.photos/seed/event4/600/400", categories: [dummyCategories[0]], owner: dummyUsers[2]
   },
   {
     id: 5, ownerId: 2, title: "Release Party v2.0",
     description: "Wir feiern das große Release von PlanFuchs 2.0 mit allen Beteiligten.",
     date: "2026-11-01", location: "Dachterrasse",
-    imageUrl: "https://picsum.photos/seed/event5/600/400", category: dummyCategories[2], owner: dummyUsers[1]
+    imageUrl: "https://picsum.photos/seed/event5/600/400", categories: [dummyCategories[2]], owner: dummyUsers[1]
   },
 ];
 

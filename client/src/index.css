@@ -20,8 +20,10 @@
     --primary-foreground: 0 0% 100%;
     --ring: 262 83% 58%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 28 100% 55%; /* #ff861a orange */
     --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary-dark: 24 100% 50%; /* #ff6800 dark-orange */
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -34,8 +36,6 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
     --radius: 0.5rem;
 
     --font-poppins: "Poppins", sans-serif;

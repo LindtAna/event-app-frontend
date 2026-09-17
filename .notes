@@ -60,3 +60,8 @@ npx shadcn@latest add sheet
 npx shadcn@latest add separator
 
 для utils.ts npm i tailwind-merge query-string
+
+
+Компонент Avatar из shadcn/ui -> автоматически показывает инициалы (AvatarFallback),
+если картинка еще не загрузилась, отсутствует или передан невалидный URL:
+

@@ -6,7 +6,7 @@ import NavItems from "./NavItems"
 import MobileNav from "./MobileNav"
 
 const Header = () => {
-  const { user, isSignedIn } = useAuth()
+  const { isSignedIn } = useAuth()
   return (
     <header className="w-full border-b border-primary-500/40">
       <div className="wrapper flex items-center justify-between">

@@ -1,6 +1,6 @@
 // mock. Later --> Go /auth/login
 export const useAuth = () => {
-  const user = { id: 'user_1', name: 'Manager' } 
+  const user = { id: 1, name: 'Manager' } 
   return {
     user,
     isSignedIn:!!user,

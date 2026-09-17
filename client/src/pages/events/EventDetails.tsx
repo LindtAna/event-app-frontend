@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { dummyEvents, dummyAttendees } from '@/constants/dummy-data'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, getInitials } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'
@@ -53,11 +54,11 @@ const EventDetails = () => {
                             </div>
                         </div>
 
-<div className="flex flex-1 items-center justify-center py-4">
-                        <Button asChild className="w-full sm:w-fit" size="lg">
-                            <Link to="#">Teilnehmen ({attendees.length})</Link>
-                        </Button>
-</div>
+                        <div className="flex flex-1 items-center justify-center py-4">
+                            <Button asChild className="w-full sm:w-fit" size="lg">
+                                <Link to="#">Teilnehmen ({attendees.length})</Link>
+                            </Button>
+                        </div>
 
                         <div className="flex flex-col gap-5">
                             <div className='flex gap-2 md:gap-3'>
@@ -87,9 +88,24 @@ const EventDetails = () => {
                                     Teilnehmer:
                                 </p>
                                 <div className="flex -space-x-2 pt-1">
-                                    {attendees.map(a => (
-                                        <img key={a.id} src={a.user?.avatarUrl} alt={a.user?.name} className="h-8 w-8 rounded-full border-2 border-white" />
-                                    ))}
+                                    {attendees.map(a => {
+                                        const userName = a.user?.name || `User #${a.userId}`
+
+                                        return (
+                                            <Avatar
+                                                key={a.id ?? a.userId}
+                                                className="h-8 w-8 border-2 border-primary-500 ring-1 ring-slate-200"
+                                            >
+                                                <AvatarImage
+                                                    src={a.user?.avatarUrl}
+                                                    alt={userName}
+                                                />
+                                                <AvatarFallback className="bg-secondary-dark text-white text-xs font-semibold">
+                                                    {getInitials(userName)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        )
+                                    })}
                                 </div>
                             </div>
                         )}

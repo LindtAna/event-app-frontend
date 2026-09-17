@@ -17,11 +17,14 @@ export type Event = {
   id: number;
   ownerId: number; 
   title: string;   
-  description: string;
-  date: string;
-  location: string;
+  description?: string;
+  startDateTime: string | Date;
+  endDateTime: string | Date;
+  location?: string;
   imageUrl?: string;
-  categories: Category[];
+  url?: string;
+  categories?: Category[];
+  categoryId?: string;
   owner?: User;  
 };
 

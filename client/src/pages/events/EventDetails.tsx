@@ -65,7 +65,7 @@ const EventDetails = () => {
                                 <img src={calendar} alt="calendar" width={32} height={32} />
                                 <div className="p-medium-16 lg:p-regular-20">
                                     {/* Nur Datum, da dummy-data kein time hat */}
-                                    <p>{formatDateTime(event.date).dateOnly}</p>
+                                    <p>{formatDateTime(event.startDateTime).dateOnly}</p>
                                 </div>
                             </div>
 

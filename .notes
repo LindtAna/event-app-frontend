@@ -65,3 +65,22 @@ npx shadcn@latest add separator
 Компонент Avatar из shadcn/ui -> автоматически показывает инициалы (AvatarFallback),
 если картинка еще не загрузилась, отсутствует или передан невалидный URL:
 
+
+Event Form:
+npx shadcn@latest add input textarea checkbox
+
+npm install react-hook-form @hookform/resolvers
+
+zod — библиотека для описания схем данных и их валидации
+react-datepicker — готовый компонент календаря для удобного выбора даты и времени
+npm install zod react-datepicker
+
+@types/react-datepicker — типы TypeScript для библиотеки react-datepicker
+npm install --save-dev @types/react-datepicker
+
+form(shadcn) - вручную:
+npm install react-hook-form @hookform/resolvers @radix-ui/react-label @radix-ui/react-slot
+
+npx shadcn@latest add label
+
+создать  src/components/ui/form.tsx

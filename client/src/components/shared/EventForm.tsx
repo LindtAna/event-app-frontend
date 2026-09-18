@@ -2,6 +2,8 @@ import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
@@ -9,12 +11,13 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
 import type { Event } from "@/types"
+import { eventFormSchema } from "@/lib/validator"
 
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'
 import link from '@/assets/icons/link.svg'
 
-// TODO: Zod-Schema (eventFormSchema) und Resolver (zodResolver) werden später für die Validierung hinzugefügt
+
 // TODO: Externe Standardwerte (eventDefaultValues) werden später aus constants importiert
 // TODO: Dropdown- und FileUploader-Komponenten werden später erstellt und importiert
 
@@ -48,15 +51,16 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
         }
         : defaultValues;
 
-    // Formular-Initialisierung ohne Zod-Resolver für den aktuellen Entwicklungsstand
-    const form = useForm({
+        // Zod-Validierung via Resolver + Festlegung des Formulardatentyps
+    const form = useForm<z.infer<typeof eventFormSchema>>({
+        resolver: zodResolver(eventFormSchema),
         defaultValues: initialValues,
     })
 
-    // Temporäre Submit-Funktion für Mock-Daten
-    async function onSubmit(values: Record<string, any>) {
+    // onSubmit erhält automatisch strikt typisierte und validierte Daten
+   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
         console.log("Form Submitted!");
-        console.log("Values:", values);
+        console.log("Validated Values:", values);
         console.log("Current UserId:", userId);
 
         // Netzwerkanfrage simulieren

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 import type { Event } from "@/types"
 import { eventFormSchema } from "@/lib/validator"
+import { eventDefaultValues } from "@/constants"
 
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'
@@ -28,18 +29,6 @@ type EventFormProps = {
     eventId?: string
 }
 
-// Lokale Standardwerte für das Formular vor der Implementierung der Zod-Validierung
-const defaultValues = {
-    title: "",
-    categoryId: "",
-    description: "",
-    imageUrl: "",
-    location: "",
-    startDateTime: new Date(),
-    endDateTime: new Date(),
-    url: "",
-}
-
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     const navigate = useNavigate();
 
@@ -49,7 +38,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             startDateTime: new Date(event.startDateTime),
             endDateTime: new Date(event.endDateTime)
         }
-        : defaultValues;
+        : eventDefaultValues;
 
         // Zod-Validierung via Resolver + Festlegung des Formulardatentyps
     const form = useForm<z.infer<typeof eventFormSchema>>({

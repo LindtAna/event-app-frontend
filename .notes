@@ -84,3 +84,8 @@ npm install react-hook-form @hookform/resolvers @radix-ui/react-label @radix-ui/
 npx shadcn@latest add label
 
 создать  src/components/ui/form.tsx
+
+---
+
+Dropdown:
+npx shadcn@latest add select alert-dialog

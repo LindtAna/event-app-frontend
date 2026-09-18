@@ -17,10 +17,10 @@ import { eventDefaultValues } from "@/constants"
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'
 import link from '@/assets/icons/link.svg'
+import Dropdown from "./Dropdown"
 
 
-// TODO: Externe Standardwerte (eventDefaultValues) werden später aus constants importiert
-// TODO: Dropdown- und FileUploader-Komponenten werden später erstellt und importiert
+// FileUploader-Komponente wird später erstellt und importiert
 
 type EventFormProps = {
     userId: string
@@ -40,14 +40,14 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
         }
         : eventDefaultValues;
 
-        // Zod-Validierung via Resolver + Festlegung des Formulardatentyps
+    // Zod-Validierung via Resolver + Festlegung des Formulardatentyps
     const form = useForm<z.infer<typeof eventFormSchema>>({
         resolver: zodResolver(eventFormSchema),
         defaultValues: initialValues,
     })
 
     // onSubmit erhält automatisch strikt typisierte und validierte Daten
-   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
+    async function onSubmit(values: z.infer<typeof eventFormSchema>) {
         console.log("Form Submitted!");
         console.log("Validated Values:", values);
         console.log("Current UserId:", userId);
@@ -78,14 +78,14 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                         )}
                     />
 
-                    {/* Später -> Dropdown-Komponente*/}
+                    {/* Dropdown-Komponente*/}
                     <FormField
                         control={form.control}
                         name="categoryId"
                         render={({ field }) => (
-                            <FormItem className="w-full">
+                            <FormItem className="w-full rounded-lg">
                                 <FormControl>
-                                    <Input placeholder="Kategorie oder ID" {...field} className="input-field" />
+                                    <Dropdown onChangeHandler={field.onChange} value={field.value} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

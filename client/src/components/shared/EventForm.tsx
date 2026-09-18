@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
+import { useState } from "react"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,13 +15,13 @@ import type { Event } from "@/types"
 import { eventFormSchema } from "@/lib/validator"
 import { eventDefaultValues } from "@/constants"
 
+import Dropdown from "./Dropdown"
+import { FileUploader } from "./FileUploader"
+
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'
 import link from '@/assets/icons/link.svg'
-import Dropdown from "./Dropdown"
 
-
-// FileUploader-Komponente wird später erstellt und importiert
 
 type EventFormProps = {
     userId: string
@@ -31,6 +32,7 @@ type EventFormProps = {
 
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     const navigate = useNavigate();
+    const [files, setFiles] = useState<File[]>([]); // FileUploader
 
     const initialValues = event && type === 'Update'
         ? {
@@ -51,6 +53,11 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
         console.log("Form Submitted!");
         console.log("Validated Values:", values);
         console.log("Current UserId:", userId);
+        console.log("Uploaded Files array:", files);
+
+        // TODO: Beim Senden an das Go-Backend wird FormData verwendet(falls eine Datei hochgeladen wurde)
+        const formData = new FormData();
+        if (files.length > 0) formData.append('file', files[0]);
 
         // Netzwerkanfrage simulieren
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -107,14 +114,18 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                         )}
                     />
 
-                    {/* Später -> FileUploader-Komponente */}
+                    {/* FileUploader-Komponente */}
                     <FormField
                         control={form.control}
                         name="imageUrl"
                         render={({ field }) => (
                             <FormItem className="w-full">
                                 <FormControl>
-                                    <Input placeholder="Bild-URL (http://...)" {...field} className="input-field" />
+                                    <FileUploader
+                                        onFieldChange={field.onChange}
+                                        imageUrl={field.value}
+                                        setFiles={setFiles}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

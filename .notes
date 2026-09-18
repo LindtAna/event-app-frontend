@@ -89,3 +89,8 @@ npx shadcn@latest add label
 
 Dropdown:
 npx shadcn@latest add select alert-dialog
+
+
+---
+FileUploader
+npm install react-dropzone

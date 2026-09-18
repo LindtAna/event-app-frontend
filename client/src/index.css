@@ -17,7 +17,7 @@
 
 
     --primary: 262 83% 58%; /* #624CF5 */
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 0 0% 100%;  
     --ring: 262 83% 58%;
 
     --secondary: 28 100% 55%; /* #ff861a orange */
@@ -259,7 +259,7 @@ body {
   background-color: #705cf7;
 }
 
-/* ========================================== REACT-DATEPICKER STYLES */
+/* REACT-DATEPICKER STYLES */
 .datePicker {
   width: 100%;
 }
@@ -272,11 +272,57 @@ body {
 }
 
 .react-datepicker__day--selected {
-  background-color: #624cf5 !important;
+  background-color: #7c3bed !important;
   color: #ffffff !important;
   border-radius: 4px;
 }
 
 .react-datepicker__time-list-item--selected {
-  background-color: #624cf5 !important;
+  background-color: #7c3bed !important;
+}
+
+/* ==========================================
+   React-Datepicker: Custom Styles & Mobile Fix
+   ========================================== */
+
+/* Allgemeine border für den Container und den Zeit-Trenner */
+.react-datepicker {
+  border: 1px solid rgba(98, 75, 255, 0.4) !important; 
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  font-family: inherit !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.react-datepicker__time-container {
+  border-left: 1px solid rgba(98, 75, 255, 0.4) !important;
+}
+
+/* Header von Kalender und Zeit */
+.react-datepicker__header,
+.react-datepicker__header--time {
+  background-color: rgba(124, 59, 237, 1.0) !important;    /* #7c3bed */
+  border-bottom: 1px solid rgba(98, 75, 255, 0.4) !important;
+}
+
+/* Weißer Text in den Headern */
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker__day-name {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+/* Navigationspfeile (previous и next) -> Weiß */
+.react-datepicker__navigation-icon::before {
+  border-color: #ffffff !important;
+}
+
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: #e2e8f0 !important;
+}
+
+/* Navigationspfeile(previous и next) -> Positionierung fixen */
+.react-datepicker__navigation {
+  top: 8px !important; 
 }

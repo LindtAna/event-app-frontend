@@ -1,10 +1,12 @@
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
-import DatePicker from "react-datepicker"
+import DatePicker, { registerLocale } from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import { de } from "date-fns/locale"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
@@ -21,6 +23,8 @@ import { FileUploader } from "./FileUploader"
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'
 import link from '@/assets/icons/link.svg'
+
+registerLocale("de", de)
 
 
 type EventFormProps = {
@@ -175,8 +179,10 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                                             selected={field.value}
                                             onChange={(date: Date | null) => field.onChange(date)}
                                             showTimeSelect
-                                            timeInputLabel="Time:"
-                                            dateFormat="MM/dd/yyyy h:mm aa"
+                                            locale="de"
+                                            timeCaption="Zeit"
+                                            dateFormat="dd.MM.yyyy HH:mm"
+                                            popperPlacement="bottom-start"
                                             wrapperClassName="datePicker"
                                         />
                                     </div>
@@ -203,8 +209,10 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                                             selected={field.value}
                                             onChange={(date: Date | null) => field.onChange(date)}
                                             showTimeSelect
-                                            timeInputLabel="Time:"
-                                            dateFormat="MM/dd/yyyy h:mm aa"
+                                            locale="de"
+                                            timeCaption="Zeit"
+                                            dateFormat="dd.MM.yyyy HH:mm"
+                                            popperPlacement="bottom-start"
                                             wrapperClassName="datePicker"
                                         />
                                     </div>
@@ -214,8 +222,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                         )}
                     />
                 </div>
-
-                <div className="flex flex-col gap-5 md:flex-row">
+<div className="flex flex-col gap-5 md:flex-row">
                     <FormField
                         control={form.control}
                         name="url"
@@ -237,7 +244,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                         )}
                     />
                 </div>
-
+                
                 <div className="flex flex-1 items-center justify-center py-4">
                     <Button
                         className="w-full sm:w-fit" size="lg"

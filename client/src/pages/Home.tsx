@@ -1,9 +1,40 @@
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
 import hero from '@/assets/images/hero.png'
-
+import Collection from '@/components/shared/Collection'
+import { dummyUsers, dummyEvents, dummyAttendees } from '@/constants/dummy-data'
 
 export default function Home() {
+
+  const currentUser = dummyUsers[0]
+
+  const attendeeEventIds = dummyAttendees
+    .filter((a) => a.userId === currentUser.id)
+    .map((a) => a.eventId)
+
+
+  if (currentUser) {
+    return (
+    <div className="wrapper my-8 flex flex-col gap-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="h2-bold">Willkommen zurück, {currentUser.name}!</h1>
+        <p className="p-regular-16 text-grey-600">
+          Hier sind Ihre aktuellen Veranstaltungen und Pläne im Überblick.
+        </p>
+      </div>
+
+      <Collection
+        data={dummyEvents}
+        emptyTitle="Keine Veranstaltungen gefunden"
+        emptyStateSubtext="Erstellen Sie Ihre erste Veranstaltung"
+        collectionType="All_Events"
+        currentUserId={currentUser.id}
+        attendeeEventIds={attendeeEventIds}
+        limit={10}
+      />
+    </div>
+  )
+  }
 
   // Guest - unauthorisierte Benutzer
   return (
@@ -26,11 +57,10 @@ export default function Home() {
         </div>
       </section>
 
-   
       <section className="wrapper my-8 md:my-10 flex flex-col gap-12">
         <h2 className="h2-bold text-center">Wie funktioniert PlanFuchs?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="border  border-primary-500/40 rounded-xl p-6">
+          <div className="border border-primary-500/40 rounded-xl p-6">
             <h3 className="font-semibold text-lg mb-2">1. Event erstellen</h3>
             <p className="text-sm">Alle Infos und Bilder im Handumdrehen hinzufügen.</p>
           </div>
@@ -43,9 +73,6 @@ export default function Home() {
             <p className="text-sm">Alle Aufgaben und Termine zentral an einem Ort.</p>
           </div>
         </div>
-        
-      {/* TODO: Dashboard-Ansicht für angemeldete Nutzer (Search, CategoryFilter, Collection) */}
-  
       </section>
     </>
   )

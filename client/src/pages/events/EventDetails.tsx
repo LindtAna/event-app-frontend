@@ -63,11 +63,20 @@ const EventDetails = () => {
                         <div className="flex flex-col gap-5">
                             <div className='flex gap-2 md:gap-3'>
                                 <img src={calendar} alt="calendar" width={32} height={32} />
+                                <p className="p-medium-16 lg:p-regular-20">Beginn:</p>
                                 <div className="p-medium-16 lg:p-regular-20">
-                                    {/* Nur Datum, da dummy-data kein time hat */}
-                                    <p>{formatDateTime(event.startDateTime).dateOnly}</p>
+                                    <p>{formatDateTime(event.startDateTime).dateTime}</p>
                                 </div>
                             </div>
+
+                            <div className='flex gap-2 md:gap-3'>
+                                <img src={calendar} alt="calendar" width={32} height={32} />
+                                <p className="p-medium-16 lg:p-regular-20">Ende:</p>
+                                <div className="p-medium-16 lg:p-regular-20">
+                                    <p>{formatDateTime(event.endDateTime).dateTime}</p>
+                                </div>
+                            </div>
+                            
 
                             <div className="p-regular-20 flex items-center gap-3">
                                 <img src={location} alt="location" width={32} height={32} />

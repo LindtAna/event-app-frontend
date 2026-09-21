@@ -1,10 +1,14 @@
 import { Button } from '@/components/ui/button'
-import { Link } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import hero from '@/assets/images/hero.png'
 import Collection from '@/components/shared/Collection'
 import { dummyUsers, dummyEvents, dummyAttendees } from '@/constants/dummy-data'
+import Search from '@/components/shared/Search'
+
 
 export default function Home() {
+  const [searchParams] = useSearchParams()
+  const searchQuery = searchParams.get('query') || ''
 
   const currentUser = dummyUsers[0]
 
@@ -12,28 +16,44 @@ export default function Home() {
     .filter((a) => a.userId === currentUser.id)
     .map((a) => a.eventId)
 
+  //Veranstaltungen filtern anhand der Suchanfrage aus der URL
+  const filteredEvents = dummyEvents.filter((event) =>
+    event.title.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   if (currentUser) {
     return (
-    <div className="wrapper my-8 flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="h2-bold">Willkommen zurück, {currentUser.name}!</h1>
-        <p className="p-regular-16 text-grey-600">
-          Hier sind Ihre aktuellen Veranstaltungen und Pläne im Überblick.
-        </p>
-      </div>
+      <div className="wrapper my-8 flex flex-col gap-8">
+        <div className="flex flex-col gap-2">
+          <h1 className="h2-bold">Willkommen zurück, {currentUser.name}!</h1>
+          <p className="p-regular-16 text-grey-600">
+            Hier sind Ihre aktuellen Veranstaltungen und Pläne im Überblick.
+          </p>
+        </div>
 
-      <Collection
-        data={dummyEvents}
-        emptyTitle="Keine Veranstaltungen gefunden"
-        emptyStateSubtext="Erstellen Sie Ihre erste Veranstaltung"
-        collectionType="All_Events"
-        currentUserId={currentUser.id}
-        attendeeEventIds={attendeeEventIds}
-        limit={10}
-      />
-    </div>
-  )
+        <div className="flex w-full flex-col gap-5 md:flex-row">
+          <Search placeholder="Event suchen..." />
+        </div>
+
+
+
+        <Collection
+          data={filteredEvents}
+          emptyTitle="Keine Veranstaltungen gefunden"
+          emptyStateSubtext={
+            searchQuery
+              ? "Versuchen Sie einen anderen Suchbegriff."
+              : "Erstellen Sie Ihre erste Veranstaltung"
+          }
+          emptyStateShowButton={!searchQuery}
+          collectionType="All_Events"
+          currentUserId={currentUser.id}
+          attendeeEventIds={attendeeEventIds}
+          limit={10}
+        />
+
+      </div>
+    )
   }
 
   // Guest - unauthorisierte Benutzer

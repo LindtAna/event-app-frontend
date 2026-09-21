@@ -14,6 +14,7 @@ type CollectionProps = {
   collectionType?: 'Events_Organized' | 'My_Events' | 'All_Events'
   currentUserId?: number
   attendeeEventIds?: number[]
+  emptyStateShowButton?: boolean
 }
 
 const Collection = ({
@@ -24,6 +25,7 @@ const Collection = ({
   collectionType = 'All_Events',
   currentUserId,
   attendeeEventIds = [],
+  emptyStateShowButton = false,
 
 }: CollectionProps) => {
   const [visibleCount, setVisibleCount] = useState(limit)
@@ -82,9 +84,11 @@ const Collection = ({
         <div className="flex-center wrapper min-h-[200px] w-full flex-col gap-3 rounded-[14px] bg-primary-50 bg-dotted-pattern bg-cover bg-center py-28 text-center border border-primary-500/40">
           <h3 className="p-bold-20 md:h5-bold text-secondary-dark">{emptyTitle}</h3>
           <p className="p-regular-14 text-secondary-dark">{emptyStateSubtext}</p>
-           <Button asChild className="w-full sm:w-fit" size="lg">
+           {emptyStateShowButton && (
+            <Button asChild className="w-full sm:w-fit mt-2" size="lg">
               <Link to="/events/create">Los geht’s!</Link>
             </Button>
+          )}
         </div>
       )}
     </>

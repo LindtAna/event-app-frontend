@@ -8,21 +8,31 @@ const Search = ({ placeholder = 'Event suchen...' }: { placeholder?: string }) =
     const [searchParams, setSearchParams] = useSearchParams()
 
 
-    const initialQuery = searchParams.get('query') || ''
-    const [query, setQuery] = useState(initialQuery)
+    const queryParam = searchParams.get('query') || ''
+    const [query, setQuery] = useState(queryParam)
+
+    //lokalen State des Eingabefelds mit der URL synchronisieren
+    // Falls eine Kategorie auswählе wird, wird der Query-Parameter aus der URL entfernt
+    useEffect(() => {
+        setQuery(queryParam)
+    }, [queryParam])
 
     useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-
-            if (query) {
-                searchParams.set('query', query)
-            } else {
-                searchParams.delete('query')
-            }
-
-            // die URL aktualisieren; `replace: true` ->den Browserverlauf nicht zuzumüllen
-            setSearchParams(searchParams, { replace: true })
-        }, 300)
+    const delayDebounceFn = setTimeout(() => {
+      setSearchParams((prev) => {
+        if (query === prev.get('query') || (!query && !prev.has('query'))) {
+          return prev
+        }
+        if (query) {
+          prev.set('query', query)
+          // Gegenseitiger Ausschluss: beim Texteingeben den Kategorienfilter zurücksetzen
+          prev.delete('category')
+        } else {
+          prev.delete('query')
+        }
+        return prev
+      }, { replace: true })
+    }, 300)
 
         return () => clearTimeout(delayDebounceFn)
     }, [query, searchParams, setSearchParams])

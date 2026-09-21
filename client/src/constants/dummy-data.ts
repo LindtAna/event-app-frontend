@@ -5,6 +5,10 @@ export const dummyCategories: Category[] = [
   { id: "2", name: "Workshop" },
   { id: "3", name: "Team-Event" },
   { id: "4", name: "Planning" },
+  { id: "5", name: "UI&UX" },
+  { id: "6", name: "Konferenz" },
+  { id: "7", name: "Weiterbildung" },
+  { id: "8", name: "Product Launch" },
 ];
 
 export const dummyUsers: User[] = [
@@ -64,7 +68,7 @@ export const dummyEvents: Event[] = [
     endDateTime: "2026-10-15 11:30",
     location: "Konferenzraum A, Cologne",
     imageUrl: "https://picsum.photos/seed/event1/600/400",
-    categories: [dummyCategories[3], dummyCategories[0]],
+    categories: [dummyCategories[3], dummyCategories[5]],
     owner: dummyUsers[0]
   },
   {
@@ -73,7 +77,7 @@ export const dummyEvents: Event[] = [
     startDateTime: "2026-10-15 15:00",
     endDateTime: "2026-10-15 18:00",
     location: "Herkulesberg, Cologne",
-    imageUrl: "https://picsum.photos/seed/event2/600/400", categories: [dummyCategories[2]], owner: dummyUsers[1]
+    imageUrl: "https://picsum.photos/seed/event2/600/400", categories: [dummyCategories[4]], owner: dummyUsers[1]
   },
   {
     id: 8, ownerId: 1, title: "React & Go Workshop",
@@ -81,7 +85,7 @@ export const dummyEvents: Event[] = [
     startDateTime: "2026-10-15 12:45",
     endDateTime: "2026-10-15 14:30",
     location: "Online - Google Meet",
-    imageUrl: "https://picsum.photos/seed/event3/600/400", categories: [dummyCategories[1]], owner: dummyUsers[0]
+    imageUrl: "https://picsum.photos/seed/event3/600/400", categories: [dummyCategories[7]], owner: dummyUsers[0]
   },
   {
     id: 9, ownerId: 3, title: "Monatliches All-Hands",
@@ -89,7 +93,7 @@ export const dummyEvents: Event[] = [
     startDateTime: "2026-10-15 08:30",
     endDateTime: "2026-10-15 09:30",
     location: "Hauptsaal",
-    imageUrl: "https://picsum.photos/seed/event4/600/400", categories: [dummyCategories[0]], owner: dummyUsers[2]
+    imageUrl: "https://picsum.photos/seed/event4/600/400", categories: [dummyCategories[5]], owner: dummyUsers[2]
   },
   {
     id: 10, ownerId: 2, title: "Release Party v2.0",
@@ -97,7 +101,7 @@ export const dummyEvents: Event[] = [
     startDateTime: "2026-10-15 16:30",
     endDateTime: "2026-10-15 18:30",
     location: "Dachterrasse",
-    imageUrl: "https://picsum.photos/seed/event5/600/400", categories: [dummyCategories[2]], owner: dummyUsers[1]
+    imageUrl: "https://picsum.photos/seed/event5/600/400", categories: [dummyCategories[6]], owner: dummyUsers[1]
   },
   {
     id: 11, ownerId: 1, title: "Q1 Planning Meeting",
@@ -106,7 +110,7 @@ export const dummyEvents: Event[] = [
     endDateTime: "2026-10-15 11:30",
     location: "Konferenzraum A, Cologne",
     imageUrl: "https://picsum.photos/seed/event1/600/400",
-    categories: [dummyCategories[3], dummyCategories[0]],
+    categories: [dummyCategories[7], dummyCategories[1]],
     owner: dummyUsers[0]
   },
   {
@@ -123,7 +127,7 @@ export const dummyEvents: Event[] = [
     startDateTime: "2026-10-15 12:45",
     endDateTime: "2026-10-15 14:30",
     location: "Online - Google Meet",
-    imageUrl: "https://picsum.photos/seed/event3/600/400", categories: [dummyCategories[1]], owner: dummyUsers[0]
+    imageUrl: "https://picsum.photos/seed/event3/600/400", categories: [dummyCategories[3]], owner: dummyUsers[0]
   },
   {
     id: 14, ownerId: 3, title: "Monatliches All-Hands",
@@ -131,7 +135,7 @@ export const dummyEvents: Event[] = [
     startDateTime: "2026-10-15 08:30",
     endDateTime: "2026-10-15 09:30",
     location: "Hauptsaal",
-    imageUrl: "https://picsum.photos/seed/event4/600/400", categories: [dummyCategories[0]], owner: dummyUsers[2]
+    imageUrl: "https://picsum.photos/seed/event4/600/400", categories: [dummyCategories[2]], owner: dummyUsers[2]
   },
   {
     id: 15, ownerId: 2, title: "Release Party v2.0",
@@ -139,7 +143,7 @@ export const dummyEvents: Event[] = [
     startDateTime: "2026-10-15 16:30",
     endDateTime: "2026-10-15 18:30",
     location: "Dachterrasse",
-    imageUrl: "https://picsum.photos/seed/event5/600/400", categories: [dummyCategories[2]], owner: dummyUsers[1]
+    imageUrl: "https://picsum.photos/seed/event5/600/400", categories: [dummyCategories[1]], owner: dummyUsers[1]
   },
 ];
 

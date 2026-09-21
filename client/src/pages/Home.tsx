@@ -4,11 +4,14 @@ import hero from '@/assets/images/hero.png'
 import Collection from '@/components/shared/Collection'
 import { dummyUsers, dummyEvents, dummyAttendees } from '@/constants/dummy-data'
 import Search from '@/components/shared/Search'
+import CategoryFilter from '@/components/shared/CategoryFilter'
 
 
 export default function Home() {
   const [searchParams] = useSearchParams()
+
   const searchQuery = searchParams.get('query') || ''
+  const categoryQuery = searchParams.get('category') || ''
 
   const currentUser = dummyUsers[0]
 
@@ -16,10 +19,20 @@ export default function Home() {
     .filter((a) => a.userId === currentUser.id)
     .map((a) => a.eventId)
 
-  //Veranstaltungen filtern anhand der Suchanfrage aus der URL
-  const filteredEvents = dummyEvents.filter((event) =>
-    event.title.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  //Veranstaltungen filtern anhand der Suchanfrage oder Karegorie
+  const filteredEvents = dummyEvents.filter((event) => {
+    //Textsuche prüfen
+    const matchQuery = searchQuery 
+      ? event.title.toLowerCase().includes(searchQuery.toLowerCase()) 
+      : true
+   // Kategorie prüfen. Event hat [categories] -> wird innerhalb dieses Arrays gesucht
+    const matchCategory = categoryQuery && categoryQuery !== 'All'
+      ? event.categories?.some((cat) => cat?.name === categoryQuery)
+      : true
+    // die Filter gegenseitig ausschließen,  einer -> immer true
+    // &&-Logik ermöglicht es jedoch kollaboratives Filtern hinzuzufügen
+    return matchQuery && matchCategory
+  })
 
   if (currentUser) {
     return (
@@ -33,19 +46,18 @@ export default function Home() {
 
         <div className="flex w-full flex-col gap-5 md:flex-row">
           <Search placeholder="Event suchen..." />
+          <CategoryFilter />
         </div>
-
-
 
         <Collection
           data={filteredEvents}
           emptyTitle="Keine Veranstaltungen gefunden"
           emptyStateSubtext={
-            searchQuery
+            searchQuery || categoryQuery
               ? "Versuchen Sie einen anderen Suchbegriff."
               : "Erstellen Sie Ihre erste Veranstaltung"
           }
-          emptyStateShowButton={!searchQuery}
+          emptyStateShowButton={!searchQuery && !categoryQuery}
           collectionType="All_Events"
           currentUserId={currentUser.id}
           attendeeEventIds={attendeeEventIds}

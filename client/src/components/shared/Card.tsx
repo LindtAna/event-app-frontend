@@ -35,7 +35,7 @@ const Card = ({ event, userRole, currentUserId, attendeeEventIds = [] }: CardPro
   }
 
   return (
-    <div className="group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-lg bg-white shadow-md shadow-primary-500/60 transition-all hover:shadow-lg md:min-h-[430px] border border-primary-500/40">
+    <div className="group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-lg bg-white shadow-md shadow-primary-500/30 hover:shadow-primary-500/60 transition-all hover:shadow-lg md:min-h-[430px] border border-primary-500/40">
       <Link
         to={`/events/${event.id}`}
         style={{ backgroundImage: `url(${event.imageUrl})` }}

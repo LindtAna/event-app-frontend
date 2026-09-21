@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import type { Event } from '@/types'
 
 import arrowDown from '@/assets/icons/arrow-down-icon.svg'
+import { Link } from 'react-router-dom'
 
 type CollectionProps = {
   data: Event[]
@@ -78,9 +79,12 @@ const Collection = ({
           )}
         </div>
       ) : (
-        <div className="flex-center wrapper min-h-[200px] w-full flex-col gap-3 rounded-[14px] bg-grey-50 py-28 text-center border border-dashed border-grey-300">
-          <h3 className="p-bold-20 md:h5-bold">{emptyTitle}</h3>
-          <p className="p-regular-14">{emptyStateSubtext}</p>
+        <div className="flex-center wrapper min-h-[200px] w-full flex-col gap-3 rounded-[14px] bg-primary-50 bg-dotted-pattern bg-cover bg-center py-28 text-center border border-primary-500/40">
+          <h3 className="p-bold-20 md:h5-bold text-secondary-dark">{emptyTitle}</h3>
+          <p className="p-regular-14 text-secondary-dark">{emptyStateSubtext}</p>
+           <Button asChild className="w-full sm:w-fit" size="lg">
+              <Link to="/events/create">Los geht’s!</Link>
+            </Button>
         </div>
       )}
     </>

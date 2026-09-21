@@ -30,7 +30,7 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
     return (
         <div
             {...getRootProps()}
-            className="flex-center bg-grey-50 flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl border border-dashed border-grey-300 hover:border-primary-500 transition-colors">
+            className="flex-center bg-primary-50 bg-dotted-pattern bg-cover bg-center flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl border border-dashed border-grey-300 hover:border-primary-500 transition-colors">
             <input {...getInputProps()} className="cursor-pointer" />
 
 {/* Konditionelles Rendering: Zeigt entweder das hochgeladene Bild oder das Drag-and-Drop-Feld */}

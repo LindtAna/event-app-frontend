@@ -3,6 +3,7 @@ import Home from "./pages/Home"
 import RootLayout from "./layouts/RootLayout"
 import EventDetails from "./pages/events/EventDetails"
 import CreateEvent from "./pages/events/CreateEvent"
+import UpdateEvent from "./pages/events/UpdateEvent"
 
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/events/create" element={<CreateEvent/>} />
+        <Route path="/events/:id/update" element={<UpdateEvent/>} />
         </Route>
       </Routes>
     </BrowserRouter>

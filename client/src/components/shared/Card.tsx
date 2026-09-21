@@ -3,6 +3,10 @@ import type { Event } from '@/types'
 
 import owner from '@/assets/icons/ownership.svg'
 import attendee from '@/assets/icons/attendee.svg'
+import editIcon from '@/assets/icons/edit.svg'
+
+import { DeleteConfirmation } from './DeleteConfirmation'
+import { LeaveConfirmation } from './LeaveConfirmation'
 
 
 type CardProps = {
@@ -36,6 +40,31 @@ const Card = ({ event, userRole, currentUserId, attendeeEventIds = [] }: CardPro
 
   return (
     <div className="group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-lg bg-white shadow-md shadow-primary-500/30 hover:shadow-primary-500/60 transition-all hover:shadow-lg md:min-h-[430px] border border-primary-500/40">
+      {/* delete, edit, leave event buttons */}
+      {effectiveRole === 'owner' && (
+        <div className="absolute right-2 top-2 z-10 flex gap-2">
+          {/* edit */}
+          <Link
+            to={`/events/${event.id}/update`}
+            title="Event bearbeiten"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-primary-500/40 shadow-sm backdrop-blur-sm transition-all hover:border-primary-500/80 hover:shadow-md hover:scale-105"
+          >
+            <img src={editIcon} alt="Bearbeiten" width={20} height={20} />
+          </Link>
+
+          {/* delete */}
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-primary-500/40 shadow-sm backdrop-blur-sm transition-all hover:border-primary-500/80 hover:shadow-md hover:scale-105 [&>button]:flex [&>button]:h-full [&>button]:w-full [&>button]:items-center [&>button]:justify-center">
+            <DeleteConfirmation eventId={event.id} />
+          </div>
+        </div>
+      )}
+ {/* leave event */}
+      {effectiveRole === 'attendee' && (
+        <div className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center p-2 shadow-sm backdrop-blur-sm transition-all border border-primary-500/40 hover:border-primary-500/80 hover:shadow-md hover:scale-105">
+          <LeaveConfirmation eventId={event.id} />
+        </div>
+      )}
+      
       <Link
         to={`/events/${event.id}`}
         style={{ backgroundImage: `url(${event.imageUrl})` }}

@@ -255,7 +255,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
                             ? 'Wird gespeichert...'
                             : type === 'Create'
                                 ? 'Los geht’s!'
-                                : 'Event korrigieren'
+                                : 'Speichern'
                         }
                     </Button>
                 </div>

@@ -13,8 +13,8 @@ export const dummyCategories: Category[] = [
 
 export const dummyUsers: User[] = [
   { id: 1, name: "Ana Müller", email: "anna@firma.de", avatarUrl: "https://i.pravatar.cc/150?img=1", bio: "Projektleitung" },
-  { id: 2, name: "Max Schmidt", email: "max@firma.de", avatarUrl: "https://i.pravatar.cc/150?img=8" },
-  { id: 3, name: "Lisa Weber", email: "lisa@firma.de", avatarUrl: "https://i.pravatar.cc/150?img=5" },
+  { id: 2, name: "Max Schmidt", email: "max@firma.de", avatarUrl: "https://i.pravatar.cc/150?img=8", bio: "Webdeveloper" },
+  { id: 3, name: "Lisa Weber", email: "lisa@firma.de", avatarUrl: "https://i.pravatar.cc/150?img=5", bio: "UI-Designer"  },
   { id: 4, name: "Tom Becker", email: "tom@firma.de", avatarUrl: "https://i.pravatar.cc/150?img=12" },
 ];
 

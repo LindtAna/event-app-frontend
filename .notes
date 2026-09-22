@@ -94,3 +94,6 @@ npx shadcn@latest add select alert-dialog
 ---
 FileUploader
 npm install react-dropzone
+
+
+---

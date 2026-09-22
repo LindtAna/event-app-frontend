@@ -4,6 +4,7 @@ import RootLayout from "./layouts/RootLayout"
 import EventDetails from "./pages/events/EventDetails"
 import CreateEvent from "./pages/events/CreateEvent"
 import UpdateEvent from "./pages/events/UpdateEvent"
+import Profile from "./pages/profile/Profile"
 
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/events/create" element={<CreateEvent/>} />
         <Route path="/events/:id/update" element={<UpdateEvent/>} />
+        <Route path="/profile" element={<Profile />} />
         </Route>
       </Routes>
     </BrowserRouter>

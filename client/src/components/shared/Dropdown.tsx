@@ -1,4 +1,6 @@
 import { useState, useEffect, startTransition } from "react"
+import { dummyCategories } from "@/constants/dummy-data"
+
 import {
   Select,
   SelectContent,
@@ -35,13 +37,8 @@ type DropdownProps = {
 }
 
 const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
-  // häufig verwendete Kategorien
-  const [categories, setCategories] = useState<Category[]>([
-    { id: "1", name: "Planning"},
-    { id: "2", name: "Teambuilding" },
-    { id: "3", name: "Wissensaustausch" },
-    { id: "4", name: "Hackathon" },
-  ])
+  // Hauptkategorien
+  const [categories, setCategories] = useState<Category[]>(dummyCategories)
   const [newCategory, setNewCategory] = useState('')
 
   const handleAddCategory = () => {

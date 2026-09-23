@@ -32,7 +32,7 @@ const Header = () => {
           {isSignedIn ? (
             <>
               {/* later Avatar + Dropdown */}
-              <div className="h-9 w-9 rounded-lg bg-primary-500" />
+              <div className="h-9 w-9 rounded-lg bg-primary" />
               <MobileNav />
             </>
           ) : (

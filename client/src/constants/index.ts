@@ -40,3 +40,10 @@ export const registerDefaultValues = {
   confirmPassword: '',
   avatarUrl: '',
 }
+
+export const profileDefaultValues = {
+  name: '',
+  email: '',
+  bio: '',
+  avatarUrl: '',
+}

@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 
 import type { User } from "@/types"
+import { profileFormSchema} from "@/lib/validator"
+import { profileDefaultValues } from "@/constants"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
@@ -14,13 +16,6 @@ import { FileUploader } from "./FileUploader"
 
 import userIcon from '@/assets/icons/username.svg'
 import mailIcon from '@/assets/icons/email.svg'
-
-const profileFormSchema = z.object({
-  name: z.string().min(2, "Name muss mindestens 2 Zeichen lang sein."),
-  email: z.string().email("Ungültige E-Mail-Adresse."),
-  bio: z.string().max(200, "Bio darf maximal 200 Zeichen lang sein.").optional(),
-  avatarUrl: z.string().optional(),
-})
 
 type ProfileFormProps = {
   userId: number | string
@@ -39,7 +34,7 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
         bio: user.bio || '',
         avatarUrl: user.avatarUrl || ''
       }
-    : { name: '', email: '', bio: '', avatarUrl: '' }
+    : profileDefaultValues
 
   const form = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),

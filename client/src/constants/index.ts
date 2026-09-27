@@ -31,3 +31,12 @@ export const eventDefaultValues = {
   categoryId: '',
   url: '',
 }
+
+
+export const registerDefaultValues = {
+  name: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  avatarUrl: '',
+}

@@ -1,14 +1,18 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import logo from '@/assets/images/logo.png'
+import userIcon from '@/assets/icons/username.svg'
 import { useAuth } from "@/hooks/useAuth"
-import { Button } from "../ui/button"
 import NavItems from "./NavItems"
 import MobileNav from "./MobileNav"
+import LoginModal from "./LoginModal"
 
 const Header = () => {
   const { isSignedIn } = useAuth()
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+
   return (
-    <header className="w-full border-b border-primary-500/40">
+    <header className="w-full border-b border border-primary-500/40">
       <div className="wrapper flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 md:gap-2.5">
           <img
@@ -27,22 +31,28 @@ const Header = () => {
           </nav>
         )}
 
-
         <div className="flex w-32 justify-end gap-3 items-center">
           {isSignedIn ? (
             <>
-              {/* later Avatar + Dropdown */}
               <div className="h-9 w-9 rounded-lg bg-primary" />
               <MobileNav />
             </>
           ) : (
-            <Button asChild className="rounded" size="lg">
-              <Link to="/sign-in">Login</Link>
-            </Button>
+            <button 
+              onClick={() => setIsLoginModalOpen(true)}
+              className="hover:scale-105 transition-transform"
+              title="Anmelden"
+            >
+              <img src={userIcon} alt="Login" width={32} height={32} className="cursor-pointer" />
+            </button>
           )}
         </div>
-
       </div>
+
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </header>
   )
 }

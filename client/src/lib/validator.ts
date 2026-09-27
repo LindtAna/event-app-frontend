@@ -30,3 +30,23 @@ export const eventFormSchema = z.object({
   
   url: z.string().url('Ungültige URL').or(z.literal('')),
 })
+
+// Registrierungsschema
+export const registerFormSchema = z.object({
+  name: z.string().min(2, "Name muss mindestens 2 Zeichen lang sein."),
+  email: z.string().email("Ungültige E-Mail-Adresse."),
+  password: z.string().min(7, "Passwort muss mindestens 7 Zeichen lang sein."),
+  confirmPassword: z.string(),
+  avatarUrl: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwörter stimmen nicht überein.",
+  path: ["confirmPassword"],
+})
+
+// Schema zur Profilbearbeitung
+export const profileFormSchema = z.object({
+  name: z.string().min(2, "Name muss mindestens 2 Zeichen lang sein."),
+  email: z.string().email("Ungültige E-Mail-Adresse."),
+  bio: z.string().max(200, "Bio darf maximal 200 Zeichen lang sein.").optional(),
+  avatarUrl: z.string().optional(),
+})

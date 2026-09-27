@@ -6,6 +6,7 @@ import CreateEvent from "./pages/events/CreateEvent"
 import UpdateEvent from "./pages/events/UpdateEvent"
 import Profile from "./pages/profile/Profile"
 import UpdateProfile from "./pages/profile/UpdateProfile"
+import Register from "./pages/profile/Register"
 
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
       <Routes>
         <Route element={<RootLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/events/create" element={<CreateEvent/>} />
         <Route path="/events/:id/update" element={<UpdateEvent/>} />

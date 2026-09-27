@@ -1,16 +1,16 @@
 # EventApp Frontend-Client
 
-https://img.shields.io/badge/React-latest-blue.svg
-https://img.shields.io/badge/TypeScript-latest-3178c6.svg
-https://img.shields.io/badge/Vite-latest-ffb020.svg
-https://img.shields.io/badge/React_Router_DOM-latest-blue.svg
-https://img.shields.io/badge/Tailwind_CSS-latest-06B6D4.svg
-https://img.shields.io/badge/shadcn_ui--Radix_UI-latest-purple.svg
-https://img.shields.io/badge/React_Hook_Form-latest-ff69b4.svg
-https://img.shields.io/badge/Zod-latest-orange.svg
-https://img.shields.io/badge/react--datepicker-latest-red.svg
-https://img.shields.io/badge/Custom_Select-latest-lightgrey.svg
-https://img.shields.io/badge/File_Uploader-latest-lightgrey.svg
+![React](https://img.shields.io/badge/React-latest-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-latest-3178c6.svg)
+![Vite](https://img.shields.io/badge/Vite-latest-ffb020.svg)
+![React Router DOM](https://img.shields.io/badge/React_Router_DOM-latest-blue.svg)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-latest-06B6D4.svg)
+![shadcn/ui](https://img.shields.io/badge/shadcn_ui--Radix_UI-latest-purple.svg)
+![React Hook Form](https://img.shields.io/badge/React_Hook_Form-latest-ff69b4.svg)
+![Zod](https://img.shields.io/badge/Zod-latest-orange.svg)
+![react-datepicker](https://img.shields.io/badge/react--datepicker-latest-red.svg)
+![Custom Select](https://img.shields.io/badge/Custom_Select-latest-lightgrey.svg)
+![File Uploader](https://img.shields.io/badge/File_Uploader-latest-lightgrey.svg)
 
 ## Über das Projekt
 
@@ -71,7 +71,7 @@ Der Client ist für die nahtlose Integration mit einem RESTful-API-Backend konzi
 
 ### Formularverarbeitung
 - React Hook Form  
-- Zod (Validierungsschemata unter `@/lib/validator`)  
+- Zod (Validierungsschemata für Events, Profil und Registrierung unter `@/lib/validator`)  
 
 ### UI-Komponenten
 - react-datepicker (Datums- und Zeitauswahl)  
@@ -106,6 +106,8 @@ Der Client ist für die nahtlose Integration mit einem RESTful-API-Backend konzi
 │   │   │   ├── MobileNav.tsx          # Responsives Hamburger-Menü für mobile Geräte
 │   │   │   ├── NavItems.tsx           # Hauptelemente der Navigation (Links)
 │   │   │   ├── ProfileForm.tsx        # Formular zur Bearbeitung des Benutzerprofils
+│   │   │   ├── RegisterForm.tsx       # Formular zur Registrierung neuer Benutzer
+│   │   │   ├── LoginModal.tsx         # Modales Fenster zur Benutzeranmeldung (Login)
 │   │   │   └── Search.tsx             # Suchleiste zur Filterung von Events
 │   │   │
 │   │   └── ui/                  # Atomare Basis-UI-Komponenten (shadcn/ui)
@@ -115,8 +117,8 @@ Der Client ist für die nahtlose Integration mit einem RESTful-API-Backend konzi
 │   │       ├── input.tsx
 │   │       └── textarea.tsx
 │   ├── constants/
-│   │   ├── index.ts            # Konstanten und Standardwerte (eventDefaultValues)
-│   │   └── dummy-data.ts       # Test- / Mock-Daten
+│   │   ├── index.ts   # Konstanten und Standardwerte (eventDefaultValues,registerDefaultValues)
+│   │   └── dummy-data.ts   # Test- / Mock-Daten
 │   ├── hooks/
 │   │   └── useAuth.ts   # Custom Hook(Verwaltung des Authentifizierungs- und Benutzerstatus)
 │   ├── layouts/
@@ -131,6 +133,7 @@ Der Client ist für die nahtlose Integration mit einem RESTful-API-Backend konzi
 │   │   │   └── UpdateEvent.tsx  # Seite zum Bearbeiten eines Events
 │   │   └── profile/
 │   │       ├── Profile.tsx        # Persönlicher Benutzerbereich (Informationen und Tabs)
+│   │       ├── Register.tsx       # Seite zur Erstellung eines neuen Benutzerkontos
 │   │       └── UpdateProfile.tsx  # Seite zum Bearbeiten des Profils
 │   ├── types/
 │   │   └── index.ts             # Globale TypeScript-Interfaces (User, Event, Attendee)
@@ -160,6 +163,7 @@ Um versehentliche, unumkehrbare Aktionen zu verhindern, werden isolierte Kompone
 
 - **DeleteConfirmation.tsx** – ruft ein modales Fenster auf, bevor `DELETE /api/v1/events/:id` ausgeführt wird.  
 - **LeaveConfirmation.tsx** – bestätigt die Abmeldung von einem Event vor dem Senden der Anfrage zum Löschen des Eintrags aus der Tabelle `event_attendees`.
+- **LoginModal.tsx** – ruft ein Anmeldefenster auf und bietet bei Bedarf die Weiterleitung zur Registrierung an.
 
 ---
 

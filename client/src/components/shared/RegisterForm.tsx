@@ -27,14 +27,32 @@ const RegisterForm = () => {
   })
 
   async function onSubmit(values: z.infer<typeof registerFormSchema>) {
-    console.log("Registration Submitted!", values)
-    const formData = new FormData()
-    if (files.length > 0) formData.append('file', files[0])
-    
-    // später: Aufruf des Backends (POST /register)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+  try {
+    const response = await fetch("http://localhost:8080/api/v1/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || "Registrierung fehlgeschlagen")
+    }
+
+    console.log("Erfolgreich registriert!", data)
     navigate('/')
+  } catch (error) {
+    console.error("Registrierung Fehler:", error)
+    alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten")
   }
+}
 
   return (
     <Form {...form}>

@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks/useAuth"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -24,6 +25,8 @@ type LoginModalProps = {
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const navigate = useNavigate()
 
+  const { login } = useAuth()
+
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: { email: '', password: '' },
@@ -31,12 +34,33 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
   if (!isOpen) return null
 
-  async function onSubmit(values: z.infer<typeof loginFormSchema>) {
-    console.log("Login form submitted:", values)
-   // später: API-Anfrage
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+ async function onSubmit(values: z.infer<typeof loginFormSchema>) {
+  try {
+    const response = await fetch("http://localhost:8080/api/v1/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: values.email,
+        password: values.password,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || "Login fehlgeschlagen")
+    }
+
+    login(data.token)
     onClose()
+  } catch (error) {
+    console.error("Login Fehler:", error)
+    // später shadcn-Toast mit Fehlermeldung für den Benutzer
+    alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten")
   }
+}
 
   const handleRegisterRedirect = () => {
     onClose()

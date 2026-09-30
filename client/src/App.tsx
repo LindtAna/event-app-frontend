@@ -7,22 +7,24 @@ import UpdateEvent from "./pages/events/UpdateEvent"
 import Profile from "./pages/profile/Profile"
 import UpdateProfile from "./pages/profile/UpdateProfile"
 import Register from "./pages/profile/Register"
-
+import { AuthProvider } from "./hooks/useAuth"
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<RootLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/events/create" element={<CreateEvent/>} />
-        <Route path="/events/:id/update" element={<UpdateEvent/>} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/profile/update" element={<UpdateProfile />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<RootLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/events/:id" element={<EventDetails />} />
+            <Route path="/events/create" element={<CreateEvent/>} />
+            <Route path="/events/:id/update" element={<UpdateEvent/>} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/update" element={<UpdateProfile />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }

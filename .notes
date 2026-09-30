@@ -119,3 +119,25 @@ cd ..\EventAppClient\client
 Будут стартовать оба сервиса одновременно.
 
 //
+
+подняться на один уровень вверх: cd ..
+
+перейти между папками в рабочей области cd ..\EventAppClient
+
+//
+проверка логина и HttpOnly куки:
+-DevTools: Network (Сеть) -> запрос login
+-в Response Payload -> JSON с accessToken + [user]
+-в Response Headers: Set-Cookie: refreshToken=...; Path=/api/v1/auth; HttpOnly; SameSite=Lax
+-Application -> Cookies -> http://localhost:8080 : refreshToken, в HttpOnly - ✔ или  true
+-Application -> Local Storage - ПУСТОЙ!
+
+--
+проверка востановления сессии(перезагрузить страницу):
+- DevTools -> Network API - POST /api/v1/auth/refresh
+- Request Headers -> Cookie: refreshToken=....
+
+--
+проверка logout:
+- DevTools -> Network -> DevTools -> Network
+- Application -> Cookies кука -> refreshToken должна исчезнуть!

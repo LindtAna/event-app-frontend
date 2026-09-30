@@ -25,7 +25,7 @@ type LoginModalProps = {
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const navigate = useNavigate()
 
-  const { login } = useAuth()
+  const { setAuth } = useAuth()
 
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -41,10 +41,8 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email: values.email,
-        password: values.password,
-      }),
+      credentials: "include", // Wichtig für cookies!
+      body: JSON.stringify(values),
     })
 
     const data = await response.json()
@@ -53,11 +51,9 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       throw new Error(data.error || "Login fehlgeschlagen")
     }
 
-    login(data.token)
+    setAuth(data.user, data.accessToken)
     onClose()
   } catch (error) {
-    console.error("Login Fehler:", error)
-    // später shadcn-Toast mit Fehlermeldung für den Benutzer
     alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten")
   }
 }

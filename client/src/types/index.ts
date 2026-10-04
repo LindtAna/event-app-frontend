@@ -2,11 +2,11 @@
 
 export type User = {
   id: number;
+  name?: string;
   email: string;
-  name: string;
-  avatarUrl?: string;
   bio?: string;
-};
+  avatarUrl?: string;
+} | null;
 
 export type Category = {
   id: string;

@@ -141,3 +141,18 @@ cd ..\EventAppClient\client
 проверка logout:
 - DevTools -> Network -> DevTools -> Network
 - Application -> Cookies кука -> refreshToken должна исчезнуть!
+
+
+--
+https://console.cloudinary.com/
+обновить настройки на Cloudinary(для загрузки аватарок)
+Cloudinary (шестеренка в углу) -> Upload
+Upload presets -> Add upload preset
+Название пресета myapp_avatars (например)
+Signing mode: Unsigned
+Asset folder -> eventapp/avatars(как вариант) это просто виртаульная папка в Cloudinary
+Auto-generate an unguessable public ID value: ON
+Disallow public ID / Filename toggles: OFF
+
+Название облака Cloudinary - набор из букв и цифр вверху, при клике на них надпись Product environments
+--

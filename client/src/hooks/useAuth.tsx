@@ -1,9 +1,11 @@
 import { useState, useEffect, createContext, useContext, type ReactNode } from 'react'
 
-type User = {
+export type User = {
   id: number;
-  name?: string;  // Backend liefert beim Login noch keinen Namen zurück
-  email: string
+  name?: string; 
+  email: string;
+  bio?: string;
+  avatarUrl?: string;
 } | null
 
 type AuthContextType = {

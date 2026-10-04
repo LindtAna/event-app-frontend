@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Collection from '@/components/shared/Collection'
-import { dummyUsers, dummyEvents, dummyAttendees } from '@/constants/dummy-data'
+import { dummyEvents, dummyAttendees } from '@/constants/dummy-data'
 import { getInitials } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
 
 import editIcon from '@/assets/icons/edit.svg'
 import userIcon from '@/assets/icons/username.svg'   
@@ -15,11 +16,12 @@ import infoIcon from '@/assets/icons/bio.svg'
 type TabType = 'teilnehmer' | 'ersteller'
 
 const Profile = () => {
-// später: Aktuellen Benutzer aus dem State/Kontext laden
-  const currentUser = dummyUsers[0]
-  
+
+const { user: currentUser } = useAuth()
  // Zustand für Tab-Steuerung
   const [activeTab, setActiveTab] = useState<TabType>('teilnehmer')
+
+  if (!currentUser) return null
 
   const attendeeEventIds = dummyAttendees
     .filter((a) => a.userId === currentUser.id)
@@ -32,8 +34,6 @@ const Profile = () => {
   const organizedEvents = dummyEvents.filter(
     (event) => event.ownerId === currentUser.id
   )
-
-  if (!currentUser) return null
 
   const userName = currentUser.name || `User #${currentUser.id}`
 

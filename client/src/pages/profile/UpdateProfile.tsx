@@ -1,14 +1,15 @@
 import ProfileForm from '@/components/shared/ProfileForm'
-import { dummyUsers } from '@/constants/dummy-data'
+import { useAuth } from '@/hooks/useAuth'
+
 
 const UpdateProfile = () => {
-  // Später: Der aktuelle Benutzer wird aus dem State/Context geladen
-  const currentUser = dummyUsers[0]
 
-  if (!currentUser) {
+  const { user: currentUser } = useAuth()
+
+ if (!currentUser) {
     return (
       <div className="wrapper my-8 text-center">
-        <h2 className="text-2xl font-bold">Benutzer nicht gefunden</h2>
+        <h2 className="text-2xl font-bold">Bitte loggen Sie sich ein</h2>
       </div>
     )
   }

@@ -1,57 +1,75 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Collection from '@/components/shared/Collection'
-import { dummyEvents, dummyAttendees } from '@/constants/dummy-data'
 import { getInitials } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
+import type { Event } from '@/types'
+import { getOrganizedEvents } from '@/api/events' 
 
 import editIcon from '@/assets/icons/edit.svg'
 import userIcon from '@/assets/icons/username.svg'   
 import mailIcon from '@/assets/icons/email.svg'    
 import infoIcon from '@/assets/icons/bio.svg'
 
-
 type TabType = 'teilnehmer' | 'ersteller'
 
 const Profile = () => {
+  const { user: currentUser } = useAuth()
+  
+ // standart auf 'ersteller' umschalten oder 'teilnehmer' beibehalten
+  const [activeTab, setActiveTab] = useState<TabType>('ersteller')
+  
+  const [organizedEvents, setOrganizedEvents] = useState<Event[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
 
-const { user: currentUser } = useAuth()
- // Zustand für Tab-Steuerung
-  const [activeTab, setActiveTab] = useState<TabType>('teilnehmer')
+ // Temporäre Platzhalter für Teilnehmer
+  const participatingEvents: Event[] = []
+  const attendeeEventIds: number[] = []
+
+  useEffect(() => {
+    if (!currentUser?.id) return
+
+    const fetchUserEvents = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // Abruf der erstellten Veranstaltungen vom Backend
+        const data = await getOrganizedEvents(currentUser.id)
+        setOrganizedEvents(data)
+      } catch (err) {
+        console.error('Fehler beim Laden der Events:', err)
+        setError('Fehler beim Laden der Events.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUserEvents()
+  }, [currentUser?.id])
 
   if (!currentUser) return null
-
-  const attendeeEventIds = dummyAttendees
-    .filter((a) => a.userId === currentUser.id)
-    .map((a) => a.eventId)
-
-  const participatingEvents = dummyEvents.filter((event) =>
-    attendeeEventIds.includes(event.id)
-  )
-
-  const organizedEvents = dummyEvents.filter(
-    (event) => event.ownerId === currentUser.id
-  )
 
   const userName = currentUser.name || `User #${currentUser.id}`
 
   return (
     <>
-     {/* Benutzerprofil */}
+      {/* Benutzerprofil */}
       <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-b-primary-500/40">
         <div className="wrapper flex flex-col gap-8 md:flex-row md:justify-between md:items-start">
           
           {/* Bearbeiten-Button - Mobile */}
           <div className="flex flex-col sm:flex-row gap-6 md:gap-10 items-center sm:items-start">
             <Link 
-            to="/profile/update" 
-            title="Profil bearbeiten" 
-            className="md:hidden self-end hover:scale-105 transition-opacity"
-          >
-            <img src={editIcon} alt="Bearbeiten" width={24} height={24} />
-          </Link>
+              to="/profile/update" 
+              title="Profil bearbeiten" 
+              className="md:hidden self-end hover:scale-105 transition-opacity"
+            >
+              <img src={editIcon} alt="Bearbeiten" width={24} height={24} />
+            </Link>
 
             {/* Avatar und Infos */}
             <Avatar className="h-32 w-32 md:h-40 md:w-40 border-2 border-primary-500/70 shadow-sm ring-1 ring-slate-200">
@@ -86,14 +104,14 @@ const { user: currentUser } = useAuth()
             </div>
           </div>
 
-            {/* Bearbeiten-Button - Desktop */}
-            <Button asChild variant="outline" className="hidden md:flex gap-2 bg-white hover:bg-primary/70 text-black border-primary-500/40">
-              <Link to="/profile/update">
-                <img src={editIcon} alt="Bearbeiten" width={16} height={16} />
-                Profil bearbeiten
-              </Link>
-            </Button>
-          </div>
+          {/* Bearbeiten-Button - Desktop */}
+          <Button asChild variant="outline" className="hidden md:flex gap-2 bg-white hover:bg-primary/70 text-black border-primary-500/40">
+            <Link to="/profile/update">
+              <img src={editIcon} alt="Bearbeiten" width={16} height={16} />
+              Profil bearbeiten
+            </Link>
+          </Button>
+        </div>
       </section>
 
       {/* Event-Liste - Tabs */}
@@ -126,7 +144,15 @@ const { user: currentUser } = useAuth()
 
         {/* Tab-Inhalte */}
         <div>
-          {activeTab === 'teilnehmer' ? (
+          {isLoading ? (
+            <div className="flex-center min-h-[200px] text-gray-500 font-medium">
+              Events werden geladen...
+            </div>
+          ) : error ? (
+            <div className="flex-center min-h-[200px] text-red-500 font-medium">
+              {error}
+            </div>
+          ) : activeTab === 'teilnehmer' ? (
             <Collection
               data={participatingEvents}
               emptyTitle="Noch keine Event-Zusagen"

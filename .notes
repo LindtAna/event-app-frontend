@@ -148,11 +148,14 @@ https://console.cloudinary.com/
 обновить настройки на Cloudinary(для загрузки аватарок)
 Cloudinary (шестеренка в углу) -> Upload
 Upload presets -> Add upload preset
-Название пресета myapp_avatars (например)
-Signing mode: Unsigned
-Asset folder -> eventapp/avatars(как вариант) это просто виртаульная папка в Cloudinary
-Auto-generate an unguessable public ID value: ON
-Disallow public ID / Filename toggles: OFF
 
 Название облака Cloudinary - набор из букв и цифр вверху, при клике на них надпись Product environments
 --
+
+создать отдельный пресет для фото мероприятий
+preset name: app_eventsphotos
+Signing Mode: Unsigned
+Asset folder: app/events
+Auto-generate an unguessable public ID value - (True)
+Use the filename of the uploaded file as the asset's display name - (True)
+Остальное - false

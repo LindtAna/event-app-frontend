@@ -15,9 +15,11 @@ export default function Home() {
 
   const currentUser = dummyUsers[0]
 
-  const attendeeEventIds = dummyAttendees
+  const attendeeEventIds = currentUser
+    ? dummyAttendees
     .filter((a) => a.userId === currentUser.id)
     .map((a) => a.eventId)
+    : []
 
   //Veranstaltungen filtern anhand der Suchanfrage oder Karegorie
   const filteredEvents = dummyEvents.filter((event) => {

@@ -51,7 +51,7 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
       // Hochladen zu Cloudinary (falls eine neue Datei ausgewählt wurde)
       if (files.length > 0) {
         const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_AVATARS_UPLOAD_PRESET;
 
         if (!cloudName || !uploadPreset) {
           throw new Error("Cloudinary-Konfiguration fehlt in den Umgebungsver Variablen");

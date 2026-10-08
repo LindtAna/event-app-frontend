@@ -21,15 +21,13 @@ import userIcon from '@/assets/icons/username.svg'
 import mailIcon from '@/assets/icons/email.svg'
 
 type ProfileFormProps = {
-  userId: number | string
   type: "Create" | "Update"
   user?: User | null
 }
 
-const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
+const ProfileForm = ({ type, user }: ProfileFormProps) => {
   const navigate = useNavigate()
   const [files, setFiles] = useState<File[]>([])
-
   const { accessToken, setAuth } = useAuth()
 
   const initialValues = user && type === 'Update'
@@ -47,9 +45,7 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
   })
 
   async function onSubmit(values: z.infer<typeof profileFormSchema>) {
-    try {
-
-      //Autorisierung prüfen
+    try { //Autorisierung prüfen
       if (!accessToken) {
       throw new Error("Nicht autorisiert. Bitte melden Sie sich erneut an.");
     }
@@ -58,9 +54,8 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
     
       // Hochladen zu Cloudinary (falls eine neue Datei ausgewählt wurde)
       if (files.length > 0) {
-      const avatarPreset = import.meta.env.VITE_CLOUDINARY_AVATARS_UPLOAD_PRESET;
-      uploadedImageUrl = await uploadToCloudinary(files[0], avatarPreset);
-    }
+        uploadedImageUrl = await uploadToCloudinary(files[0], 'avatars');
+      }
 
       // Senden der Profildaten an das Go-Backend
       const data = await updateUserProfile(
@@ -71,7 +66,6 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
       },
       accessToken
     );
-
       // Benutzer global aktualisieren (der aktuelle accessToken bleibt erhalten)
     setAuth(data.user, accessToken);
     navigate('/profile');
@@ -85,7 +79,6 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
       return (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6 max-w-3xl mx-auto">
-
             <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center md:items-stretch">
 
               {/* linkeseite - Avatar upload*/}
@@ -134,7 +127,10 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
                       <FormControl>
                         <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
                           <img src={mailIcon} alt="email" width={24} height={24} />
-                          <Input placeholder="E-Mail" {...field} className="input-field" />
+                          <Input
+                          placeholder="E-Mail"
+                          {...field}
+                          className="input-field"/>
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -181,9 +177,7 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
               >
                 Abbrechen
               </Button>
-
             </div>
-
           </form>
         </Form>
       )

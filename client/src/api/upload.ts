@@ -1,13 +1,19 @@
+type UploadPresetType = 'events' | 'avatars';
+
 export const uploadToCloudinary = async (
   file: File,
-  preset: string = import.meta.env.VITE_CLOUDINARY_EVENTS_UPLOAD_PRESET
+  type: UploadPresetType = 'events'
 ): Promise<string> => {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
-  if (!cloudName || !preset) {
-    throw new Error("Cloudinary-Konfiguration fehlt in den Umgebungsverablen");
-  }
+ const preset = type === 'avatars' 
+    ? import.meta.env.VITE_CLOUDINARY_AVATARS_UPLOAD_PRESET 
+    : import.meta.env.VITE_CLOUDINARY_EVENTS_UPLOAD_PRESET;
 
+  if (!cloudName || !preset) {
+    throw new Error("Cloudinary-Konfiguration fehlt in den Umgebungsvariablen");
+  }
+  
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', preset);

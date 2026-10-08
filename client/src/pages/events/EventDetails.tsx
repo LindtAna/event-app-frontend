@@ -1,25 +1,59 @@
+import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { dummyEvents, dummyAttendees } from '@/constants/dummy-data'
+import { getEventById } from '@/api/events'
 import { formatDateTime, getInitials } from '@/lib/utils'
+import type { Event } from '@/types'
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'
-import { Button } from '@/components/ui/button'
-
 
 const EventDetails = () => {
-    const { id } = useParams()
-    // URL-Param ist string, Event.id ist number -> konvertieren
-    const eventId = Number(id)
-    const event = dummyEvents.find(e => e.id === eventId)
+    const { id } = useParams<{ id: string }>()
 
-    if (!event) {
-        return <div className="wrapper my-20 text-center">Event nicht gefunden</div>
+    const [event, setEvent] = useState<Event | null>(null)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (!id) return
+
+        const fetchEvent = async () => {
+            try {
+                setIsLoading(true)
+                setError(null)
+                const data = await getEventById(id)
+                setEvent(data)
+            } catch (err) {
+                console.error('Fehler beim Laden des Events:', err)
+                setError('Event konnte nicht geladen werden.')
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchEvent()
+    }, [id])
+
+    if (isLoading) {
+        return (
+            <div className="flex-center min-h-[300px] text-gray-500 font-medium">
+                Event wird geladen...
+            </div>
+        )
     }
 
-    // Teilnehmer für dieses Event aus dummy-data
-    const attendees = dummyAttendees.filter(a => a.eventId === eventId)
+    if (error || !event) {
+        return (
+            <div className="wrapper my-20 text-center text-red-500 font-medium">
+                {error || 'Event nicht gefunden'}
+            </div>
+        )
+    }
+
+    // const attendees = event.attendees || []
+
 
     return (
         <>
@@ -27,13 +61,14 @@ const EventDetails = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 2xl:max-w-7xl">
                     {/* Hero-Bild */}
                     <img
-                        src={event.imageUrl || `https://picsum.photos/seed/${event.id}/1000/600`}
+                        src={event.imageUrl}
                         alt={event.title}
                         className="h-full min-h-[300px] w-full object-cover object-center"
                     />
                     <div className="flex w-full flex-col gap-8 p-5 md:p-10">
                         <div className="flex flex-col gap-6">
-                            <h2 className="text-[28px] font-bold leading-tight md:text-[34px] lg:text-[48px]">{event.title}</h2>
+                            <h2 className="text-[28px] font-bold leading-tight md:text-[34px] lg:text-[48px]">
+                                {event.title}</h2>
                             <div className="flex items-center gap-3">
                                 {/* Kategorie */}
                                 {event.categories?.map(cat => (
@@ -56,7 +91,9 @@ const EventDetails = () => {
 
                         <div className="flex flex-1 items-center justify-center py-4">
                             <Button asChild className="w-full sm:w-fit" size="lg">
-                                <Link to="#">Teilnehmen ({attendees.length})</Link>
+                                <Link to="#">Teilnehmen
+                                {/* ({attendees.length}) */}
+                                </Link>
                             </Button>
                         </div>
 
@@ -76,7 +113,7 @@ const EventDetails = () => {
                                     <p>{formatDateTime(event.endDateTime).dateTime}</p>
                                 </div>
                             </div>
-                            
+
 
                             <div className="p-regular-20 flex items-center gap-3">
                                 <img src={location} alt="location" width={32} height={32} />
@@ -91,13 +128,13 @@ const EventDetails = () => {
                             <p className="p-medium-16 lg:p-regular-18">{event.description}</p>
                         </div>
 
-                        {attendees.length > 0 && (
+                        {/* {attendees.length > 0 && ( */}
                             <div className="flex flex-col gap-2">
                                 <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
                                     Teilnehmer:
                                 </p>
                                 <div className="flex -space-x-2 pt-1">
-                                    {attendees.map(a => {
+                                    {/* {attendees.map(a => {
                                         const userName = a.user?.name || `User #${a.userId}`
 
                                         return (
@@ -114,10 +151,10 @@ const EventDetails = () => {
                                                 </AvatarFallback>
                                             </Avatar>
                                         )
-                                    })}
+                                    })} */}
                                 </div>
                             </div>
-                        )}
+                        {/* )} */}
                     </div>
                 </div>
             </section>

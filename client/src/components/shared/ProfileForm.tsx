@@ -8,6 +8,8 @@ import type { User } from "@/types"
 import { profileFormSchema } from "@/lib/validator"
 import { profileDefaultValues } from "@/constants"
 import { useAuth } from "@/hooks/useAuth"
+import { uploadToCloudinary } from "@/api/upload"
+import { updateUserProfile } from "@/api/users"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
@@ -21,7 +23,7 @@ import mailIcon from '@/assets/icons/email.svg'
 type ProfileFormProps = {
   userId: number | string
   type: "Create" | "Update"
-  user?: User
+  user?: User | null
 }
 
 const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
@@ -45,66 +47,40 @@ const ProfileForm = ({ userId, type, user }: ProfileFormProps) => {
   })
 
   async function onSubmit(values: z.infer<typeof profileFormSchema>) {
-    let uploadedImageUrl = values.avatarUrl;
-
     try {
+
+      //Autorisierung prüfen
+      if (!accessToken) {
+      throw new Error("Nicht autorisiert. Bitte melden Sie sich erneut an.");
+    }
+
+    let uploadedImageUrl = values.avatarUrl;
+    
       // Hochladen zu Cloudinary (falls eine neue Datei ausgewählt wurde)
       if (files.length > 0) {
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_AVATARS_UPLOAD_PRESET;
-
-        if (!cloudName || !uploadPreset) {
-          throw new Error("Cloudinary-Konfiguration fehlt in den Umgebungsver Variablen");
-        }
-        const formData = new FormData();
-        formData.append('file', files[0]);
-        formData.append('upload_preset', uploadPreset);
-
-
-        const cloudinaryRes = await fetch(
-          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
-
-        if (!cloudinaryRes.ok) throw new Error("Fehler beim Bildupload");
-
-        const cloudinaryData = await cloudinaryRes.json();
-        uploadedImageUrl = cloudinaryData.secure_url;
-      }
+      const avatarPreset = import.meta.env.VITE_CLOUDINARY_AVATARS_UPLOAD_PRESET;
+      uploadedImageUrl = await uploadToCloudinary(files[0], avatarPreset);
+    }
 
       // Senden der Profildaten an das Go-Backend
-      const response = await fetch("http://localhost:8080/api/v1/users/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          name: values.name,
-          bio: values.bio || "",
-          avatarUrl: uploadedImageUrl || ""
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Profil konnte nicht aktualisiert werden");
-      }
+      const data = await updateUserProfile(
+      {
+        name: values.name,
+        bio: values.bio || "",
+        avatarUrl: uploadedImageUrl || ""
+      },
+      accessToken
+    );
 
       // Benutzer global aktualisieren (der aktuelle accessToken bleibt erhalten)
-      setAuth(data.user, accessToken as string);
-      
-      navigate('/profile');
-      
-    } catch (error) {
-      console.error(error);
-      alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten");
-    }
+    setAuth(data.user, accessToken);
+    navigate('/profile');
+
+  } catch (error) {
+    console.error(error);
+    alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten");
   }
+}
 
       return (
         <Form {...form}>

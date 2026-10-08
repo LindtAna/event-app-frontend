@@ -1,15 +1,9 @@
 import { useState, useEffect, createContext, useContext, type ReactNode } from 'react'
-
-export type User = {
-  id: number;
-  name?: string; 
-  email: string;
-  bio?: string;
-  avatarUrl?: string;
-} | null
+import { apiFetch } from '@/lib/api'
+import type { User } from '@/types'
 
 type AuthContextType = {
-  user: User
+  user: User | null
   accessToken: string | null
   isSignedIn: boolean
   isLoading: boolean
@@ -17,37 +11,31 @@ type AuthContextType = {
   logout: () => Promise<void>
 }
 
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   //Beim Start die Gültigkeit des HttpOnly-Cookies über /refresh überprüfen
-  useEffect(() => {
+ useEffect(() => {
     const restoreSession = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/v1/auth/refresh", {
-          method: "POST",
-          credentials: "include",
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setUser(data.user)
-          setAccessToken(data.accessToken)
-        }
+        const data = await apiFetch<{ user: User; accessToken: string }>('/auth/refresh', {
+          method: 'POST',
+        });
+        setUser(data.user);
+        setAccessToken(data.accessToken);
       } catch (error) {
-        console.error("Session restore failed:", error)
+        console.error("Session restore failed:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    restoreSession()
-  }, [])
+    restoreSession();
+  }, []);
 
   const setAuth = (userData: User, token: string) => {
     setUser(userData)
@@ -55,18 +43,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const logout = async () => {
-    try {
-      await fetch("http://localhost:8080/api/v1/auth/logout", {
-        method: "POST",
-        credentials: "include", //Wichtig für cookies!
-      })
-    } catch (error) {
-      console.error("Logout error:", error)
-    } finally {
-      setUser(null)
-      setAccessToken(null)
-    }
+  try {
+    await apiFetch('/auth/logout', { method: 'POST' });
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    setUser(null);
+    setAccessToken(null);
   }
+};
  
   return (
     <AuthContext.Provider

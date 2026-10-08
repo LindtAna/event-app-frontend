@@ -17,6 +17,8 @@ import type { Event } from "@/types"
 import { eventFormSchema } from "@/lib/validator"
 import { eventDefaultValues } from "@/constants"
 import { useAuth } from "@/hooks/useAuth"
+import { createEvent, updateEvent } from "@/api/events"
+import { uploadToCloudinary } from "@/api/upload"
 
 import Dropdown from "./Dropdown"
 import { FileUploader } from "./FileUploader"
@@ -56,84 +58,44 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
 
     // onSubmit erhält automatisch strikt typisierte und validierte Daten
    async function onSubmit(values: z.infer<typeof eventFormSchema>) {
-        let uploadedImageUrl = values.imageUrl;
-
         try {
+        let uploadedImageUrl = values.imageUrl;
             // Hochladen des Eventfotos zu Cloudinary (sofern eine Datei hochgeladen wurde)
-            if (files.length > 0) {
-                const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-                const uploadPreset = import.meta.env.VITE_CLOUDINARY_EVENTS_UPLOAD_PRESET;
-
-                if (!cloudName || !uploadPreset) {
-                    throw new Error("Cloudinary configuration missing in env variables");
-                }
-
-                const formData = new FormData();
-                formData.append('file', files[0]);
-                formData.append('upload_preset', uploadPreset);
-
-                const cloudinaryRes = await fetch(
-                    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-                    {
-                        method: 'POST',
-                        body: formData,
-                    }
-                );
-
-                if (!cloudinaryRes.ok) throw new Error("Fehler beim Bildupload zu Cloudinary");
-
-                const cloudinaryData = await cloudinaryRes.json();
-                uploadedImageUrl = cloudinaryData.secure_url;
-            }
+           if (files.length > 0) {
+            uploadedImageUrl = await uploadToCloudinary(files[0]);
+        }
 
             // Erstellen des Request-Bodys für das Go-Backend
             const payload = {
-                title: values.title,
-                description: values.description,
-                imageUrl: uploadedImageUrl || "",
-                location: values.location,
-                startDateTime: values.startDateTime.toISOString(),
-                endDateTime: values.endDateTime.toISOString(),
-                categoryId: values.categoryId,
-                url: values.url || ""
-            };
+            title: values.title,
+            description: values.description,
+            imageUrl: uploadedImageUrl || "",
+            location: values.location,
+            startDateTime: values.startDateTime.toISOString(),
+            endDateTime: values.endDateTime.toISOString(),
+            categoryId: values.categoryId,
+            url: values.url || ""
+        };
 
-            const endpoint = type === 'Create'
-                ? 'http://localhost:8080/api/v1/events'
-                : `http://localhost:8080/api/v1/events/${eventId}`;
-
-            const method = type === 'Create' ? 'POST' : 'PUT';
-
+    
             // Anfrage senden
-            const response = await fetch(endpoint, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Fehler beim Speichern des Events");
-            }
+           const savedEvent = type === 'Create'
+            ? await createEvent(payload, accessToken)
+            : await updateEvent(eventId!, payload, accessToken);
 
             //Wechsel zum erstellten/aktualisierten Event
             if (type === 'Create') {
-                form.reset();
-                navigate(`/events/${data.id}`);
-            } else {
-                navigate(`/events/${eventId}`);
-            }
+            form.reset();
+            navigate(`/events/${savedEvent.id}`);
+        } else {
+            navigate(`/events/${eventId}`);
+        }
 
         } catch (error) {
-            console.error(error);
-            alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten");
-        }
+        console.error(error);
+        alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten");
     }
-
+}
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">

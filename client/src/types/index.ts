@@ -6,7 +6,7 @@ export type User = {
   email: string;
   bio?: string;
   avatarUrl?: string;
-} | null;
+};
 
 export type Category = {
   id: string;
@@ -25,14 +25,14 @@ export type Event = {
   url?: string;
   categories?: Category[];
   categoryId?: string;
-  owner?: User;  
+  owner?: User | null; 
 };
 
 export type Attendee = {
   id?: number;
   userId: number;
   eventId: number;
-  user?: User; 
+  user?: User | null;
 };
 
 export type EventWithDetails = Event & {

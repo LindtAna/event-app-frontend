@@ -15,6 +15,7 @@ type CollectionProps = {
   currentUserId?: number
   attendeeEventIds?: number[]
   emptyStateShowButton?: boolean
+  onEventDeleted?: (eventId: number | string) => void
 }
 
 const Collection = ({
@@ -26,7 +27,7 @@ const Collection = ({
   currentUserId,
   attendeeEventIds = [],
   emptyStateShowButton = false,
-
+  onEventDeleted
 }: CollectionProps) => {
   const [visibleCount, setVisibleCount] = useState(limit)
 
@@ -58,6 +59,7 @@ const Collection = ({
                     userRole={userRole}
                     currentUserId={currentUserId}
                     attendeeEventIds={attendeeEventIds}
+                    onEventDeleted={onEventDeleted}
                   />
                 </li>
               )

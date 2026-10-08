@@ -31,13 +31,12 @@ registerLocale("de", de)
 
 
 type EventFormProps = {
-    userId: string | number
     type: "Create" | "Update"
     event?: Event
     eventId?: string
 }
 
-const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
+const EventForm = ({ type, event, eventId }: EventFormProps) => {
     const navigate = useNavigate();
     const [files, setFiles] = useState<File[]>([]); // FileUploader
     const { accessToken } = useAuth();
@@ -45,6 +44,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     const initialValues = event && type === 'Update'
         ? {
             ...event,
+            categoryId: event.categoryId || (event as any).category?.id || '',
             startDateTime: new Date(event.startDateTime),
             endDateTime: new Date(event.endDateTime)
         }
@@ -64,7 +64,6 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
            if (files.length > 0) {
             uploadedImageUrl = await uploadToCloudinary(files[0]);
         }
-
             // Erstellen des Request-Bodys für das Go-Backend
             const payload = {
             title: values.title,
@@ -76,8 +75,6 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             categoryId: values.categoryId,
             url: values.url || ""
         };
-
-    
             // Anfrage senden
            const savedEvent = type === 'Create'
             ? await createEvent(payload, accessToken)
@@ -86,10 +83,8 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             //Wechsel zum erstellten/aktualisierten Event
             if (type === 'Create') {
             form.reset();
-            navigate(`/events/${savedEvent.id}`);
-        } else {
-            navigate(`/events/${eventId}`);
-        }
+        } 
+        navigate(`/events/${savedEvent.id || eventId}`)
 
         } catch (error) {
         console.error(error);

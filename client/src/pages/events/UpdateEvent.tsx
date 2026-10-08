@@ -1,18 +1,51 @@
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import EventForm from '@/components/shared/EventForm'
-import { dummyEvents } from '@/constants/dummy-data'
+import type { Event } from '@/types'
+import { getEventById } from '@/api/events'
 
 const UpdateEvent = () => {
   const { id } = useParams<{ id: string }>()
-  const mockUserId = 'user_12345'
 
-  //nach einem Event in dummyData suchen anhand seiner URL-ID
-  const event = dummyEvents.find((e) => e.id.toString() === id)
+  const [event, setEvent] = useState<Event | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!event) {
+  useEffect(() => {
+    if (!id) return
+
+    const fetchEvent = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+    
+        const data = await getEventById(id)
+        setEvent(data)
+      } catch (err) {
+        console.error('Fehler beim Laden des Events:', err)
+        setError('Veranstaltung konnte nicht geladen werden.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchEvent()
+  }, [id])
+
+  if (isLoading) {
+    return (
+      <div className="wrapper my-8 text-center text-gray-500 font-medium">
+        Veranstaltung wird geladen...
+      </div>
+    )
+  }
+
+  if (error || !event) {
     return (
       <div className="wrapper my-8 text-center">
-        <h2 className="text-2xl font-bold">Veranstaltung nicht gefunden</h2>
+        <h2 className="text-2xl font-bold text-red-500">
+          {error || 'Veranstaltung nicht gefunden'}
+        </h2>
       </div>
     )
   }
@@ -27,7 +60,6 @@ const UpdateEvent = () => {
 
       <div className="wrapper my-8">
         <EventForm
-          userId={mockUserId}
           type="Update"
           event={event}
           eventId={event.id.toString()}

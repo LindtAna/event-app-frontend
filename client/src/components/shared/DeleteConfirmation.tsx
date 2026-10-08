@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import deleteIcon from '@/assets/icons/delete.svg'
+import { deleteEvent } from '@/api/events'
+import { useAuth } from '@/hooks/useAuth'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,21 +14,33 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
+import deleteIcon from '@/assets/icons/delete.svg'
+
 type DeleteConfirmationProps = {
   eventId: number | string
+  onEventDeleted?: (eventId: number | string) => void
 }
 
-export const DeleteConfirmation = ({ eventId }: DeleteConfirmationProps) => {
+export const DeleteConfirmation = ({ eventId, onEventDeleted }: DeleteConfirmationProps) => {
+  const { accessToken } = useAuth()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [open, setOpen] = useState(false)
 
-  const handleDelete = async () => {
-    setIsDeleting(true)
-    console.log(`[MOCK DELETE] Event ID: ${eventId}`)
-    
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    
-    setIsDeleting(false)
-    // TODO: später wird die Lösch-API aufgerufen und die Ereignisliste aktualisiert
+ const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    try {
+      setIsDeleting(true)
+      await deleteEvent(eventId, accessToken,)
+      setOpen(false)
+      if (onEventDeleted) {
+        onEventDeleted(eventId)
+      }
+    } catch (err) {
+      console.error('Fehler beim Löschen des Events:', err)
+      alert('Event konnte nicht gelöscht werden.')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -50,7 +64,7 @@ export const DeleteConfirmation = ({ eventId }: DeleteConfirmationProps) => {
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>Abbrechen</AlertDialogCancel>
 
           <AlertDialogAction
             onClick={handleDelete}

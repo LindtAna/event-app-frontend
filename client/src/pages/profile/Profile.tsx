@@ -6,26 +6,26 @@ import Collection from '@/components/shared/Collection'
 import { getInitials } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import type { Event } from '@/types'
-import { getOrganizedEvents } from '@/api/events' 
+import { getOrganizedEvents } from '@/api/events'
 
 import editIcon from '@/assets/icons/edit.svg'
-import userIcon from '@/assets/icons/username.svg'   
-import mailIcon from '@/assets/icons/email.svg'    
+import userIcon from '@/assets/icons/username.svg'
+import mailIcon from '@/assets/icons/email.svg'
 import infoIcon from '@/assets/icons/bio.svg'
 
 type TabType = 'teilnehmer' | 'ersteller'
 
 const Profile = () => {
   const { user: currentUser } = useAuth()
-  
- // standart auf 'ersteller' umschalten oder 'teilnehmer' beibehalten
+
+  // standart auf 'ersteller' umschalten oder 'teilnehmer' beibehalten
   const [activeTab, setActiveTab] = useState<TabType>('ersteller')
-  
+
   const [organizedEvents, setOrganizedEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
- // Temporäre Platzhalter für Teilnehmer
+  // Temporäre Platzhalter für Teilnehmer
   const participatingEvents: Event[] = []
   const attendeeEventIds: number[] = []
 
@@ -36,7 +36,7 @@ const Profile = () => {
       try {
         setIsLoading(true)
         setError(null)
-        
+
         // Abruf der erstellten Veranstaltungen vom Backend
         const data = await getOrganizedEvents(currentUser.id)
         setOrganizedEvents(data)
@@ -55,17 +55,21 @@ const Profile = () => {
 
   const userName = currentUser.name || `User #${currentUser.id}`
 
+  const handleEventDeleted = (deletedId: number | string) => {
+    setOrganizedEvents((prevEvents) => prevEvents.filter((e) => e.id !== deletedId))
+  }
+
   return (
     <>
       {/* Benutzerprofil */}
       <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-b-primary-500/40">
         <div className="wrapper flex flex-col gap-8 md:flex-row md:justify-between md:items-start">
-          
+
           {/* Bearbeiten-Button - Mobile */}
           <div className="flex flex-col sm:flex-row gap-6 md:gap-10 items-center sm:items-start">
-            <Link 
-              to="/profile/update" 
-              title="Profil bearbeiten" 
+            <Link
+              to="/profile/update"
+              title="Profil bearbeiten"
               className="md:hidden self-end hover:scale-105 transition-opacity"
             >
               <img src={editIcon} alt="Bearbeiten" width={24} height={24} />
@@ -82,7 +86,7 @@ const Profile = () => {
             {/* Benutzerdaten */}
             <div className="flex flex-col gap-4 text-center sm:text-left">
               <h2 className="text-[24px] font-bold md:text-[28px]">Mein Profil</h2>
-              
+
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-center sm:justify-start gap-3">
                   <img src={userIcon} alt="Name" width={20} height={20} />
@@ -117,26 +121,24 @@ const Profile = () => {
       {/* Event-Liste - Tabs */}
       <section className="wrapper flex flex-col gap-4">
         <h3 className="text-[24px] font-bold text-center md:text-start md:text-[28px]">Meine Events</h3>
-        
+
         {/* Tab-Navigation */}
         <div className="flex gap-8 border-b border-primary-500/40 pb-2">
           <button
             onClick={() => setActiveTab('teilnehmer')}
-            className={`p-medium-20 pb-2 transition-all hover:text-primary-500 relative ${
-              activeTab === 'teilnehmer' 
-                ? 'text-black font-bold after:content-[""] after:absolute after:left-0 after:bottom-[-9px] after:w-full after:h-[3px] after:bg-primary-500' 
+            className={`p-medium-20 pb-2 transition-all hover:text-primary-500 relative ${activeTab === 'teilnehmer'
+                ? 'text-black font-bold after:content-[""] after:absolute after:left-0 after:bottom-[-9px] after:w-full after:h-[3px] after:bg-primary-500'
                 : 'text-gray-500'
-            }`}
+              }`}
           >
             Teilnehmer
           </button>
           <button
             onClick={() => setActiveTab('ersteller')}
-            className={`p-medium-20 pb-2 transition-all hover:text-primary-500 relative ${
-              activeTab === 'ersteller' 
-                ? 'text-black font-bold after:content-[""] after:absolute after:left-0 after:bottom-[-9px] after:w-full after:h-[3px] after:bg-primary-500' 
+            className={`p-medium-20 pb-2 transition-all hover:text-primary-500 relative ${activeTab === 'ersteller'
+                ? 'text-black font-bold after:content-[""] after:absolute after:left-0 after:bottom-[-9px] after:w-full after:h-[3px] after:bg-primary-500'
                 : 'text-gray-500'
-            }`}
+              }`}
           >
             Ersteller
           </button>
@@ -173,6 +175,7 @@ const Profile = () => {
               currentUserId={currentUser.id}
               attendeeEventIds={attendeeEventIds}
               limit={6}
+              onEventDeleted={handleEventDeleted}
             />
           )}
         </div>

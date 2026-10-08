@@ -29,7 +29,10 @@ export const eventFormSchema = z.object({
   categoryId: z.string().min(1, 'Bitte wähle eine Kategorie aus'),
   
   url: z.string().url('Ungültige URL').or(z.literal('')),
-})
+}).refine((data) => data.endDateTime >= data.startDateTime, {
+  message: "Das Enddatum muss nach dem Startdatum liegen",
+  path: ["endDateTime"],
+});
 
 // Registrierungsschema
 export const registerFormSchema = z.object({

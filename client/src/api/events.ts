@@ -16,6 +16,10 @@ export const getOrganizedEvents = async (userId: number): Promise<Event[]> => {
   return apiFetch<Event[]>(`/events?ownerId=${userId}`);
 }
 
+export const getEventById = async (id: string): Promise<Event> => {
+  return apiFetch<Event>(`/events/${id}`);
+}
+
 export const createEvent = async (payload: EventPayload, token?: string | null): Promise<Event> => {
   return apiFetch<Event>('/events', {
     method: 'POST',
@@ -31,3 +35,10 @@ export const updateEvent = async (eventId: string, payload: EventPayload, token?
     token,
   });
 }
+
+export const deleteEvent = async (eventId: number | string, token?: string | null): Promise<void> => {
+  return apiFetch<void>(`/events/${eventId}`, {
+    method: 'DELETE',
+    token,
+  });
+};

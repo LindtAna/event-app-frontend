@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
+
+import { useAuth } from '@/hooks/useAuth'
 import { getEventById } from '@/api/events'
+import type { Event, User } from '@/types'
+import { getEventAttendees, addEventAttendee } from '@/api/attendees'
+
 import { formatDateTime } from '@/lib/utils'
-import type { Event } from '@/types'
+
 import { Button } from '@/components/ui/button'
-// import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'
@@ -12,29 +16,156 @@ import location from '@/assets/icons/location.svg'
 const EventDetails = () => {
     const { id } = useParams<{ id: string }>()
 
+    const {
+        user,
+        accessToken,
+        isSignedIn,
+        isLoading: isAuthLoading,
+    } = useAuth()
+
     const [event, setEvent] = useState<Event | null>(null)
+    const [attendees, setAttendees] = useState<User[]>([])
+
     const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [isAttendeesLoading, setIsAttendeesLoading] = useState(true)
+    const [isJoining, setIsJoining] = useState(false)
+
     const [error, setError] = useState<string | null>(null)
+    const [attendeesError, setAttendeesError] = useState<string | null>(null)
+    const [joinError, setJoinError] = useState<string | null>(null)
 
     useEffect(() => {
         if (!id) return
+
+        let cancelled = false
 
         const fetchEvent = async () => {
             try {
                 setIsLoading(true)
                 setError(null)
+
                 const data = await getEventById(id)
-                setEvent(data)
+
+                if (!cancelled) {
+                    setEvent(data)
+                }
             } catch (err) {
                 console.error('Fehler beim Laden des Events:', err)
-                setError('Event konnte nicht geladen werden.')
+                if (!cancelled) {
+                    setError('Event konnte nicht geladen werden.')
+                }
             } finally {
-                setIsLoading(false)
+                if (!cancelled) {
+                    setIsLoading(false)
+                }
+            }
+        }
+        void fetchEvent()
+
+        return () => {
+            cancelled = true
+        }
+    }, [id])
+
+    // Teilnehmer des Events laden
+    useEffect(() => {
+        if (!id) return
+
+        let cancelled = false
+
+        const fetchAttendees = async () => {
+            setIsAttendeesLoading(true)
+            setAttendeesError(null)
+            setAttendees([])
+
+            try {
+                const data = await getEventAttendees(id)
+
+                if (!cancelled) {
+                    // Der Backend-Handler kann bei null Teilnehmern
+                    // eine JSON-null-Antwort zurückgeben.
+                    setAttendees(data ?? [])
+                }
+            } catch (err) {
+                console.error(
+                    'Fehler beim Laden der Teilnehmer:',
+                    err
+                )
+
+                if (!cancelled) {
+                    setAttendeesError(
+                        'Teilnehmer konnten nicht geladen werden.'
+                    )
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsAttendeesLoading(false)
+                }
             }
         }
 
-        fetchEvent()
+        void fetchAttendees()
+
+        return () => {
+            cancelled = true
+        }
     }, [id])
+
+    // Prüfen, ob der aktuelle Benutzer bereits teilnimmt
+    const isAttending = Boolean(
+        user && attendees.some((attendee) => attendee.id === user.id)
+    )
+
+    // Aktuellen Benutzer als Teilnehmer registrieren
+    const handleJoinEvent = async () => {
+        if (!event || !user || !accessToken) {
+            setJoinError('Bitte melde dich an, um teilzunehmen.')
+            return
+        }
+
+        if (isAttending || isJoining) return
+
+        try {
+            setIsJoining(true)
+            setJoinError(null)
+
+            await addEventAttendee(event.id, user.id, accessToken)
+
+            // Unmittelbar nach erfolgreicher Registrierung aktualisieren
+            setAttendees((currentAttendees) => {
+                const alreadyAdded = currentAttendees.some(
+                    (attendee) => attendee.id === user.id
+                )
+
+                return alreadyAdded
+                    ? currentAttendees
+                    : [...currentAttendees, user]
+            })
+
+            // Teilnehmerliste nochmals mit dem Backend abgleichen.
+            // Ein Fehler hierbei macht die erfolgreiche Anmeldung
+            // nicht rückgängig.
+            try {
+                const updatedAttendees = await getEventAttendees(event.id)
+                setAttendees(updatedAttendees ?? [])
+            } catch (refreshError) {
+                console.error(
+                    'Teilnehmerliste konnte nicht aktualisiert werden:',
+                    refreshError
+                )
+            }
+        } catch (err) {
+            console.error('Fehler bei der Anmeldung:', err)
+
+            setJoinError(
+                err instanceof Error
+                    ? err.message
+                    : 'Die Anmeldung ist fehlgeschlagen.'
+            )
+        } finally {
+            setIsJoining(false)
+        }
+    }
 
     if (isLoading) {
         return (
@@ -52,8 +183,17 @@ const EventDetails = () => {
         )
     }
 
-    // const attendees = event.attendees || []
-
+    const joinButtonText = isAuthLoading
+        ? 'Anmeldestatus wird geprüft...'
+        : !isSignedIn
+            ? 'Bitte anmelden, um teilzunehmen'
+            : isAttendeesLoading
+                ? 'Teilnehmer werden geladen...'
+                : isAttending
+                    ? 'Du nimmst teil'
+                    : isJoining
+                        ? 'Anmeldung läuft...'
+                        : 'Teilnehmen'
 
     return (
         <>
@@ -83,20 +223,41 @@ const EventDetails = () => {
                                     Veranstalter:
                                 </p>
                                 <span className="p-medium-16 text-black">
-                                    {event.owner?.name || `User #${event.ownerId}`}
+                                    {event.owner?.name}
                                 </span>
 
                             </div>
                         </div>
 
-                        <div className="flex flex-1 items-center justify-center py-4">
-                            <Button asChild className="w-full sm:w-fit" size="lg">
-                                <Link to="#">Teilnehmen
-                                {/* ({attendees.length}) */}
-                                </Link>
+                        {/* Teilnahme */}
+                        <div className="flex flex-1 flex-col items-center justify-center gap-3 py-4">
+                            <Button
+                                className="w-full sm:w-fit"
+                                size="lg"
+                                onClick={handleJoinEvent}
+                                disabled={
+                                    isAuthLoading ||
+                                    !isSignedIn ||
+                                    !accessToken ||
+                                    isAttendeesLoading ||
+                                    isJoining ||
+                                    isAttending
+                                }
+                            >
+                                {joinButtonText}
                             </Button>
+
+                            {joinError && (
+                                <p
+                                    role="alert"
+                                    className="text-center text-sm font-medium text-red-500"
+                                >
+                                    {joinError}
+                                </p>
+                            )}
                         </div>
 
+                        {/* Datum und Uhrzeit */}
                         <div className="flex flex-col gap-5">
                             <div className='flex gap-2 md:gap-3'>
                                 <img src={calendar} alt="calendar" width={32} height={32} />
@@ -121,6 +282,7 @@ const EventDetails = () => {
                             </div>
                         </div>
 
+                        {/* Beschreibung */}
                         <div className="flex flex-col gap-2">
                             <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
                                 Beschreibung:
@@ -128,33 +290,40 @@ const EventDetails = () => {
                             <p className="p-medium-16 lg:p-regular-18">{event.description}</p>
                         </div>
 
-                        {/* {attendees.length > 0 && ( */}
-                            <div className="flex flex-col gap-2">
-                                <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
-                                    Teilnehmer:
-                                </p>
-                                <div className="flex -space-x-2 pt-1">
-                                    {/* {attendees.map(a => {
-                                        const userName = a.user?.name || `User #${a.userId}`
+                        {/* Teilnehmer */}
 
-                                        return (
-                                            <Avatar
-                                                key={a.id ?? a.userId}
-                                                className="h-8 w-8 border-2 border-primary-500 ring-1 ring-slate-200"
-                                            >
-                                                <AvatarImage
-                                                    src={a.user?.avatarUrl}
-                                                    alt={userName}
-                                                />
-                                                <AvatarFallback className="bg-secondary-dark text-white text-xs font-semibold">
-                                                    {getInitials(userName)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        )
-                                    })} */}
-                                </div>
-                            </div>
-                        {/* )} */}
+                        <div className="flex flex-col gap-2">
+                            <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
+                                Teilnehmer ({attendees.length})
+                            </p>
+
+                            {isAttendeesLoading ? (
+                                <p className="text-sm text-gray-500">
+                                    Teilnehmer werden geladen...
+                                </p>
+                            ) : attendeesError ? (
+                                <p className="text-sm text-red-500">
+                                    {attendeesError}
+                                </p>
+                            ) : attendees.length === 0 ? (
+                                <p className="text-sm text-gray-500">
+                                    Noch keine Teilnehmer.
+                                </p>
+                            ) : (
+                                <ul className="flex flex-wrap gap-2 pt-1">
+                                    {attendees.map((attendee) => (
+                                        <li
+                                            key={attendee.id}
+                                            className="rounded-full border border-secondary-dark/30 bg-secondary/50 px-3 py-1.5 text-sm text-black"
+                                        >
+                                            {attendee.name ||
+                                                `Teilnehmer #${attendee.id}`}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            
+                        </div>
                     </div>
                 </div>
             </section>

@@ -39,9 +39,6 @@ const Card = ({ event, userRole, currentUserId, attendeeEventIds = [], onEventDe
     }
   }
 
-  const ownerDisplayName =
-    event.owner?.name || (event.ownerId ? `User #${event.ownerId}` : 'Veranstalter')
-
   return (
     <div className="group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-lg bg-white shadow-md shadow-primary-500/30 hover:shadow-primary-500/60 transition-all hover:shadow-lg md:min-h-[430px] border border-primary-500/40">
       {/* delete, edit, leave event buttons */}
@@ -114,7 +111,7 @@ const Card = ({ event, userRole, currentUserId, attendeeEventIds = [], onEventDe
 
         <div className="flex-between w-full mt-auto">
           <p className="p-medium-14 md:p-medium-16 text-secondary-dark">
-            {ownerDisplayName}
+          {event.owner?.name}
           </p>
           <p className="p-regular-14 text-secondary line-clamp-1">{event.location}</p>
         </div>

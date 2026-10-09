@@ -12,6 +12,10 @@ export type EventPayload = {
   url: string
 }
 
+export const getAllEvents = async (): Promise<Event[]> => {
+  return apiFetch<Event[]>('/events');
+};
+
 export const getOrganizedEvents = async (userId: number): Promise<Event[]> => {
   return apiFetch<Event[]>(`/events?ownerId=${userId}`);
 }

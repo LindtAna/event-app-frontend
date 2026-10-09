@@ -1,46 +1,92 @@
-import { Button } from '@/components/ui/button'
+
+import { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import hero from '@/assets/images/hero.png'
+
+import { useAuth } from '@/hooks/useAuth'
+import { getAllEvents } from '@/api/events'
+import type { Event } from '@/types'
+
+import { Button } from '@/components/ui/button'
+
 import Collection from '@/components/shared/Collection'
-import { dummyUsers, dummyEvents, dummyAttendees } from '@/constants/dummy-data'
 import Search from '@/components/shared/Search'
 import CategoryFilter from '@/components/shared/CategoryFilter'
 
+import hero from '@/assets/images/hero.png'
+
 
 export default function Home() {
+  const { user, isSignedIn, isLoading: isAuthLoading } = useAuth()
   const [searchParams] = useSearchParams()
 
   const searchQuery = searchParams.get('query') || ''
   const categoryQuery = searchParams.get('category') || ''
 
-  const currentUser = dummyUsers[0]
+  const [events, setEvents] = useState<Event[]>([])
+  const [isEventsLoading, setIsEventsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const attendeeEventIds = currentUser
-    ? dummyAttendees
-    .filter((a) => a.userId === currentUser.id)
-    .map((a) => a.eventId)
-    : []
+// für den angemeldeten Benutzer alle Veranstaltungen laden 
+  useEffect(() => {
+    if (!isSignedIn) return
 
-  //Veranstaltungen filtern anhand der Suchanfrage oder Karegorie
-  const filteredEvents = dummyEvents.filter((event) => {
-    //Textsuche prüfen
-    const matchQuery = searchQuery 
-      ? event.title.toLowerCase().includes(searchQuery.toLowerCase()) 
+    const fetchEvents = async () => {
+      setIsEventsLoading(true)
+      setError(null)
+      try {
+        const data = await getAllEvents()
+        setEvents(data || [])
+      } catch (err) {
+        console.error('Fehler beim Laden der Veranstaltungen:', err)
+        setError('Veranstaltungen konnten nicht geladen werden.')
+      } finally {
+        setIsEventsLoading(false)
+      }
+    }
+
+    fetchEvents()
+  }, [isSignedIn])
+
+ // Entfernen des Events aus local State ( nach erfolgreichem DELETE aus der Card)
+  const handleEventDeleted = (eventId: number | string) => {
+    setEvents((prev) => prev.filter((event) => event.id !== Number(eventId)))
+  }
+
+  // Filtern nach Suchanfrage und Kategorie
+  const filteredEvents = events.filter((event) => {
+    const matchQuery = searchQuery
+      ? event.title.toLowerCase().includes(searchQuery.toLowerCase())
       : true
-   // Kategorie prüfen. Event hat [categories] -> wird innerhalb dieses Arrays gesucht
-    const matchCategory = categoryQuery && categoryQuery !== 'All'
-      ? event.categories?.some((cat) => cat?.name === categoryQuery)
-      : true
-    // die Filter gegenseitig ausschließen,  einer -> immer true
-    // &&-Logik ermöglicht es jedoch kollaboratives Filtern hinzuzufügen
+
+    const matchCategory =
+      categoryQuery && categoryQuery !== 'All'
+        ? event.categoryId === categoryQuery ||
+          event.categories?.some(
+            (cat) => cat.id === categoryQuery || cat.name === categoryQuery
+          )
+        : true
+
     return matchQuery && matchCategory
   })
 
-  if (currentUser) {
+  // Warten auf den Abschluss der Autorisierungsprüfung (Flackern der Landingpage vermeiden)
+  if (isAuthLoading) {
+    return (
+      <div className="wrapper my-8 flex items-center justify-center min-h-[300px]">
+        <p className="p-regular-16 text-grey-500">Laden...</p>
+      </div>
+    )
+  }
+
+  
+ // Autorisierter Benutzer
+  if (isSignedIn && user) {
     return (
       <div className="wrapper my-8 flex flex-col gap-8">
         <div className="flex flex-col gap-2">
-          <h1 className="h2-bold">Willkommen zurück, {currentUser.name}!</h1>
+          <h1 className="h2-bold">
+            Willkommen zurück, {user.name || user.email}!
+          </h1>
           <p className="p-regular-16 text-grey-600">
             Hier sind Ihre aktuellen Veranstaltungen und Pläne im Überblick.
           </p>
@@ -51,21 +97,31 @@ export default function Home() {
           <CategoryFilter />
         </div>
 
-        <Collection
-          data={filteredEvents}
-          emptyTitle="Keine Veranstaltungen gefunden"
-          emptyStateSubtext={
-            searchQuery || categoryQuery
-              ? "Versuchen Sie einen anderen Suchbegriff."
-              : "Erstellen Sie Ihre erste Veranstaltung"
-          }
-          emptyStateShowButton={!searchQuery && !categoryQuery}
-          collectionType="All_Events"
-          currentUserId={currentUser.id}
-          attendeeEventIds={attendeeEventIds}
-          limit={10}
-        />
-
+        {isEventsLoading ? (
+          <div className="flex items-center justify-center min-h-[200px] text-grey-500">
+            Veranstaltungen werden geladen...
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center min-h-[200px] text-red-500">
+            {error}
+          </div>
+        ) : (
+          <Collection
+            data={filteredEvents}
+            emptyTitle="Keine Veranstaltungen gefunden"
+            emptyStateSubtext={
+              searchQuery || categoryQuery
+                ? 'Versuchen Sie einen anderen Suchbegriff.'
+                : 'Erstellen Sie Ihre erste Veranstaltung'
+            }
+            emptyStateShowButton={!searchQuery && !categoryQuery}
+            collectionType="All_Events"
+            currentUserId={user.id}
+            attendeeEventIds={[]}
+            limit={10}
+            onEventDeleted={handleEventDeleted}
+          />
+        )}
       </div>
     )
   }

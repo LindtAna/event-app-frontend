@@ -21,7 +21,7 @@ const Footer = () => {
 
 
         <p className="text-center leading-relaxed text-muted-foreground pt-2 pb-2 text-[10px] md:text-[14px] max-w-full">
-          Copyright © 2005-2026 PlanFuchs. Alle Rechte vorbehalten.
+          Copyright © 2025-2026 PlanFuchs. Alle Rechte vorbehalten.
         </p>
       </div>
     </footer>

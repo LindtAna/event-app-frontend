@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getEventById } from '@/api/events'
-import { formatDateTime, getInitials } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 import type { Event } from '@/types'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+// import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 import calendar from '@/assets/icons/calendar.svg'
 import location from '@/assets/icons/location.svg'

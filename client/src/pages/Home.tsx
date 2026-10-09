@@ -78,14 +78,14 @@ export default function Home() {
     )
   }
 
-  
+
  // Autorisierter Benutzer
   if (isSignedIn && user) {
     return (
       <div className="wrapper my-8 flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="h2-bold">
-            Willkommen zurück, {user.name || user.email}!
+            Willkommen zurück, {user.name}!
           </h1>
           <p className="p-regular-16 text-grey-600">
             Hier sind Ihre aktuellen Veranstaltungen und Pläne im Überblick.

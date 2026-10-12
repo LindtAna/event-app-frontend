@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
+
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Collection from '@/components/shared/Collection'
+
 import { getInitials } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import type { Event } from '@/types'
 import { getOrganizedEvents } from '@/api/events'
+import { getEventsByAttendee } from '@/api/attendees'
 
 import editIcon from '@/assets/icons/edit.svg'
 import userIcon from '@/assets/icons/username.svg'
@@ -22,43 +25,65 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState<TabType>('ersteller')
 
   const [organizedEvents, setOrganizedEvents] = useState<Event[]>([])
+  const [participatingEvents, setParticipatingEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Temporäre Platzhalter für Teilnehmer
-  const participatingEvents: Event[] = []
-  const attendeeEventIds: number[] = []
+  const attendeeEventIds = participatingEvents.map((event) => event.id)
 
   useEffect(() => {
     if (!currentUser?.id) return
+
+    let cancelled = false
 
     const fetchUserEvents = async () => {
       try {
         setIsLoading(true)
         setError(null)
 
-        // Abruf der erstellten Veranstaltungen vom Backend
-        const data = await getOrganizedEvents(currentUser.id)
-        setOrganizedEvents(data)
+        const [organizedData, participatingData] = await Promise.all([
+          getOrganizedEvents(currentUser.id),
+          getEventsByAttendee(currentUser.id),
+        ])
+
+        if (!cancelled) {
+          setOrganizedEvents(organizedData ?? [])
+          setParticipatingEvents(participatingData ?? [])
+        }
       } catch (err) {
         console.error('Fehler beim Laden der Events:', err)
-        setError('Fehler beim Laden der Events.')
+
+        if (!cancelled) {
+          setError('Fehler beim Laden der Events.')
+        }
       } finally {
-        setIsLoading(false)
+        if (!cancelled) {
+          setIsLoading(false)
+        }
       }
     }
 
-    fetchUserEvents()
+    void fetchUserEvents()
+
+    return () => {
+      cancelled = true
+    }
   }, [currentUser?.id])
 
   if (!currentUser) return null
 
   const userName = currentUser.name || `User #${currentUser.id}`
 
-  const handleEventDeleted = (deletedId: number | string) => {
-    setOrganizedEvents((prevEvents) => prevEvents.filter((e) => e.id !== deletedId))
+  const handleEventDeleted = (eventId: number | string) => {
+    setOrganizedEvents((prevEvents) =>
+      prevEvents.filter((event) => event.id !== Number(eventId))
+    )
   }
-
+  const handleEventLeft = (eventId: number | string) => {
+    setParticipatingEvents((prevEvents) =>
+      prevEvents.filter((event) => event.id !== Number(eventId))
+    )
+  }
   return (
     <>
       {/* Benutzerprofil */}
@@ -125,19 +150,23 @@ const Profile = () => {
         {/* Tab-Navigation */}
         <div className="flex gap-8 border-b border-primary-500/40 pb-2">
           <button
+            role="tab"
+            aria-selected={activeTab === 'teilnehmer'}
             onClick={() => setActiveTab('teilnehmer')}
             className={`p-medium-20 pb-2 transition-all hover:text-primary-500 relative ${activeTab === 'teilnehmer'
-                ? 'text-black font-bold after:content-[""] after:absolute after:left-0 after:bottom-[-9px] after:w-full after:h-[3px] after:bg-primary-500'
-                : 'text-gray-500'
+              ? 'text-black font-bold after:content-[""] after:absolute after:left-0 after:bottom-[-9px] after:w-full after:h-[3px] after:bg-primary-500'
+              : 'text-gray-500'
               }`}
           >
             Teilnehmer
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'ersteller'}
             onClick={() => setActiveTab('ersteller')}
             className={`p-medium-20 pb-2 transition-all hover:text-primary-500 relative ${activeTab === 'ersteller'
-                ? 'text-black font-bold after:content-[""] after:absolute after:left-0 after:bottom-[-9px] after:w-full after:h-[3px] after:bg-primary-500'
-                : 'text-gray-500'
+              ? 'text-black font-bold after:content-[""] after:absolute after:left-0 after:bottom-[-9px] after:w-full after:h-[3px] after:bg-primary-500'
+              : 'text-gray-500'
               }`}
           >
             Ersteller
@@ -164,6 +193,7 @@ const Profile = () => {
               currentUserId={currentUser.id}
               attendeeEventIds={attendeeEventIds}
               limit={6}
+              onEventLeft={handleEventLeft}
             />
           ) : (
             <Collection

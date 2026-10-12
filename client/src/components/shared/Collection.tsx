@@ -16,6 +16,7 @@ type CollectionProps = {
   attendeeEventIds?: number[]
   emptyStateShowButton?: boolean
   onEventDeleted?: (eventId: number | string) => void
+  onEventLeft?: (eventId: number | string) => void
 }
 
 const Collection = ({
@@ -27,7 +28,8 @@ const Collection = ({
   currentUserId,
   attendeeEventIds = [],
   emptyStateShowButton = false,
-  onEventDeleted
+  onEventDeleted,
+  onEventLeft
 }: CollectionProps) => {
   const [visibleCount, setVisibleCount] = useState(limit)
 
@@ -38,21 +40,19 @@ const Collection = ({
   const visibleEvents = data.slice(0, visibleCount)
   const hasMore = visibleCount < data.length
 
+  const userRole = 
+    collectionType === 'Events_Organized' 
+      ? 'owner' 
+      : collectionType === 'My_Events' 
+        ? 'attendee' 
+        : undefined
+
   return (
     <>
       {data.length > 0 ? (
         <div className="flex flex-col items-center gap-10">
           <ul className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:gap-10">
-            {visibleEvents.map((event) => {
-              let userRole: 'owner' | 'attendee' | undefined
-
-              if (collectionType === 'Events_Organized') {
-                userRole = 'owner'
-              } else if (collectionType === 'My_Events') {
-                userRole = 'attendee'
-              }
-
-              return (
+            {visibleEvents.map((event) => (
                 <li key={event.id} className="flex justify-center">
                   <Card
                     event={event}
@@ -60,10 +60,10 @@ const Collection = ({
                     currentUserId={currentUserId}
                     attendeeEventIds={attendeeEventIds}
                     onEventDeleted={onEventDeleted}
+                    onEventLeft={onEventLeft}
                   />
                 </li>
-              )
-            })}
+            ))}
           </ul>
 
           {hasMore && (

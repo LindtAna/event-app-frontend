@@ -21,7 +21,10 @@ type DeleteConfirmationProps = {
   onEventDeleted?: (eventId: number | string) => void
 }
 
-export const DeleteConfirmation = ({ eventId, onEventDeleted }: DeleteConfirmationProps) => {
+export const DeleteConfirmation = ({ 
+  eventId, 
+  onEventDeleted 
+}: DeleteConfirmationProps) => {
   const { accessToken } = useAuth()
   const [isDeleting, setIsDeleting] = useState(false)
   const [open, setOpen] = useState(false)

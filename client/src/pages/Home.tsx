@@ -4,6 +4,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 
 import { useAuth } from '@/hooks/useAuth'
 import { getAllEvents } from '@/api/events'
+import { getEventsByAttendee } from '@/api/attendees'
 import type { Event } from '@/types'
 
 import { Button } from '@/components/ui/button'
@@ -23,34 +24,62 @@ export default function Home() {
   const categoryQuery = searchParams.get('category') || ''
 
   const [events, setEvents] = useState<Event[]>([])
+  const [attendeeEventIds, setAttendeeEventIds] = useState<number[]>([])
   const [isEventsLoading, setIsEventsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-// für den angemeldeten Benutzer alle Veranstaltungen laden 
+// für den angemeldeten Benutzer alle Veranstaltungen und Teilnahmen laden 
   useEffect(() => {
-    if (!isSignedIn) return
+  if (!isSignedIn || !user) {
+    setAttendeeEventIds([])
+    return
+  }
 
-    const fetchEvents = async () => {
-      setIsEventsLoading(true)
-      setError(null)
-      try {
-        const data = await getAllEvents()
-        setEvents(data || [])
+  let cancelled = false
+
+  const fetchData = async () => {
+    setIsEventsLoading(true)
+    setError(null)
+    try {
+        const [eventsData, myEventsData] = await Promise.all([
+          getAllEvents(),
+          getEventsByAttendee(user.id),
+        ])
+
+        if (!cancelled) {
+          setEvents(eventsData ?? [])
+          setAttendeeEventIds((myEventsData ?? []).map((event) => event.id))
+        }
       } catch (err) {
-        console.error('Fehler beim Laden der Veranstaltungen:', err)
-        setError('Veranstaltungen konnten nicht geladen werden.')
+        console.error('Fehler beim Laden der Daten:', err)
+        if (!cancelled) {
+          setError('Veranstaltungen konnten nicht geladen werden.')
+          setAttendeeEventIds([])
+        }
       } finally {
-        setIsEventsLoading(false)
+        if (!cancelled) {
+          setIsEventsLoading(false)
+        }
       }
     }
 
-    fetchEvents()
-  }, [isSignedIn])
+    void fetchData()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isSignedIn, user?.id])
 
  // Entfernen des Events aus local State ( nach erfolgreichem DELETE aus der Card)
   const handleEventDeleted = (eventId: number | string) => {
     setEvents((prev) => prev.filter((event) => event.id !== Number(eventId)))
   }
+
+  const handleEventLeft = (eventId: number | string) => {
+  setAttendeeEventIds((prev) =>
+    prev.filter((id) => id !== Number(eventId))
+  )
+}
 
   // Filtern nach Suchanfrage und Kategorie
   const filteredEvents = events.filter((event) => {
@@ -117,9 +146,10 @@ export default function Home() {
             emptyStateShowButton={!searchQuery && !categoryQuery}
             collectionType="All_Events"
             currentUserId={user.id}
-            attendeeEventIds={[]}
+            attendeeEventIds={attendeeEventIds}
             limit={10}
             onEventDeleted={handleEventDeleted}
+            onEventLeft={handleEventLeft}
           />
         )}
       </div>

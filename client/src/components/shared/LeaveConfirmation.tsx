@@ -1,8 +1,11 @@
+
 import { useState } from 'react'
 import leaveIcon from '@/assets/icons/leave.svg'
+import { leaveEvent } from '@/api/attendees'
+import { useAuth } from '@/hooks/useAuth'
+
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -14,51 +17,104 @@ import {
 
 type LeaveConfirmationProps = {
   eventId: number | string
+  onEventLeft?: (eventId: number | string) => void
 }
 
-export const LeaveConfirmation = ({ eventId }: LeaveConfirmationProps) => {
+export const LeaveConfirmation = ({
+  eventId,
+  onEventLeft,
+}: LeaveConfirmationProps) => {
+  const { user, accessToken } = useAuth()
+
+  const [isOpen, setIsOpen] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleLeave = async () => {
-    setIsLeaving(true)
-    console.log(`[MOCK LEAVE] Event ID: ${eventId}`)
+    if (!user || !accessToken) {
+      setError('Bitte melde dich erneut an.')
+      return
+    }
 
-    await new Promise((resolve) => setTimeout(resolve, 800))
+    try {
+      setIsLeaving(true)
+      setError(null)
 
-    setIsLeaving(false)
-    // TODO: später API-Aufruf zur Stornierung(Delete Attendee)
+      await leaveEvent(eventId, user.id, accessToken)
+
+      // Erst nach erfolgreicher Antwort die Card aktualisieren
+      onEventLeft?.(eventId)
+
+      setIsOpen(false)
+    } catch (err) {
+      console.error('Fehler beim Verlassen des Events:', err)
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Die Teilnahme konnte nicht storniert werden.'
+      )
+    } finally {
+      setIsLeaving(false)
+    }
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!isLeaving) {
+          setIsOpen(open)
+          if (open) setError(null)
+        }
+      }}
+    >
       <AlertDialogTrigger asChild>
         <button
           type="button"
-          className="cursor-pointer hover:opacity-75 transition-opacity"
+          className="cursor-pointer transition-opacity hover:opacity-75"
           title="Event verlassen"
+          aria-label="Event verlassen"
         >
-          <img src={leaveIcon} alt="Verlassen" width={30} height={30} />
+          <img
+            src={leaveIcon}
+            alt=""
+            width={30}
+            height={30}
+          />
         </button>
       </AlertDialogTrigger>
 
       <AlertDialogContent className="bg-white">
         <AlertDialogHeader>
-          <AlertDialogTitle>Event verlassen?</AlertDialogTitle>
+          <AlertDialogTitle>
+            Event verlassen?
+          </AlertDialogTitle>
+
           <AlertDialogDescription className="p-regular-16 text-grey-600">
             Möchten Sie Ihre Teilnahme an dieser Veranstaltung wirklich stornieren?
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+        {error && (
+          <p role="alert" className="text-sm text-red-500">
+            {error}
+          </p>
+        )}
 
-          <AlertDialogAction
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isLeaving}>
+            Abbrechen
+          </AlertDialogCancel>
+
+          <button
+            type="button"
             onClick={handleLeave}
             disabled={isLeaving}
-            className="bg-secondary-dark hover:bg-red-600 text-black"
+            className="inline-flex items-center justify-center rounded-md bg-secondary-dark px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLeaving ? 'Wird verlassen...' : 'Verlassen'}
-          </AlertDialogAction>
+          </button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

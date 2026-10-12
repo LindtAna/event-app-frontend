@@ -15,9 +15,17 @@ type CardProps = {
   currentUserId?: number
   attendeeEventIds?: number[]
   onEventDeleted?: (eventId: number | string) => void
+  onEventLeft?: (eventId: number | string) => void
 }
 
-const Card = ({ event, userRole, currentUserId, attendeeEventIds = [], onEventDeleted }: CardProps) => {
+const Card = ({ 
+  event, 
+  userRole, 
+  currentUserId, 
+  attendeeEventIds = [], 
+  onEventDeleted,
+  onEventLeft }: CardProps) => {
+
   const formattedDate = new Date(event.startDateTime).toLocaleDateString('de-DE', {
     day: '2-digit',
     month: 'short',
@@ -64,7 +72,10 @@ const Card = ({ event, userRole, currentUserId, attendeeEventIds = [], onEventDe
       {/* leave event */}
       {effectiveRole === 'attendee' && (
         <div className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center p-2 shadow-sm backdrop-blur-sm transition-all border border-primary-500/40 hover:border-primary-500/80 hover:shadow-md hover:scale-105">
-          <LeaveConfirmation eventId={event.id} />
+           <LeaveConfirmation
+            eventId={event.id}
+            onEventLeft={onEventLeft}
+          />
         </div>
       )}
 
@@ -111,7 +122,7 @@ const Card = ({ event, userRole, currentUserId, attendeeEventIds = [], onEventDe
 
         <div className="flex-between w-full mt-auto">
           <p className="p-medium-14 md:p-medium-16 text-secondary-dark">
-          {event.owner?.name}
+            {event.owner?.name}
           </p>
           <p className="p-regular-14 text-secondary line-clamp-1">{event.location}</p>
         </div>

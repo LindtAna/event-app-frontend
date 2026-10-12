@@ -41,7 +41,8 @@ export const updateEvent = async (eventId: string, payload: EventPayload, token?
 }
 
 export const deleteEvent = async (eventId: number | string, token?: string | null): Promise<void> => {
-  return apiFetch<void>(`/events/${eventId}`, {
+  return apiFetch<void>(`/events/${eventId}`,
+    {
     method: 'DELETE',
     token,
   });

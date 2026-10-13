@@ -8,7 +8,8 @@ export type EventPayload = {
   location: string
   startDateTime: string
   endDateTime: string
-  categoryId: string
+  categoryId?: string
+  categoryName?: string
   url: string
 }
 

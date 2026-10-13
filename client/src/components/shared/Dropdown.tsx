@@ -1,5 +1,4 @@
-import { useState, useEffect, startTransition } from "react"
-import { dummyCategories } from "@/constants/dummy-data"
+import { useState, useEffect } from "react"
 
 import {
   Select,
@@ -7,6 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectSeparator,
 } from "@/components/ui/select"
 
 import {
@@ -18,18 +18,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
 import { Input } from "@/components/ui/input"
 
-// TODO: Später Kategorien vom Go-Backend laden (GET /api/v1/categories)
-// TODO: Später neue Kategorie im Go-Backend speichern (POST /api/v1/categories)
+import { apiFetch } from "@/lib/api"
+import type { Category } from "@/types"
 
-export type Category = {
-  id: string
-  name: string
-}
+const NEW_CATEGORY_PREFIX = "new:"
+const CREATE_CATEGORY_VALUE = "__create_category__"
 
 type DropdownProps = {
   value?: string
@@ -37,67 +33,214 @@ type DropdownProps = {
 }
 
 const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
-  // Hauptkategorien
-  const [categories, setCategories] = useState<Category[]>(dummyCategories)
-  const [newCategory, setNewCategory] = useState('')
 
-  const handleAddCategory = () => {
-    if (!newCategory.trim()) return;
+  const [categories, setCategories] = useState<Category[]>([])
+  const [newCategory, setNewCategory] = useState("")
+  const [loadError, setLoadError] = useState("")
 
-    const createdCategory: Category = {
-      id: Date.now().toString(),
-      name: newCategory.trim()
-    };
+  // Steuerungs-States für unabhängige öffnen/schließen
+  // von Select-Dropdown und Erstellungs-Dialog 
+  const [isSelectOpen, setIsSelectOpen] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-    // Temporär lokal hinzufügen (Später API-Call ans Go-Backend)
-    setCategories((prevState) => [...prevState, createdCategory]);
-    setNewCategory('');
-  }
-
+  // Lädt beim Start alle Kategorien vom Go-Backend
+  // Bewahrt temporäre Kategorien bei zeitgleichen Aktionen
   useEffect(() => {
-    // TODO: Später Kategorien per fetch/axios vom Go-Backend abrufen
+    let cancelled = false
+
+    const loadCategories = async () => {
+      try {
+        const data = await apiFetch<Category[]>("/categories")
+
+        if (!cancelled) {
+          setCategories((current) => {
+           // Temporäre Kategorien (lokal erstellt, noch nicht in DB) beibehalten
+           // falls der Request spät ankommt
+            const temporaryCategories = current.filter((category) =>
+              category.id.startsWith(NEW_CATEGORY_PREFIX)
+            )
+
+            const merged = [...data]
+
+            for (const temporary of temporaryCategories) {
+              const alreadyExists = merged.some(
+                (category) =>
+                  category.name.toLowerCase() ===
+                  temporary.name.toLowerCase()
+              )
+
+              if (!alreadyExists) {
+                merged.push(temporary)
+              }
+            }
+
+            return merged
+          })
+
+          setLoadError("")
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Kategorien konnten nicht geladen werden."
+          )
+        }
+      }
+    }
+
+    void loadCategories()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  return (
-    <Select onValueChange={onChangeHandler} defaultValue={value}>
-      <SelectTrigger className="select-field">
-        <SelectValue placeholder="Kategorie auswählen" className="input-field"  />
-      </SelectTrigger>
-      <SelectContent>
-        {categories.length > 0 && categories.map((category) => (
-          <SelectItem key={category.id} value={category.id} className="select-item">
-            {category.name}
-          </SelectItem>
-        ))}
+// Fängt die Auswahl im Dropdown ab
+// Öffnet den Dialog oder
+// übergibt den Wert an React Hook Form
+  const handleSelectValueChange = (nextValue: string) => {
+    if (nextValue === CREATE_CATEGORY_VALUE) {
+      // Zuerst das Select-Dropdown schließen
+      // danach den Dialog für neue Kategorien öffnen
+      setIsSelectOpen(false)
+      setIsDialogOpen(true)
+      return
+    }
+// Reguläre Kategorie ausgewählt
+    onChangeHandler?.(nextValue)
+  }
 
-        <AlertDialog>
-          <AlertDialogTrigger className="p-medium-14 flex w-full rounded-lg py-3 pl-8 text-primary-500 hover:bg-primary-50 focus:text-primary-500">
-            + Neue Kategorie hinzufügen
-          </AlertDialogTrigger>
-          <AlertDialogContent className="bg-white">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Neue Kategorie erstellen</AlertDialogTitle>
-              <AlertDialogDescription>
-                Gib den Namen für die neue Kategorie ein:
-                <Input 
-                  type="text" 
-                  placeholder="Kategoriename" 
-                  className="input-field mt-3 text-grey-500" 
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)} 
-                />
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-              <AlertDialogAction onClick={() => startTransition(handleAddCategory)}>
-                Hinzufügen
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </SelectContent>
-    </Select>
+  // Erstellt eine temporäre Kategorie im Frontend
+  //  Event geschpeichert => neue Kategorie wird ans Backend übertragen
+  const handleAddCategory = () => {
+    const name = newCategory.trim()
+
+    if (!name) return
+
+    // Prüfen, ob die Kategorie bereits existiert (Case-insensitive)
+    const existingCategory = categories.find(
+      (category) => category.name.toLowerCase() === name.toLowerCase()
+    )
+
+    if (existingCategory) {
+      onChangeHandler?.(existingCategory.id)
+      setNewCategory("")
+      setIsDialogOpen(false)
+      return
+    }
+    // Temporäre ID mit Präfix generieren
+    // damit das Backend erkennt, dass es eine neue Kategorie ist
+    const temporaryId = `${NEW_CATEGORY_PREFIX}${name}`
+
+    setCategories((current) => [
+      ...current,
+      {
+        id: temporaryId,
+        name,
+      },
+    ])
+
+    // Aktualisiert das React-Hook-Form-Feld
+    onChangeHandler?.(temporaryId)
+
+    setNewCategory("")
+    setIsDialogOpen(false)
+  }
+
+
+  return (
+    <>
+      <Select
+        open={isSelectOpen}
+        onOpenChange={setIsSelectOpen}
+        value={value ?? ""}
+        onValueChange={handleSelectValueChange}
+      >
+        <SelectTrigger className="select-field w-full">
+          <SelectValue placeholder="Kategorie auswählen" />
+        </SelectTrigger>
+
+        <SelectContent>
+          {categories.map((category) => (
+            <SelectItem
+              key={category.id}
+              value={category.id}
+              className="select-item"
+            >
+              {category.name}
+            </SelectItem>
+          ))}
+
+          <SelectSeparator />
+
+          <SelectItem
+            value={CREATE_CATEGORY_VALUE}
+            className="cursor-pointer text-primary-500 focus:text-primary-500"
+          >
+            + Neue Kategorie erstellen
+          </SelectItem>
+        </SelectContent>
+      </Select>
+
+      {loadError && (
+        <p className="text-sm text-red-600" role="alert">
+          {loadError}
+        </p>
+      )}
+
+{/* Dialogfenster zum Eingeben und Hinzufügen einer neuen Kategorie */}
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Neue Kategorie erstellen
+            </AlertDialogTitle>
+
+            <AlertDialogDescription>
+              Gib den Namen für die neue Kategorie ein:
+            </AlertDialogDescription>
+
+            <Input
+              type="text"
+              placeholder="Kategoriename"
+              aria-label="Kategoriename"
+              className="input-field mt-3 text-grey-500"
+              value={newCategory}
+              onChange={(event) => setNewCategory(event.target.value)}
+              maxLength={100}
+              autoFocus
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault()
+                  handleAddCategory()
+                }
+              }}
+            />
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNewCategory("")}>
+              Abbrechen
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={(event) => {
+                if (!newCategory.trim()) {
+                  event.preventDefault()
+                  return
+                }
+
+                handleAddCategory()
+              }}
+            >
+              Hinzufügen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 

@@ -57,40 +57,44 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
     })
 
     // onSubmit erhält automatisch strikt typisierte und validierte Daten
-   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
+    async function onSubmit(values: z.infer<typeof eventFormSchema>) {
         try {
-        let uploadedImageUrl = values.imageUrl;
+            let uploadedImageUrl = values.imageUrl;
             // Hochladen des Eventfotos zu Cloudinary (sofern eine Datei hochgeladen wurde)
-           if (files.length > 0) {
-            uploadedImageUrl = await uploadToCloudinary(files[0]);
-        }
+            if (files.length > 0) {
+                uploadedImageUrl = await uploadToCloudinary(files[0]);
+            }
             // Erstellen des Request-Bodys für das Go-Backend
+            const isNewCategory = values.categoryId.startsWith("new:");
+
             const payload = {
-            title: values.title,
-            description: values.description,
-            imageUrl: uploadedImageUrl || "",
-            location: values.location,
-            startDateTime: values.startDateTime.toISOString(),
-            endDateTime: values.endDateTime.toISOString(),
-            categoryId: values.categoryId,
-            url: values.url || ""
-        };
+                title: values.title,
+                description: values.description,
+                imageUrl: uploadedImageUrl || "",
+                location: values.location,
+                startDateTime: values.startDateTime.toISOString(),
+                endDateTime: values.endDateTime.toISOString(),
+                ...(isNewCategory
+                    ? { categoryName: values.categoryId.slice(4) }
+                    : { categoryId: values.categoryId }),
+                url: values.url || "",
+            };
             // Anfrage senden
-           const savedEvent = type === 'Create'
-            ? await createEvent(payload, accessToken)
-            : await updateEvent(eventId!, payload, accessToken);
+            const savedEvent = type === 'Create'
+                ? await createEvent(payload, accessToken)
+                : await updateEvent(eventId!, payload, accessToken);
 
             //Wechsel zum erstellten/aktualisierten Event
             if (type === 'Create') {
-            form.reset();
-        } 
-        navigate(`/events/${savedEvent.id || eventId}`)
+                form.reset();
+            }
+            navigate(`/events/${savedEvent.id || eventId}`)
 
         } catch (error) {
-        console.error(error);
-        alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten");
+            console.error(error);
+            alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten");
+        }
     }
-}
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
@@ -241,7 +245,7 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
                         )}
                     />
                 </div>
-<div className="flex flex-col gap-5 md:flex-row">
+                <div className="flex flex-col gap-5 md:flex-row">
                     <FormField
                         control={form.control}
                         name="url"
@@ -263,7 +267,7 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
                         )}
                     />
                 </div>
-                
+
                 <div className="flex flex-1 items-center justify-center py-4">
                     <Button
                         className="w-full sm:w-fit" size="lg"

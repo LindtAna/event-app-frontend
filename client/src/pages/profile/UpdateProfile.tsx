@@ -24,7 +24,7 @@ const UpdateProfile = () => {
 
       <div className="wrapper my-8">
         <ProfileForm
-          userId={currentUser.id}
+          // userId={currentUser.id}
           type="Update"
           user={currentUser}
         />

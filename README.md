@@ -45,7 +45,7 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
 - Die Anmeldung wird über `LoginModal` angeboten. Der Authentifizierungszustand wird über `AuthProvider` und `useAuth` bereitgestellt.
 - Der bisher dokumentierte Authentifizierungsablauf sieht beim App-Start einen Aufruf von `POST /auth/refresh` zur Wiederherstellung einer Sitzung und beim Logout `POST /auth/logout` vor. Der Auth-Kontext stellt unter anderem `user`, `accessToken`, `isSignedIn`, `isLoading`, `setAuth` und `logout` bereit.
 
-## Suche & Filterung
+### Suche & Filterung
 - Suchleiste  
 - Kategorienfilter zum schnellen Auffinden passender Events  
 
@@ -72,16 +72,14 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
 - Während des Ladens und bei Fehlern werden entsprechende Zustände angezeigt. Für beide Eventlisten verwendet die Profilseite `Collection` mit einem Limit von 6 Einträgen.
 - Nach dem Löschen eines organisierten Events oder dem Verlassen eines Events entfernt `Profile` das betreffende Event über einen Callback aus der jeweiligen lokalen Liste, ohne dass die Profilseite vollständig neu geladen werden muss.
 
-## Teilnahmesystem
+### Teilnahmesystem
 - Getrennte Ansicht von Events über Tab-Navigation:
   - **Ersteller** – vom Nutzer erstellte Veranstaltungen  
   - **Teilnehmer** – Events, bei denen er als Teilnehmer eingetragen ist
 
-
 ---
 
 ## Tech-Stack
-
 ### Core
 - React  
 - TypeScript  
@@ -120,16 +118,18 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
 ## Konfiguration
 
 Die Beispiel-Konfiguration liegt unter `client/.env.example`. Für die lokale Entwicklung sollte eine lokale Umgebungsdatei mit den passenden Werten angelegt werden.
+Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In diesen Variablen sollten daher keine geheimen Schlüssel oder privaten Zugangsdaten abgelegt werden.
 
 - `VITE_API_BASE_URL` legt die Basis-URL der Backend-API fest.
 - `VITE_CLOUDINARY_CLOUD_NAME` bezeichnet die Cloudinary-Cloud.
 - `VITE_CLOUDINARY_AVATARS_UPLOAD_PRESET` wird für Avatar-Uploads verwendet.
 - `VITE_CLOUDINARY_EVENTS_UPLOAD_PRESET` wird für Event-Bilder verwendet.
 
-Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In diesen Variablen sollten daher keine geheimen Schlüssel oder privaten Zugangsdaten abgelegt werden.
+
 ---
 
 ## Repository-Struktur
+
 ```
 .
 ├── public/                      # Statische öffentliche Ressourcen
@@ -201,9 +201,9 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 └── package.json                 # Abhängigkeiten und npm-Skripte
 
 ```
+---
 
 ## Formularvalidierung (`src/lib/validator.ts`)
-
 ### Event-Formular
 
 | Feld | Validierungsregel |
@@ -231,6 +231,8 @@ Die zusätzliche Regel weist `endDateTime` zurück, wenn der Wert **vor** `start
 - `bio`: optional, maximal 200 Zeichen
 - `avatarUrl`: optionaler String
 
+---
+
 ## Routing
 Im `src/App.tsx` registrierten Routen sind:
 
@@ -246,8 +248,9 @@ Im `src/App.tsx` registrierten Routen sind:
 
 Alle Routen werden innerhalb des `RootLayout` gerendert; `AuthProvider` stellt den Authentifizierungszustand bereit.
 
-## Zentrale Komponenten und Datenflüsse
+---
 
+## Zentrale Komponenten und Datenflüsse
 ### `Home` (`src/pages/Home.tsx`)
 Bei angemeldeten Benutzern lädt `Home` `getAllEvents()` und `getEventsByAttendee(user.id)` mit `Promise.all`. Während Authentifizierungs- und Event-Daten geladen werden, zeigt die Seite Ladezustände an. Fehler beim Laden führen zu einer sichtbaren Fehlermeldung. Bei erfolgreichem Abruf speichert der Client Events und Teilnahme-IDs separat. Löschen eines Events entfernt es aus der lokalen Event-Liste; Verlassen eines Events entfernt dessen ID aus den Teilnahme-IDs. Bei Gästen wird stattdessen die Landingpage angezeigt.
 
@@ -277,8 +280,7 @@ Event und Teilnehmerliste werden separat geladen. Die Effekte nutzen ein `cancel
 
 ### `Card` und `Collection`
 
-`Collection` legt anhand des `collectionType` eine Standardrolle fest: `Events_Organized` übergibt `owner`, `My_Events` übergibt `attendee`; für `All_Events` wird keine Rolle vorgegeben. `Card` verwendet eine übergebene Rolle vorrangig. Fehlt sie, wird bei vorhandenem `currentUserId` zunächst `event.ownerId` verglichen und anschließend geprüft, ob `event.id` in `attendeeEventIds` enthalten ist. Die Karte zeigt die erste Kategorie, Startdatum und -uhrzeit, Titel, Veranstalternamen und Veranstaltungsort. Veranstalter erhalten Bearbeiten- und Löschen-Aktionen, Teilnehmer eine Aktion zum Verlassen des Events.
-
+ `Collection` legt anhand des `collectionType` eine Standardrolle fest: `Events_Organized` übergibt `owner`, `My_Events` übergibt `attendee`; für `All_Events` wird keine Rolle vorgegeben. `Card` verwendet eine übergebene Rolle vorrangig. Fehlt sie, wird bei vorhandenem `currentUserId` zunächst `event.ownerId` verglichen und anschließend geprüft, ob `event.id` in `attendeeEventIds` enthalten ist. Die Karte zeigt die erste Kategorie, Startdatum und -uhrzeit, Titel, Veranstalternamen und Veranstaltungsort. Veranstalter erhalten Bearbeiten- und Löschen-Aktionen, Teilnehmer eine Aktion zum Verlassen des Events.
 `Collection` zeigt standardmäßig 10 Einträge an; die Profilseite übergibt den Wert 6. Jeder Klick auf **Mehr anzeigen** erhöht die sichtbare Anzahl um das jeweilige Limit. Wenn keine Daten vorhanden sind, wird ein konfigurierbarer Leerzustand angezeigt; ein Button zum Erstellen eines Events kann optional eingeblendet werden.
 
 ### `Profile` (`src/pages/profile/Profile.tsx`)
@@ -299,6 +301,8 @@ Die Seite rendert den Bereich mit der Überschrift „Account erstellen“, eine
 ### Authentifizierungszustand (`src/hooks/useAuth.tsx`)
 
 Der bisher dokumentierte Ablauf sieht einen globalen Auth-Kontext vor, der Benutzer und Access-Token verwaltet. Beim App-Start wird versucht, eine Sitzung über `/auth/refresh` wiederherzustellen; `isLoading` kennzeichnet die laufende Prüfung. `useAuth` wird unter anderem in `Home`, `EventForm`, `EventDetails`, `Profile` und `DeleteConfirmation` verwendet. 
+
+---
 
 ## TypeScript-Datenmodelle (`src/types/index.ts`)
 
@@ -358,6 +362,7 @@ Sowohl `Dropdown` als auch `CategoryFilter` laden die Kategorien beim ersten Ren
 
 `EventForm` erzeugt vor dem Request ein Payload-Objekt und wandelt `startDateTime` und `endDateTime` mit `toISOString()` um. Bei einer bestehenden Kategorie wird `categoryId` gesendet. Ein vom Dropdown erzeugter temporärer Wert mit dem Präfix `new:` wird in `categoryName` umgewandelt. Das Feld `url` wird bei leerem Formularwert als leerer String übertragen. Die konkrete Persistenz- und Bereinigungslogik für Kategorien ist im Backend zu prüfen.
 
+---
 ## Bilder und Dateien: Cloudinary
 
 `uploadToCloudinary(file, type = 'events')` lädt die ausgewählte Datei direkt zu Cloudinary hoch:

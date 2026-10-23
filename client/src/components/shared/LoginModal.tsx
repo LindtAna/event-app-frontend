@@ -1,6 +1,10 @@
-import { useAuth } from "@/hooks/useAuth"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
+
+import { useAuth } from "@/hooks/useAuth"
+import { loginUser } from "@/api/auth"
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { XIcon } from "lucide-react"
@@ -22,45 +26,55 @@ type LoginModalProps = {
   onClose: () => void
 }
 
+type ModalView = "login" | "registration-choice"
+type RegistrationType = "owner" | "member"
+
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const navigate = useNavigate()
-
   const { setAuth } = useAuth()
+
+   const [view, setView] = useState<ModalView>("login")
 
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: { email: '', password: '' },
   })
 
+  // Bei erneutem Öffnen immer die Login-Ansicht anzeigen.
+  useEffect(() => {
+    if (isOpen) {
+      setView("login")
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
- async function onSubmit(values: z.infer<typeof loginFormSchema>) {
+async function onSubmit(values: z.infer<typeof loginFormSchema>) {
   try {
-    const response = await fetch("http://localhost:8080/api/v1/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // Wichtig für cookies!
-      body: JSON.stringify(values),
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error || "Login fehlgeschlagen")
-    }
+    const data = await loginUser(values)
 
     setAuth(data.user, data.accessToken)
     onClose()
   } catch (error) {
-    alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten")
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Ein Fehler ist aufgetreten",
+    )
   }
 }
 
-  const handleRegisterRedirect = () => {
+const handleShowRegistrationOptions = () => {
+    setView("registration-choice")
+  }
+
+   const handleRegistrationRedirect = (type: RegistrationType) => {
     onClose()
-    navigate('/register')
+    navigate(`/register?type=${type}`)
+  }
+
+  const handleBackToLogin = () => {
+    setView("login")
   }
 
   return (
@@ -78,6 +92,8 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           <XIcon className="size-6" />
         </Button>
 
+      {view === "login" ? (
+          <> 
         <div className="mb-6 text-center">
           <h2 className="text-[18px] font-bold leading-tight md:text-[20px] lg:text-[24px] text-center">Anmelden</h2>
           <p className="p-medium-12 md:p-regular-16 text-secondary-dark mt-2">Bitte melde dich an</p>
@@ -121,7 +137,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
               Noch kein Account?{' '}
               <span
                 className="cursor-pointer font-semibold p-medium-12 md:p-regular-16 text-primary-500 hover:underline"
-                onClick={handleRegisterRedirect}
+                onClick={handleShowRegistrationOptions}
               >
                 Hier klicken
               </span>
@@ -137,6 +153,65 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
             </Button>
           </form>
         </Form>
+        </>
+        ) : (
+          <>
+            <div className="mb-6 text-center">
+              <h2 className="text-[18px] font-bold leading-tight md:text-[20px] lg:text-[24px]">
+                Account erstellen
+              </h2>
+
+              <p className="p-medium-12 md:p-regular-16 mt-2">
+                Wie möchtest du PlanFuchs nutzen?
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  className="w-full whitespace-normal rounded-lg bg-primary py-6 text-white hover:bg-primary-500 hover:text-black"
+                  size="lg"
+                  onClick={() => handleRegistrationRedirect("owner")}
+                >
+                  Neues Team erstellen
+                </Button>
+
+                <p className="text-center text-xs md:text-sm leading-relaxed text-secondary-dark">
+                  Erstelle einen neuen Bereich für dein Unternehmen und
+                  verwalte ihn als Admin.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  className="w-full whitespace-normal rounded-lg bg-primary py-6 text-white hover:bg-primary-500 hover:text-black"
+                  size="lg"
+                  onClick={() => handleRegistrationRedirect("member")}
+                >
+                  Mit Einladung beitreten
+                </Button>
+
+                <p className="text-center text-xs md:text-sm leading-relaxed text-secondary-dark">
+                  Mit einem Einladungscode kannst du einem bestehenden
+                  Team beitreten.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 text-center text-sm">
+              Du hast bereits einen Account?{" "}
+              <button
+                type="button"
+                className="cursor-pointer font-semibold text-primary hover:underline"
+                onClick={handleBackToLogin}
+              >
+                Zurück zur Anmeldung
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

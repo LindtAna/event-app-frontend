@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
-import logo from '@/assets/images/logo.png'
-import userIcon from '@/assets/icons/username.svg'
+
 import { useAuth } from "@/hooks/useAuth"
+
 import NavItems from "./NavItems"
 import MobileNav from "./MobileNav"
 import LoginModal from "./LoginModal"
+
+import logo from '@/assets/images/logo.png'
+import userIcon from '@/assets/icons/username.svg'
 
 const Header = () => {
   const { isSignedIn, user, logout } = useAuth()

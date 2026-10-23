@@ -39,6 +39,10 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
 
 ### Registrierung und Anmeldung
 
+- `LoginModal` bietet sowohl die Benutzeranmeldung als auch eine Auswahl des Registrierungsmoduы: beim Klick auf „Hier klicken“ wird innerhalb des bestehenden Modalfensters eine Auswahl mit zwei Registrierungsoptionen angezeigt:
+  - **Neues Team erstellen:** Weiterleitung zu `/register?type=owner` für die Registrierung eines Tenant-Owners.
+  - **Mit Einladung beitreten:** Weiterleitung zu `/register?type=member` für die Registrierung eines Tenant-Members.
+Die Auswahl erfolgt über die URL-Query-Parameter `type=owner` bzw. `type=member`. Vor der Navigation wird das Modalfenster geschlossen. Über „Zurück zur Anmeldung“ kann zur Login-Form zurückgekehrt werden, ohne das Modalfenster zu schließen.
 - `Register` (`src/pages/profile/Register.tsx`) stellt die Überschrift „Account erstellen“, einen kurzen Einführungstext und anschließend die Komponente `RegisterForm` dar.
 - Das Registrierungsformular ist laut bisher dokumentiertem Validierungsschema für Name, E-Mail-Adresse, Passwort und Passwortbestätigung vorgesehen; das Schema enthält zusätzlich ein optionales Feld `avatarUrl`. Die aktuelle Implementierung von `RegisterForm` selbst wurde in dieser Aktualisierung nicht mitgeliefert.
 - Die clientseitige Formularvalidierung erfolgt über Zod und `zodResolver`.
@@ -135,6 +139,7 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 ├── public/                      # Statische öffentliche Ressourcen
 ├── src/
 │   ├── api/
+│   │   ├── auth.ts      # API-Funktionen für Authentifizierung
 │   │   ├── events.ts    # API-Funktionen zur Event-Verwaltung
 │   │   ├── attendees.ts # API-Funktionen zur Verwaltung von Event-Teilnahmen
 │   │   ├── upload.ts    # Upload von Event- und Profilbildern zu Cloudinary
@@ -239,7 +244,7 @@ Im `src/App.tsx` registrierten Routen sind:
 | Pfad | Komponente | Zweck |
 |---|---|---|
 | `/` | `Home` | Landingpage bzw. Event-Übersicht |
-| `/register` | `Register` | Registrierung |
+| `/register` | `Register` | Registrierung; Auswahl des Modus über ?type=owner oder ?type=member |
 | `/events/:id` | `EventDetails` | Event-Details und Teilnahme |
 | `/events/create` | `CreateEvent` | Neues Event erstellen |
 | `/events/:id/update` | `UpdateEvent` | Event bearbeiten |
@@ -294,6 +299,12 @@ Wenn kein angemeldeter Benutzer vorhanden ist, rendert die Komponente `null`.
 
 Die Komponente stellt einen Bestätigungsdialog für das dauerhafte Löschen eines Events dar. Beim Bestätigen ruft sie `deleteEvent(eventId, accessToken)` auf. Während der Anfrage ist die Aktion deaktiviert und der Buttontext wechselt zu „Wird gelöscht...“. Bei einem Fehler wird dieser in der Konsole protokolliert und eine Fehlermeldung per `alert` angezeigt. Nach erfolgreichem Löschen wird der optionale Callback `onEventDeleted(eventId)` aufgerufen, sodass übergeordnete Listen lokal aktualisiert werden können.
 
+### `LoginModal` (`src/components/shared/LoginModal.tsx`)
+
+`LoginModal` verwaltet die Login-Form sowie die Auswahl des Registrierungsmodus innerhalb desselben Modalfensters. Die Ansicht wird abhängig vom internen Komponentenstatus zwischen Login-Form und Registrierungsauswahl umgeschaltet.
+Die Anmeldung erfolgt über die Funktion `loginUser` aus `src/api/auth.ts`. Bei erfolgreicher Anmeldung werden der Benutzer und der Access Token über `setAuth` in den Authentifizierungskontext übernommen. Anschließend wird das Modalfenster geschlossen.
+Die Registrierungsauswahl bietet zwei Optionen: die Owner-Registrierung mit einem neuen Team und den Beitritt als Member über einen Einladungscode. Die gewählte Option wird über den Query-Parameter `type` an die Registrierungsseite übergeben.
+
 ### `Register` (`src/pages/profile/Register.tsx`)
 
 Die Seite rendert den Bereich mit der Überschrift „Account erstellen“, einen kurzen Registrierungshinweis und anschließend `RegisterForm`. Die Felder und der Request-Ablauf sind an die separate Formular-Komponente delegiert.
@@ -317,6 +328,15 @@ Der bisher dokumentierte Ablauf sieht einen globalen Auth-Kontext vor, der Benut
 ## Integration mit der Backend-API
 Alle folgenden Pfade sind relativ zur konfigurierten API-Basis-URL zu verstehen.
 Die tatsächliche Zusammensetzung der URL sowie Header- und Fehlerbehandlung werden in `apiFetch` implementiert.
+
+### Authentifizierung (`src/api/auth.ts`)
+
+| Funktion | HTTP-Methode und Pfad | Zweck |
+|---|---|---|
+| `loginUser(payload)` | `POST /auth/login` | Benutzer anmelden und Benutzerobjekt sowie Access Token abrufen |
+
+`LoginPayload` enthält die Felder `email` und `password`. Die Antwort wird über den Typ `LoginResponse` mit den Feldern `user` und `accessToken` typisiert.
+Die Funktion `loginUser` verwendet den zentralen HTTP-Helper `apiFetch` aus `src/lib/api.ts`. Dadurch werden die konfigurierte API-Basis-URL, die Standard-Header, die Verarbeitung der JSON-Antworten und die Fehlerbehandlung zentral verwaltet.`apiFetch` setzt außerdem `credentials: 'include'`, damit der Browser HttpOnly-Cookies verarbeiten kann. Der Backend-Login setzt auf diese Weise das Refresh-Token-Cookie; der Access Token wird separat in der JSON-Antwort zurückgegeben.
 
 ### Events (`src/api/events.ts`)
 

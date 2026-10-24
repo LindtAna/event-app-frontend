@@ -7,7 +7,7 @@ const Register = () => {
         <h3 className="text-[28px] font-bold leading-tight md:text-[34px] lg:text-[48px] text-center">
           Account erstellen
         </h3>
-        <p className="text-center p-medium-12 md:p-regular-16 px-4 mt-2 text-secondary-dark">
+        <p className="text-center p-medium-12 md:p-regular-16 px-4 mt-2">
           Die Registrierung ist einfach und kostenlos.<br/>
           Fülle dazu das Formular aus, um zu beginnen.
         </p>

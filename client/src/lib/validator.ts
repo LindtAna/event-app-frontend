@@ -34,17 +34,52 @@ export const eventFormSchema = z.object({
   path: ["endDateTime"],
 });
 
-// Registrierungsschema
-export const registerFormSchema = z.object({
-  name: z.string().min(2, "Name muss mindestens 2 Zeichen lang sein."),
-  email: z.string().email("Ungültige E-Mail-Adresse."),
-  password: z.string().min(7, "Passwort muss mindestens 7 Zeichen lang sein."),
-  confirmPassword: z.string(),
-  avatarUrl: z.string().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwörter stimmen nicht überein.",
-  path: ["confirmPassword"],
-})
+// Registrierungsschema für Owner und Member
+export const registerFormSchema = z
+  .object({
+    registrationType: z.enum(["owner", "member"]),
+    
+    name: z.string().trim().min(2, "Name muss mindestens 2 Zeichen lang sein."),
+    email: z.string().trim().email("Ungültige E-Mail-Adresse."),
+    password: z.string().min(8, "Passwort muss mindestens 8 Zeichen lang sein.")
+      .refine(
+        (password) => new TextEncoder().encode(password).length <= 72,
+        "Passwort darf maximal 72 Byte umfassen.",
+      ),
+confirmPassword: z.string(),
+companyName: z.string().optional(),
+invitationCode: z.string().optional(),
+avatarUrl: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Passwörter stimmen nicht überein.",
+        path: ["confirmPassword"],
+      })
+    }
+
+    if (
+      data.registrationType === "owner" && !data.companyName?.trim()
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Bitte gib einen Teamnamen ein.",
+        path: ["companyName"],
+      })
+    }
+
+    if (
+      data.registrationType === "member" && !data.invitationCode?.trim()
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Bitte gib deinen Einladungscode ein.",
+        path: ["invitationCode"],
+      })
+    }
+  })
 
 // Schema zur Profilbearbeitung
 export const profileFormSchema = z.object({

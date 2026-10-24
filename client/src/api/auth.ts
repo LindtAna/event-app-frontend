@@ -19,3 +19,30 @@ export const loginUser = async (
     body: JSON.stringify(payload),
   })
 }
+
+type RegisterBasePayload = {
+  name: string
+  email: string
+  password: string
+  avatarUrl?: string
+  bio?: string
+}
+
+export type RegisterPayload =
+  | (RegisterBasePayload & {
+      registrationType: "owner"
+      companyName: string
+    })
+  | (RegisterBasePayload & {
+      registrationType: "member"
+      invitationCode: string
+    })
+
+export const registerUser = async (
+  payload: RegisterPayload,
+): Promise<User> => {
+  return apiFetch<User>("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+}

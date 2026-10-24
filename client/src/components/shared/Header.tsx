@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 
 import { useAuth } from "@/hooks/useAuth"
 
@@ -12,6 +12,8 @@ import userIcon from '@/assets/icons/username.svg'
 
 const Header = () => {
   const { isSignedIn, user, logout } = useAuth()
+  const location = useLocation()
+const navigate = useNavigate()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -25,6 +27,28 @@ const Header = () => {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  useEffect(() => {
+  const navigationState = location.state as
+    | { openLoginModal?: boolean }
+    | null
+  if (!navigationState?.openLoginModal) {
+    return
+  }
+  setIsLoginModalOpen(true)
+
+  navigate(
+    {
+      pathname: location.pathname,
+      search: location.search,
+      hash: location.hash,
+    },
+    {
+      replace: true,
+      state: null,
+    },
+  )
+}, [location, navigate])
 
   const handleLogout = async () => {
     await logout()

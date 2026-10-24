@@ -44,7 +44,11 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
   - **Mit Einladung beitreten:** Weiterleitung zu `/register?type=member` für die Registrierung eines Tenant-Members.
 Die Auswahl erfolgt über die URL-Query-Parameter `type=owner` bzw. `type=member`. Vor der Navigation wird das Modalfenster geschlossen. Über „Zurück zur Anmeldung“ kann zur Login-Form zurückgekehrt werden, ohne das Modalfenster zu schließen.
 - `Register` (`src/pages/profile/Register.tsx`) stellt die Überschrift „Account erstellen“, einen kurzen Einführungstext und anschließend die Komponente `RegisterForm` dar.
-- Das Registrierungsformular ist laut bisher dokumentiertem Validierungsschema für Name, E-Mail-Adresse, Passwort und Passwortbestätigung vorgesehen; das Schema enthält zusätzlich ein optionales Feld `avatarUrl`. Die aktuelle Implementierung von `RegisterForm` selbst wurde in dieser Aktualisierung nicht mitgeliefert.
+- `RegisterForm` (`\src\components\shared\RegisterForm.tsx`) liest den Registrierungsmodus aus dem URL-Parameter type. Bei `owner `wird zusätzlich das Feld Teamsname angezeigt; bei `member` wird der Einladungscode abgefragt.
+Beide Registrierungsmodi verwenden gemeinsame Formularfelder für Name, E-Mail-Adresse, Passwort, Passwortbestätigung und optionalen Avatar. Vor dem Absenden des Registrierungsformulars wird ein ausgewählter Avatar über die vorhandene Cloudinary-Upload-Funktion hochgeladen. Ohne ausgewählten Avatar wird kein zusätzlicher Upload durchgeführt.
+Bei erfolgreicher Registrierung zeigt die Oberfläche eine Bestätigung an und die Schaltfläche Einloggen(der Benutzer wird zur Startseite gewechselt und das LoginModal geöffnet)
+Die Registrierung meldet den Benutzer nicht automatisch an.
+Fehler der Registrierung werden dem Benutzer angezeigt; das Formular kann nach einem fehlgeschlagenen Request erneut abgesendet werden.
 - Die clientseitige Formularvalidierung erfolgt über Zod und `zodResolver`.
 - Die Anmeldung wird über `LoginModal` angeboten. Der Authentifizierungszustand wird über `AuthProvider` und `useAuth` bereitgestellt.
 - Der bisher dokumentierte Authentifizierungsablauf sieht beim App-Start einen Aufruf von `POST /auth/refresh` zur Wiederherstellung einer Sitzung und beim Logout `POST /auth/logout` vor. Der Auth-Kontext stellt unter anderem `user`, `accessToken`, `isSignedIn`, `isLoading`, `setAuth` und `logout` bereit.
@@ -225,11 +229,16 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 Die zusätzliche Regel weist `endDateTime` zurück, wenn der Wert **vor** `startDateTime` liegt. 
 
 ### Registrierung
-- `name`: mindestens 2 Zeichen
-- `email`: gültige E-Mail-Adresse
-- `password`: mindestens 7 Zeichen
+- `registrationType`: Pflichtfeld; zulässige Werte sind `owner` und `member`
+- `companyName`: bei `owner` erforderlich; wird über das Formularfeld Teamsname eingegeben
+- `invitationCode`: bei `member` erforderlich; wird über das Formularfeld Einladungscode eingegeben
+- `name`: Pflichtfeld; mindestens 2 Zeichen
+- `email`: Pflichtfeld; muss eine gültige E-Mail-Adresse sein
+- `password`: mindestens 8 Zeichen; maximal 72 Bytes gemäß Backend-Anforderung
 - `confirmPassword`: muss mit `password` übereinstimmen
-- `avatarUrl`: optionaler String
+- `avatarUrl`: optional; enthält nach einem erfolgreichen Cloudinary-Upload die URL des Avatars
+Bei den Feldern `companyName` und `invitationCode` bleibt die serverseitige Validierung maßgeblich; ungültige oder bereits verwendete Einladungen sowie bereits registrierte E-Mail-Adressen können zur Ablehnung der Registrierung führen.
+
 
 ### Profilbearbeitung
 - `name`: mindestens 2 Zeichen

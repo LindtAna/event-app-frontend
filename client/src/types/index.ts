@@ -2,6 +2,8 @@
 
 export type User = {
   id: number;
+  tenantId: number;
+  role: "owner" | "member";
   name?: string;
   email: string;
   bio?: string;

@@ -25,7 +25,6 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
 ## Hauptfunktionen
 
 ### Startseite und Event-Übersicht
-
 - Nicht angemeldete Besucher sehen eine öffentliche Landingpage mit Hero-Bild und einer Einführung in PlanFuchs.
 - Nach erfolgreicher Authentifizierung zeigt die Startseite eine Begrüßung sowie die Event-Übersicht.
 - Vor der Entscheidung, welche Ansicht angezeigt wird, wartet `Home` auf den Abschluss der Authentifizierungsprüfung.
@@ -38,7 +37,6 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
 - Teilnahme-IDs werden im Frontend gehalten, damit Karten den Status als Veranstalter oder Teilnehmer darstellen können.
 
 ### Registrierung und Anmeldung
-
 - `LoginModal` bietet sowohl die Benutzeranmeldung als auch eine Auswahl des Registrierungsmoduы: beim Klick auf „Hier klicken“ wird innerhalb des bestehenden Modalfensters eine Auswahl mit zwei Registrierungsoptionen angezeigt:
   - **Neues Team erstellen:** Weiterleitung zu `/register?type=owner` für die Registrierung eines Tenant-Owners.
   - **Mit Einladung beitreten:** Weiterleitung zu `/register?type=member` für die Registrierung eines Tenant-Members.
@@ -51,14 +49,31 @@ Die Registrierung meldet den Benutzer nicht automatisch an.
 Fehler der Registrierung werden dem Benutzer angezeigt; das Formular kann nach einem fehlgeschlagenen Request erneut abgesendet werden.
 - Die clientseitige Formularvalidierung erfolgt über Zod und `zodResolver`.
 - Die Anmeldung wird über `LoginModal` angeboten. Der Authentifizierungszustand wird über `AuthProvider` und `useAuth` bereitgestellt.
-- Der bisher dokumentierte Authentifizierungsablauf sieht beim App-Start einen Aufruf von `POST /auth/refresh` zur Wiederherstellung einer Sitzung und beim Logout `POST /auth/logout` vor. Der Auth-Kontext stellt unter anderem `user`, `accessToken`, `isSignedIn`, `isLoading`, `setAuth` und `logout` bereit.
+- Beim App-Start findet einen Aufruf von `POST /auth/refresh` zur Wiederherstellung einer Sitzung und statt beim Logout der Aufruf von `POST /auth/logout`. Der Auth-Kontext stellt unter anderem `user`, `accessToken`, `isSignedIn`, `isLoading`, `setAuth` und `logout` bereit.
+- Die Member-Registrierung verwendet einen zuvor von einem Tenant-Owner erstellten Einladungscode. Der Client übermittelt den Code im Feld Enladungscode. Ob die Einladung gültig, noch nicht verwendet, nicht widerrufen und nicht abgelaufen ist, wird vom Backend geprüft.
 
-### Suche & Filterung
-- Suchleiste  
-- Kategorienfilter zum schnellen Auffinden passender Events  
+
+### Einladungsverwaltung
+- Die Einladungsseite ermöglicht Tenant-Ownern, Einladungen für weitere Teammitglieder zu erstellen, bestehende Einladungen einzusehen und noch gültige Einladungen zu widerrufen.
+- Der Zugriff auf die Seite wird im Frontend auf angemeldete Benutzer mit der Rolle `owner` beschränkt. Nicht angemeldete Benutzer und Benutzer mit einer anderen Rolle werden zur Startseite weitergeleitet. Die verbindliche Berechtigungsprüfung erfolgt im Backend.
+- Beim Erstellen einer Einladung sendet der Client einen Ablaufzeitpunkt (`expiresAt`) im RFC3339-Format an die API. Aktuell wird dieser Zeitpunkt im Frontend auf sieben Tage nach der Erstellung gesetzt.
+- Das Backend gibt den neu generierten `invitationCode` bei der Erstellung einmalig zurück. Der Code wird im Frontend angezeigt und kann über die Zwischenablage kopiert werden. Er wird nicht erneut vom Backend abgerufen. Vor dem Ersetzen eines noch nicht als kopiert markierten Codes erscheint ein Bestätigungsdialog. Nach erfolgreichem Kopieren wird der entsprechende Status in der Oberfläche angezeigt.
+- Die Einladungsübersicht zeigt die ID sowie die Zeitpunkte der Erstellung, des Ablaufs, der Verwendung und des Widerrufs. Zeitstempel ohne Zeitzonenangabe werden vom Frontend als UTC interpretiert und für die Anzeige in deutscher Lokalzeit formatiert.
+- Bereits verwendete, widerrufene oder abgelaufene Einladungen können über die Oberfläche nicht widerrufen werden.
+- Nach einem erfolgreichen Widerruf wird der lokale Datensatz aktualisiert.
+- Lade-, Erstellungs- und Widerrufsfehler sowie erfolgreiche Aktionen werden dem Benutzer über sichtbare Statusmeldungen angezeigt.
+
+### Profilverwaltung
+- Die Profilseite zeigt Avatar, Namen, E-Mail-Adresse und – sofern vorhanden – die Biografie (`bio`). Fehlt ein anzeigbares Avatarbild, werden die Initialen des Namens als Fallback verwendet.
+- Die Profilbearbeitung ist unter `/profile/update` erreichbar.
+- Die Benutzer-API stellt die Funktion `updateUserProfile` zum Aktualisieren des Profils bereit. Der Request-Payload umfasst `name` sowie optionale Werte für `bio` und `avatarUrl`; die Antwort ist als `{ user, message? }` typisiert.
+- Für Avatar-Uploads ist in der Upload-Funktion ein eigenes Cloudinary-Preset vorgesehen.
+- Die Profilseite hat getrennte Tabs für **Teilnehmer** und **Ersteller**. Standardmäßig ist `Ersteller` ausgewählt. Organisierte Events und Teilnahme-Events werden nach Vorliegen einer Benutzer-ID parallel geladen; ein Cleanup-Flag verhindert nach dem Unmount die Übernahme verspäteter Antworten.
+- Während des Ladens und bei Fehlern werden entsprechende Zustände angezeigt. Für beide Eventlisten verwendet die Profilseite `Collection` mit einem Limit von 6 Einträgen.
+- Nach dem Löschen eines organisierten Events oder dem Verlassen eines Events entfernt `Profile` das betreffende Event über einen Callback aus der jeweiligen lokalen Liste, ohne dass die Profilseite vollständig neu geladen werden muss.
+
 
 ### Event-Verwaltung (CRUD)
-
 - Die Event-API unterstützt das Abrufen aller Events, eines einzelnen Events und der vom Benutzer organisierten Events sowie das Erstellen, Aktualisieren und Löschen von Events.
 - Das gemeinsame Formular `EventForm` wird sowohl zum Erstellen als auch zum Bearbeiten verwendet.
 - Event-Daten umfassen Titel, Beschreibung, Kategorie, Start- und Enddatum mit Uhrzeit, Veranstaltungsort bzw. Online-Hinweis, Bild und optionale externe URL.
@@ -70,20 +85,16 @@ Fehler der Registrierung werden dem Benutzer angezeigt; das Formular kann nach e
 - In Event-Karten können Veranstalter ihre eigenen Events über einen Bestätigungsdialog löschen. Nach erfolgreichem Löschen wird ein optionaler Callback zur lokalen Listenaktualisierung aufgerufen. Teilnehmer können nach Bestätigung ihre Teilnahme beenden.
 - `Collection` zeigt zunächst eine begrenzte Zahl von Events und bietet bei weiteren Ergebnissen die Schaltfläche **Mehr anzeigen**.
 
-### Profilverwaltung
-
-- Die Profilseite zeigt Avatar, Namen, E-Mail-Adresse und – sofern vorhanden – die Biografie (`bio`). Fehlt ein anzeigbares Avatarbild, werden die Initialen des Namens als Fallback verwendet.
-- Die Profilbearbeitung ist unter `/profile/update` erreichbar.
-- Die Benutzer-API stellt die Funktion `updateUserProfile` zum Aktualisieren des Profils bereit. Der Request-Payload umfasst `name` sowie optionale Werte für `bio` und `avatarUrl`; die Antwort ist als `{ user, message? }` typisiert.
-- Für Avatar-Uploads ist in der Upload-Funktion ein eigenes Cloudinary-Preset vorgesehen.
-- Die Profilseite hat getrennte Tabs für **Teilnehmer** und **Ersteller**. Standardmäßig ist `Ersteller` ausgewählt. Organisierte Events und Teilnahme-Events werden nach Vorliegen einer Benutzer-ID parallel geladen; ein Cleanup-Flag verhindert nach dem Unmount die Übernahme verspäteter Antworten.
-- Während des Ladens und bei Fehlern werden entsprechende Zustände angezeigt. Für beide Eventlisten verwendet die Profilseite `Collection` mit einem Limit von 6 Einträgen.
-- Nach dem Löschen eines organisierten Events oder dem Verlassen eines Events entfernt `Profile` das betreffende Event über einen Callback aus der jeweiligen lokalen Liste, ohne dass die Profilseite vollständig neu geladen werden muss.
 
 ### Teilnahmesystem
 - Getrennte Ansicht von Events über Tab-Navigation:
   - **Ersteller** – vom Nutzer erstellte Veranstaltungen  
   - **Teilnehmer** – Events, bei denen er als Teilnehmer eingetragen ist
+
+
+### Suche & Filterung
+- Suchleiste  
+- Kategorienfilter zum schnellen Auffinden passender Events  
 
 ---
 
@@ -143,11 +154,12 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 ├── public/                      # Statische öffentliche Ressourcen
 ├── src/
 │   ├── api/
-│   │   ├── auth.ts      # API-Funktionen für Authentifizierung
-│   │   ├── events.ts    # API-Funktionen zur Event-Verwaltung
-│   │   ├── attendees.ts # API-Funktionen zur Verwaltung von Event-Teilnahmen
-│   │   ├── upload.ts    # Upload von Event- und Profilbildern zu Cloudinary
-│   │   └── users.ts     # API-Funktion zur Aktualisierung des Benutzerprofils
+│   │   ├── auth.ts         # API-Funktionen für Authentifizierung
+│   │   ├── invitations.ts  # API-Funktionen zur Einladungsverwaltung
+│   │   ├── events.ts       # API-Funktionen zur Event-Verwaltung
+│   │   ├── attendees.ts    # API-Funktionen zur Verwaltung von Event-Teilnahmen
+│   │   ├── upload.ts       # Upload von Event- und Profilbildern zu Cloudinary
+│   │   └── users.ts        # API-Funktion zur Aktualisierung des Benutzerprofils
 │   ├── assets/
 │   │     ├── icons/
 │   │     └── images/
@@ -192,13 +204,15 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   └── validator.ts         # Zod-Validierungsschemata (eventFormSchema, profileFormSchema)
 │   ├── pages/
 │   │   ├── events/
-│   │   │   ├── CreateEvent.tsx  # Seite zum Erstellen eines neuen Events
-│   │   │   ├── EventDetails.tsx # Detailseite eines Events
-│   │   │   └── UpdateEvent.tsx  # Seite zum Bearbeiten eines Events
-│   │   └── profile/
-│   │       ├── Profile.tsx        # Persönlicher Benutzerbereich (Informationen und Tabs)
-│   │       ├── Register.tsx       # Seite zur Erstellung eines neuen Benutzerkontos
-│   │       └── UpdateProfile.tsx  # Seite zum Bearbeiten des Profils
+│   │   │   ├── CreateEvent.tsx     # Seite zum Erstellen eines neuen Events
+│   │   │   ├── EventDetails.tsx    # Detailseite eines Events
+│   │   │   └── UpdateEvent.tsx     # Seite zum Bearbeiten eines Events
+│   │   ├── profile/
+│   │   │   ├── Profile.tsx         # Persönlicher Benutzerbereich (Informationen und Tabs)
+│   │   │   ├── Register.tsx        # Seite zur Erstellung eines neuen Benutzerkontos
+│   │   │   └── UpdateProfile.tsx   # Seite zum Bearbeiten des Profils
+│   │   └── inviations/
+│   │       └── InvitationPage.tsx  # Erstellen, Anzeigen und Widerrufen von Einladungen
 │   ├── types/
 │   │   └── index.ts             # Globale TypeScript-Interfaces (User, Event, Attendee)
 │   ├── App.tsx                  # Hauptkomponente für das Routing
@@ -254,6 +268,7 @@ Im `src/App.tsx` registrierten Routen sind:
 |---|---|---|
 | `/` | `Home` | Landingpage bzw. Event-Übersicht |
 | `/register` | `Register` | Registrierung; Auswahl des Modus über ?type=owner oder ?type=member |
+| `/invitations` | `InvitationPage` | Einladungen für Teammitglieder verwalten; Zugriff für Owner |
 | `/events/:id` | `EventDetails` | Event-Details und Teilnahme |
 | `/events/create` | `CreateEvent` | Neues Event erstellen |
 | `/events/:id/update` | `UpdateEvent` | Event bearbeiten |
@@ -326,10 +341,11 @@ Der bisher dokumentierte Ablauf sieht einen globalen Auth-Kontext vor, der Benut
 
 ## TypeScript-Datenmodelle (`src/types/index.ts`)
 
-- `User`: `id: number`, `email: string`; `name`, `bio` und `avatarUrl` sind optional.
+- `User`: `id: number`, `tenantId: number`, `role: "owner"`,  `email: string`; `name`, `bio` und `avatarUrl` sind optional.
+- Invitation: `id: number`, `tenantId: number`, `createdBy: number`, `expiresAt: string` und `createdAt: string`; `usedAt` und `revokedAt` sind optional und können `string | null` sein.
 - `Category`: `id: string`, `name: string`.
-- `Event`: `id` und `ownerId` sind Zahlen; `title` ist erforderlich. `description`, `location`, `imageUrl`, `url`, `categories`, `categoryId` und `owner` sind optional. `startDateTime` und `endDateTime` sind als `string | Date` typisiert. `categories` ist ein Array aus `Category`; `owner` kann `User` oder `null` sein.
-- `Attendee`: optionale numerische `id`, numerische `userId` und `eventId` sowie optionales `user`-Objekt (`User | null`).
+- `Event`: `id: number`, `ownerId: number`, `title` ist erforderlich. `description`, `location`, `imageUrl`, `url`, `categories`, `categoryId` und `owner` sind optional. `startDateTime` und `endDateTime`: `string | Date`, `categories: [Category]`; `owner`:`User | null`.
+- `Attendee`: `id`, `userId: number`, `eventId: number`, `user`: `User[] | null`.
 - `EventWithDetails`: erweitert `Event` um `attendees: User[]`.
 
 ---
@@ -346,6 +362,22 @@ Die tatsächliche Zusammensetzung der URL sowie Header- und Fehlerbehandlung wer
 
 `LoginPayload` enthält die Felder `email` und `password`. Die Antwort wird über den Typ `LoginResponse` mit den Feldern `user` und `accessToken` typisiert.
 Die Funktion `loginUser` verwendet den zentralen HTTP-Helper `apiFetch` aus `src/lib/api.ts`. Dadurch werden die konfigurierte API-Basis-URL, die Standard-Header, die Verarbeitung der JSON-Antworten und die Fehlerbehandlung zentral verwaltet.`apiFetch` setzt außerdem `credentials: 'include'`, damit der Browser HttpOnly-Cookies verarbeiten kann. Der Backend-Login setzt auf diese Weise das Refresh-Token-Cookie; der Access Token wird separat in der JSON-Antwort zurückgegeben.
+
+### Einladungen (`src/api/invitations.ts`)
+
+| Funktion | HTTP-Methode und Pfad | Zweck |
+|---|---|---|
+| `createInvitation(expiresAt, token)` | `POST /invitations` | Einladung erstellen und den einmalig zurückgegebenen Einladungscode abrufen |
+| `getInvitations(token)` | `GET /invitations` | Einladungen des authentifizierten Tenants abrufen |
+| `revokeInvitation(invitationId, token)` | `DELETE /invitations/:id` | Eine widerrufbare Einladung widerrufen |
+
+`createInvitation` übermittelt den Ablaufzeitpunkt im Feld expiresAt. Die Antwort enthält den neu generierten `invitationCode` sowie den zugehörigen Einladungsdatensatz. Der Klartextcode wird vom Client nur für die Anzeige und das Kopieren verwendet.
+
+`getInvitations` liefert die Einladungsdatensätze für die Übersicht. 
+
+`revokeInvitation` verarbeitet eine erfolgreiche `DELETE`-Antwort ohne Response-Body `(204 No Content)`. Nach erfolgreichem Widerruf aktualisiert InvitationPage den lokalen Einladungsdatensatz.
+
+Die Berechtigungsprüfung und die tatsächliche Gültigkeit einer Einladung werden serverseitig durchgesetzt. Die Einschränkung der verfügbaren Aktionen im Frontend dient ausschließlich der Benutzerführung und ersetzt keine Backend-Autorisierung.
 
 ### Events (`src/api/events.ts`)
 
@@ -403,4 +435,3 @@ Sowohl `Dropdown` als auch `CategoryFilter` laden die Kategorien beim ersten Ren
 5. Fehlt die Cloudinary-Konfiguration oder schlägt der Request fehl, wird ein Fehler ausgelöst. Die Fehlermeldung von Cloudinary wird bevorzugt, sofern sie verfügbar ist.
 
 Die resultierende URL wird für Events als `imageUrl` und für Benutzerprofile als `avatarUrl` gespeichert. Die Cloudinary-Funktion verwendet die beiden `VITE_`-Variablen für den Cloud-Namen und die Presets; geheime Schlüssel dürfen nicht als Frontend-Umgebungsvariablen hinterlegt werden.
-

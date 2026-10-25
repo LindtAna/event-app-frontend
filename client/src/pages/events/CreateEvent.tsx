@@ -11,7 +11,9 @@ const mockUserId = "user_12345";
             </section>
 
             <div className="wrapper my-8">
-                <EventForm userId={mockUserId} type="Create" />
+                <EventForm 
+                // userId={mockUserId}
+                type="Create" />
             </div>
         </>
     )

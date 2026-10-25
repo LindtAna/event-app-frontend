@@ -10,6 +10,17 @@ export type User = {
   avatarUrl?: string;
 };
 
+
+export type Invitation = {
+  id: number;
+  tenantId: number;
+  expiresAt: string;
+  usedAt?: string | null;
+  revokedAt?: string | null;
+  createdBy: number;
+  createdAt: string;
+};
+
 export type Category = {
   id: string;
   name: string;

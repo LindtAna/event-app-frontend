@@ -8,6 +8,7 @@ import Profile from "./pages/profile/Profile"
 import UpdateProfile from "./pages/profile/UpdateProfile"
 import Register from "./pages/profile/Register"
 import { AuthProvider } from "./hooks/useAuth"
+import InvitationPage from "./pages/invitations/InvitationPage"
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/events/:id/update" element={<UpdateEvent/>} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/update" element={<UpdateProfile />} />
+            <Route path="/invitations" element={<InvitationPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

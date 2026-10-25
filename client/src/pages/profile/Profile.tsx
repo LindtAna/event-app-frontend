@@ -19,7 +19,7 @@ import infoIcon from '@/assets/icons/bio.svg'
 type TabType = 'teilnehmer' | 'ersteller'
 
 const Profile = () => {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, accessToken, isLoading: isAuthLoading,} = useAuth()
 
   // standart auf 'ersteller' umschalten oder 'teilnehmer' beibehalten
   const [activeTab, setActiveTab] = useState<TabType>('ersteller')
@@ -32,8 +32,16 @@ const Profile = () => {
   const attendeeEventIds = participatingEvents.map((event) => event.id)
 
   useEffect(() => {
-    if (!currentUser?.id) return
+      // Warten, bis die Authentifizierung wiederhergestellt wurde.
+  if (isAuthLoading) return
+  if (!currentUser?.id || !accessToken) {
+    setIsLoading(false)
 
+    if (currentUser?.id) {
+      setError('Die Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.')
+    }
+    return
+  }
     let cancelled = false
 
     const fetchUserEvents = async () => {
@@ -42,8 +50,8 @@ const Profile = () => {
         setError(null)
 
         const [organizedData, participatingData] = await Promise.all([
-          getOrganizedEvents(currentUser.id),
-          getEventsByAttendee(currentUser.id),
+          getOrganizedEvents(currentUser.id, accessToken),
+          getEventsByAttendee(currentUser.id, accessToken),
         ])
 
         if (!cancelled) {
@@ -68,7 +76,7 @@ const Profile = () => {
     return () => {
       cancelled = true
     }
-  }, [currentUser?.id])
+  }, [currentUser?.id, accessToken, isAuthLoading])
 
   if (!currentUser) return null
 

@@ -17,8 +17,8 @@ export const getAllEvents = async (): Promise<Event[]> => {
   return apiFetch<Event[]>('/events');
 }
 
-export const getOrganizedEvents = async (userId: number): Promise<Event[]> => {
-  return apiFetch<Event[]>(`/events?ownerId=${userId}`);
+export const getOrganizedEvents = async (userId: number, token: string,): Promise<Event[]> => {
+  return apiFetch<Event[]>(`/events?ownerId=${userId}`,{token})
 }
 
 export const getEventById = async (

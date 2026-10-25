@@ -12,9 +12,10 @@ export const getEventAttendees = async (
 }
 
 export const getEventsByAttendee = async (
-  userId: number
+  userId: number,
+  token: string,
 ): Promise<Event[]> => {
-  return apiFetch<Event[]>(`/attendees/${userId}/events`)
+  return apiFetch<Event[]>(`/attendees/${userId}/events`, {token})
 }
 
 export const addEventAttendee = async (

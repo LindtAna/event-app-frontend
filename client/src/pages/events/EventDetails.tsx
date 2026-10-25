@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 import { useAuth } from '@/hooks/useAuth'
 import { getEventById } from '@/api/events'

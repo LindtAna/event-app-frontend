@@ -25,21 +25,28 @@ export const getEventById = async (id: string): Promise<Event> => {
   return apiFetch<Event>(`/events/${id}`);
 }
 
-export const createEvent = async (payload: EventPayload, token?: string | null): Promise<Event> => {
+export const createEvent = async (
+  payload: EventPayload,
+  token: string,
+): Promise<Event> => {
   return apiFetch<Event>('/events', {
     method: 'POST',
     body: JSON.stringify(payload),
     token,
   });
-}
+};
 
-export const updateEvent = async (eventId: string, payload: EventPayload, token?: string | null): Promise<Event> => {
+export const updateEvent = async (
+  eventId: string,
+  payload: EventPayload,
+  token: string,
+): Promise<Event> => {
   return apiFetch<Event>(`/events/${eventId}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
     token,
   });
-}
+};
 
 export const deleteEvent = async (eventId: number | string, token?: string | null): Promise<void> => {
   return apiFetch<void>(`/events/${eventId}`,

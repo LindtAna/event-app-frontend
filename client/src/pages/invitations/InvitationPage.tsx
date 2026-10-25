@@ -495,8 +495,7 @@ const InvitationPage = () => {
                                                         </Button>
                                                     </td>
                                                     <td className="whitespace-nowrap py-3 text-center">
-                                                       //Platzhalter
-                                                       //das Löschen aus der DB muss zunächst im Backend implementiert werden
+                                                       {/* Platzhalter;das Löschen aus der DB muss zunächst im Backend implementiert werden */}
                                                         <Button
                                                             type="button"
                                                             size="sm"

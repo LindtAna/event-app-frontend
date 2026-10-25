@@ -28,11 +28,12 @@ const NEW_CATEGORY_PREFIX = "new:"
 const CREATE_CATEGORY_VALUE = "__create_category__"
 
 type DropdownProps = {
-  value?: string
+  value?: string;
+  token: string | null;
   onChangeHandler?: (value: string) => void
 }
 
-const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
+const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
 
   const [categories, setCategories] = useState<Category[]>([])
   const [newCategory, setNewCategory] = useState("")
@@ -46,56 +47,65 @@ const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
   // Lädt beim Start alle Kategorien vom Go-Backend
   // Bewahrt temporäre Kategorien bei zeitgleichen Aktionen
   useEffect(() => {
-    let cancelled = false
+  let cancelled = false;
 
-    const loadCategories = async () => {
-      try {
-        const data = await apiFetch<Category[]>("/categories")
-
-        if (!cancelled) {
-          setCategories((current) => {
-           // Temporäre Kategorien (lokal erstellt, noch nicht in DB) beibehalten
-           // falls der Request spät ankommt
-            const temporaryCategories = current.filter((category) =>
-              category.id.startsWith(NEW_CATEGORY_PREFIX)
-            )
-
-            const merged = [...data]
-
-            for (const temporary of temporaryCategories) {
-              const alreadyExists = merged.some(
-                (category) =>
-                  category.name.toLowerCase() ===
-                  temporary.name.toLowerCase()
-              )
-
-              if (!alreadyExists) {
-                merged.push(temporary)
-              }
-            }
-
-            return merged
-          })
-
-          setLoadError("")
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setLoadError(
-            error instanceof Error
-              ? error.message
-              : "Kategorien konnten nicht geladen werden."
-          )
-        }
-      }
-    }
-
-    void loadCategories()
+  if (!token) {
+    setCategories([]);
+    setLoadError("");
 
     return () => {
-      cancelled = true
+      cancelled = true;
+    };
+  }
+
+  const loadCategories = async () => {
+    try {
+      const data = await apiFetch<Category[]>("/categories", {
+        token,
+      });
+
+      if (!cancelled) {
+        setCategories((current) => {
+          const temporaryCategories = current.filter((category) =>
+            category.id.startsWith(NEW_CATEGORY_PREFIX)
+          );
+
+          const merged = [...data];
+
+          for (const temporary of temporaryCategories) {
+            const alreadyExists = merged.some(
+              (category) =>
+                category.name.toLowerCase() ===
+                temporary.name.toLowerCase()
+            );
+
+            if (!alreadyExists) {
+              merged.push(temporary);
+            }
+          }
+
+          return merged;
+        });
+
+        setLoadError("");
+      }
+    } catch (error) {
+      if (!cancelled) {
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : "Kategorien konnten nicht geladen werden."
+        );
+      }
     }
-  }, [])
+  };
+
+  void loadCategories();
+
+  return () => {
+    cancelled = true;
+  };
+}, [token]);
 
 // Fängt die Auswahl im Dropdown ab
 // Öffnet den Dialog oder

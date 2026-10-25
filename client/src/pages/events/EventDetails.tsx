@@ -35,23 +35,30 @@ const EventDetails = () => {
     const [joinError, setJoinError] = useState<string | null>(null)
 
     useEffect(() => {
-        if (!id) return
+        if (!id || isAuthLoading) return;
 
         let cancelled = false
 
         const fetchEvent = async () => {
+            setIsLoading(true)
+            setError(null)
+
+            if (!accessToken) {
+                setEvent(null)
+                setError('Bitte melde dich an, um dieses Event anzusehen.')
+                setIsLoading(false)
+                return
+            }
+
             try {
-                setIsLoading(true)
-                setError(null)
-
-                const data = await getEventById(id)
-
+                const data = await getEventById(id, accessToken)
                 if (!cancelled) {
                     setEvent(data)
                 }
             } catch (err) {
                 console.error('Fehler beim Laden des Events:', err)
                 if (!cancelled) {
+                    setEvent(null)
                     setError('Event konnte nicht geladen werden.')
                 }
             } finally {
@@ -65,11 +72,11 @@ const EventDetails = () => {
         return () => {
             cancelled = true
         }
-    }, [id])
+    }, [id, accessToken, isAuthLoading])
 
     // Teilnehmer des Events laden
     useEffect(() => {
-        if (!id) return
+        if (!id || isAuthLoading) return
 
         let cancelled = false
 
@@ -78,8 +85,14 @@ const EventDetails = () => {
             setAttendeesError(null)
             setAttendees([])
 
+            if (!accessToken) {
+                setAttendeesError('Bitte melde dich an, um die Teilnehmer zu sehen.')
+                setIsAttendeesLoading(false)
+                return
+            }
+
             try {
-                const data = await getEventAttendees(id)
+                const data = await getEventAttendees(id, accessToken)
 
                 if (!cancelled) {
                     // Der Backend-Handler kann bei null Teilnehmern
@@ -88,10 +101,7 @@ const EventDetails = () => {
                 }
             } catch (err) {
                 console.error(
-                    'Fehler beim Laden der Teilnehmer:',
-                    err
-                )
-
+                    'Fehler beim Laden der Teilnehmer:', err)
                 if (!cancelled) {
                     setAttendeesError(
                         'Teilnehmer konnten nicht geladen werden.'
@@ -109,7 +119,7 @@ const EventDetails = () => {
         return () => {
             cancelled = true
         }
-    }, [id])
+    }, [id, accessToken, isAuthLoading])
 
     // Prüfen, ob der aktuelle Benutzer bereits teilnimmt
     const isAttending = Boolean(
@@ -146,7 +156,7 @@ const EventDetails = () => {
             // Ein Fehler hierbei macht die erfolgreiche Anmeldung
             // nicht rückgängig.
             try {
-                const updatedAttendees = await getEventAttendees(event.id)
+                const updatedAttendees = await getEventAttendees(event.id, accessToken)
                 setAttendees(updatedAttendees ?? [])
             } catch (refreshError) {
                 console.error(
@@ -322,7 +332,7 @@ const EventDetails = () => {
                                     ))}
                                 </ul>
                             )}
-                            
+
                         </div>
                     </div>
                 </div>

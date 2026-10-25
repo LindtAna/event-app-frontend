@@ -3,9 +3,12 @@ import { apiFetch } from '@/lib/api'
 import type { Attendee, Event, User } from '@/types'
 
 export const getEventAttendees = async (
-  eventId: number | string
+  eventId: number | string,
+  token: string,
 ): Promise<User[]> => {
-  return apiFetch<User[]>(`/events/${eventId}/attendees`)
+  return apiFetch<User[]>(`/events/${eventId}/attendees`, {
+    token,
+  })
 }
 
 export const getEventsByAttendee = async (

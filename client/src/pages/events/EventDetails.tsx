@@ -208,25 +208,24 @@ const EventDetails = () => {
     return (
         <>
             <section className="flex justify-center bg-primary-50 bg-dotted-pattern bg-contain">
-                <div className="grid grid-cols-1 md:grid-cols-2 2xl:max-w-7xl">
+                <div className="grid w-full min-w-0 grid-cols-1 md:grid-cols-2 2xl:max-w-7xl">
                     {/* Hero-Bild */}
                     <img
                         src={event.imageUrl}
                         alt={event.title}
                         className="h-full min-h-[300px] w-full object-cover object-center"
                     />
-                    <div className="flex w-full flex-col gap-8 p-5 md:p-10">
+                    <div className="flex min-w-0 w-full flex-col gap-8 p-5 md:p-10">
                         <div className="flex flex-col gap-6">
-                            <h2 className="text-[28px] font-bold leading-tight md:text-[34px] lg:text-[48px]">
+                            <h2 className="min-w-0 break-words text-[28px] font-bold leading-tight md:text-[34px] lg:text-[48px]">
                                 {event.title}</h2>
-                            <div className="flex items-center gap-3">
-                                {/* Kategorie */}
-                                {event.categories?.map(cat => (
-                                    <p key={cat.id} className="p-medium-16 w-fit rounded-lg bg-secondary/70 px-4 py-2.5 text-black">
-                                        {cat.name}
+                            {event.categoryName && (
+                                <div className="min-w-0">
+                                    <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
+                                        {event.categoryName}
                                     </p>
-                                ))}
-                            </div>
+                                </div>
+                            )}
                             {/* Badge + Name nebeneinander */}
                             <div className="flex items-center gap-3">
                                 <p className="p-medium-16 w-fit font-bold text-black underline underline-offset-8 decoration-black decoration-2 px-2">
@@ -293,15 +292,17 @@ const EventDetails = () => {
                         </div>
 
                         {/* Beschreibung */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex min-w-0 flex-col gap-2">
                             <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
                                 Beschreibung:
                             </p>
-                            <p className="p-medium-16 lg:p-regular-18">{event.description}</p>
+
+                            <p className="min-w-0 max-w-full whitespace-pre-wrap break-words p-medium-16 lg:p-regular-18">
+                                {event.description}
+                            </p>
                         </div>
 
                         {/* Teilnehmer */}
-
                         <div className="flex flex-col gap-2">
                             <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
                                 Teilnehmer ({attendees.length})

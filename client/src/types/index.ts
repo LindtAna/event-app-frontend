@@ -37,6 +37,7 @@ export type Event = {
   location?: string;
   imageUrl?: string;
   url?: string;
+  categoryName?: string;
   categories?: Category[];
   categoryId?: string;
   owner?: User | null; 

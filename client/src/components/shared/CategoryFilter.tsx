@@ -9,12 +9,14 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 
-import { apiFetch } from '@/lib/api'
+import { getCategories } from '@/api/categories'
+import { useAuth } from '@/hooks/useAuth'
 import type { Category } from '@/types'
 
 const ALL_CATEGORIES_VALUE = 'All'
 
 const CategoryFilter = () => {
+    const { accessToken, isLoading: isAuthLoading } = useAuth()
     const [searchParams, setSearchParams] = useSearchParams()
 
     const [categories, setCategories] = useState<Category[]>([])
@@ -23,14 +25,25 @@ const CategoryFilter = () => {
 
     // Lädt alle verfügbaren Kategorien beim ersten Rendern vom Go-Backend
     useEffect(() => {
+        if (isAuthLoading) return
+
+        if (!accessToken) {
+            setCategories([])
+            setLoadError('Bitte melden Sie sich an, um Kategorien zu laden.')
+            setIsLoading(false)
+            return
+        }
         let cancelled = false
 
         const fetchCategories = async () => {
+             setIsLoading(true)
+            setLoadError('')
+
             try {
-                const data = await apiFetch<Category[]>('/categories')
+                const data = await getCategories(accessToken)
 
                 if (!cancelled) {
-                    setCategories(data)
+                    setCategories(data ?? [])
                     setLoadError('')
                 }
             } catch (error) {
@@ -50,7 +63,7 @@ const CategoryFilter = () => {
         return () => {
             cancelled = true
         }
-    }, [])
+    }, [accessToken, isAuthLoading])
 
     // Aktuelle Kategorie aus den URL-Suchparametern abrufen
     const currentCategory = searchParams.get('category') || ''
@@ -62,7 +75,6 @@ const CategoryFilter = () => {
         const existsById = categories.some(
             (category) => category.id === currentCategory
         )
-
         if (existsById) return
 
         const matchingCategory = categories.find(
@@ -95,6 +107,7 @@ const CategoryFilter = () => {
             <Select
                 value={currentCategory || ALL_CATEGORIES_VALUE}
                 onValueChange={onSelectCategory} >
+
                 <div className="flex-center w-full overflow-hidden rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-primary-500/40">
                     <SelectTrigger className="select-field">
                         <SelectValue placeholder="Kategorie wählen..." />
@@ -104,7 +117,8 @@ const CategoryFilter = () => {
                 <SelectContent className="bg-white">
                     <SelectItem
                         value={ALL_CATEGORIES_VALUE}
-                        className="select-item p-regular-14">
+                        className="select-item p-regular-14"
+                        >
                         Alle Kategorien
                     </SelectItem>
 
@@ -116,10 +130,11 @@ const CategoryFilter = () => {
 
                     {categories.map((category) => (
                         <SelectItem
-                            value={category.id}
+                            value={String(category.id)}
                             key={category.id}
                             className="select-item p-regular-14"
-                        >{category.name}
+                        >
+                            {category.name}
                         </SelectItem>))}
                 </SelectContent>
             </Select>

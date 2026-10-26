@@ -13,8 +13,8 @@ export type EventPayload = {
   url: string
 }
 
-export const getAllEvents = async (): Promise<Event[]> => {
-  return apiFetch<Event[]>('/events');
+export const getAllEvents = async (token: string): Promise<Event[]> => {
+  return apiFetch<Event[]>('/events', {token});
 }
 
 export const getOrganizedEvents = async (userId: number, token: string,): Promise<Event[]> => {

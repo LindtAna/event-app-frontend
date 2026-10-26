@@ -16,7 +16,7 @@ import hero from '@/assets/images/hero.png'
 
 
 export default function Home() {
-  const { user, isSignedIn, isLoading: isAuthLoading } = useAuth()
+  const { user, isSignedIn, accessToken, isLoading: isAuthLoading } = useAuth()
   const [searchParams] = useSearchParams()
 
   const searchQuery = searchParams.get('query') || ''
@@ -29,8 +29,13 @@ export default function Home() {
 
 // für den angemeldeten Benutzer alle Veranstaltungen und Teilnahmen laden 
   useEffect(() => {
-  if (!isSignedIn || !user) {
+    if (isAuthLoading) return
+
+  if (!isSignedIn || !user || !accessToken) {
+    setEvents([])
     setAttendeeEventIds([])
+    setIsEventsLoading(false)
+    setError(null)
     return
   }
 
@@ -41,8 +46,8 @@ export default function Home() {
     setError(null)
     try {
         const [eventsData, myEventsData] = await Promise.all([
-          getAllEvents(),
-          getEventsByAttendee(user.id),
+          getAllEvents(accessToken),
+          getEventsByAttendee(user.id, accessToken),
         ])
 
         if (!cancelled) {
@@ -51,6 +56,7 @@ export default function Home() {
         }
       } catch (err) {
         console.error('Fehler beim Laden der Daten:', err)
+
         if (!cancelled) {
           setError('Veranstaltungen konnten nicht geladen werden.')
           setAttendeeEventIds([])
@@ -67,7 +73,7 @@ export default function Home() {
     return () => {
       cancelled = true
     }
-  }, [isSignedIn, user?.id])
+  }, [isAuthLoading, isSignedIn, user?.id, accessToken])
 
  // Entfernen des Events aus local State ( nach erfolgreichem DELETE aus der Card)
   const handleEventDeleted = (eventId: number | string) => {

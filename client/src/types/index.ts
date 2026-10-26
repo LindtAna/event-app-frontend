@@ -24,7 +24,8 @@ export type Invitation = {
 export type Category = {
   id: string;
   name: string;
-};
+  isDefault?: boolean;
+}
 
 export type Event = {
   id: number;

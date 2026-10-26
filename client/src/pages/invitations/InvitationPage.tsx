@@ -307,13 +307,13 @@ const InvitationPage = () => {
 
     return (
         <>
-            <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
-                <h3 className="text-[28px] font-bold leading-tight md:text-[34px] lg:text-[48px] text-center">
+            <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-3 md:py-4">
+                <h3 className="text-[24px] font-bold leading-tight md:text-[30px] lg:text-[36px] text-center">
                     Einladung erstellen
                 </h3>
             </section>
 
-            <div className="wrapper my-8 flex flex-col gap-12">
+            <div className="wrapper my-2 flex flex-col gap-12">
                 {/* Einladung erstellen */}
                 <section>
                     <div className="flex flex-col gap-5 md:flex-row md:items-center md:gap-9">
@@ -325,8 +325,8 @@ const InvitationPage = () => {
                             disabled={isCreating}
                         >
                             {isCreating
-                                ? "Wird erstellt..."
-                                : "Einladung erstellen"}
+                                ? "Wird generiert..."
+                                : "Code generieren"}
                         </Button>
 
                         <div className="flex w-full min-w-0 items-center gap-1">

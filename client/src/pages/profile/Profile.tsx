@@ -118,7 +118,7 @@ const Profile = () => {
 
             {/* Benutzerdaten */}
             <div className="flex flex-col gap-4 text-center sm:text-left">
-              <h2 className="text-[24px] font-bold md:text-[28px]">Mein Profil</h2>
+              <h2 className="text-[24px] font-bold md:text-[30px]">Mein Profil</h2>
 
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-center sm:justify-start gap-3">

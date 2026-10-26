@@ -1,38 +1,64 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import EventForm from '@/components/shared/EventForm'
+
+import { useAuth } from '@/hooks/useAuth'
 import type { Event } from '@/types'
 import { getEventById } from '@/api/events'
 
+import EventForm from '@/components/shared/EventForm'
+
 const UpdateEvent = () => {
   const { id } = useParams<{ id: string }>()
+  const { accessToken, isLoading: isAuthLoading} = useAuth()
 
   const [event, setEvent] = useState<Event | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!id) return
+     if (isAuthLoading) return
+
+    if (!id) {
+      setError('Keine Veranstaltungs-ID angegeben.')
+      setIsLoading(false)
+      return
+    }
+
+    if (!accessToken) {
+      setError('Bitte melde dich an, um die Veranstaltung zu bearbeiten.')
+      setIsLoading(false)
+      return
+    }
+    let cancelled = false
 
     const fetchEvent = async () => {
       try {
         setIsLoading(true)
         setError(null)
     
-        const data = await getEventById(id)
-        setEvent(data)
+        const data = await getEventById(id, accessToken)
+        if (!cancelled) {
+          setEvent(data)
+        }
       } catch (err) {
         console.error('Fehler beim Laden des Events:', err)
-        setError('Veranstaltung konnte nicht geladen werden.')
+        if (!cancelled) {
+          setError('Veranstaltung konnte nicht geladen werden.')
+        }
       } finally {
-        setIsLoading(false)
+          if (!cancelled) {
+          setIsLoading(false)
+        }
       }
     }
+void fetchEvent()
 
-    fetchEvent()
-  }, [id])
+return () => {
+      cancelled = true
+    }
+  }, [id, accessToken, isAuthLoading])
 
-  if (isLoading) {
+  if (isAuthLoading || isLoading) {
     return (
       <div className="wrapper my-8 text-center text-gray-500 font-medium">
         Veranstaltung wird geladen...

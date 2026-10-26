@@ -23,11 +23,9 @@ export const getOrganizedEvents = async (userId: number, token: string,): Promis
 
 export const getEventById = async (
   id: string,
-  token?: string | null,
+  token: string,
 ): Promise<Event> => {
-  return apiFetch<Event>(`/events/${id}`, {
-    token,
-  })
+  return apiFetch<Event>(`/events/${id}`, {token})
 }
 
 export const createEvent = async (
@@ -53,7 +51,7 @@ export const updateEvent = async (
   })
 }
 
-export const deleteEvent = async (eventId: number | string, token?: string | null): Promise<void> => {
+export const deleteEvent = async (eventId: number | string, token: string): Promise<void> => {
   return apiFetch<void>(`/events/${eventId}`,
     {
     method: 'DELETE',

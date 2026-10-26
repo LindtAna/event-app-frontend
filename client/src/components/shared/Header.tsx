@@ -67,18 +67,18 @@ const Header = () => {
             alt="PlanFuchs logo"
             className="size-12 md:size-14 object-contain flex-shrink-0"
           />
-          <span className="text-[18px] md:text-[24px] lg:text-[36px] font-semibold tracking-tight font-poppins">
+          <span className="text-[14px] md:text-[24px] lg:text-[30px] font-semibold tracking-tight font-poppins">
             PlanFuchs
           </span>
         </Link>
 
         {isSignedIn && (
-          <nav className="hidden md:flex w-full max-w-xs justify-center">
+          <nav className="hidden md:flex flex-1 min-w-0 justify-center px-2">
             <NavItems />
           </nav>
         )}
 
-        <div className="flex w-32 justify-end gap-3 items-center">
+        <div className="flex shrink-0 justify-end gap-3 items-center">
           {isSignedIn ? (
             <>
               {/* Benutzer-Pop-up-Menü */}
@@ -97,13 +97,13 @@ const Header = () => {
                   <img
                     src={user?.avatarUrl || userIcon}
                     alt=""
-                    width={32}
-                    height={32}
+                    width={36}
+                    height={36}
                     onError={(event) => {
                       event.currentTarget.onerror = null
                       event.currentTarget.src = userIcon
                     }}
-                    className="size-8 cursor-pointer rounded-full object-cover"
+                    className="size-8 md:size-10 cursor-pointer rounded-full object-cover"
                   />
                 </button>
 

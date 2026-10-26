@@ -1,17 +1,23 @@
+import { useState } from "react"
+
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
+
 import NavItems from "./NavItems"
+
 import logo from "@/assets/images/logo.png"
 import menu from "@/assets/icons/menu.svg"
 
 const MobileNav = () => {
+  const [isOpen, setIsOpen] = useState(false)
+
   return (
     <nav className="md:hidden">
-      <Sheet>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger className="align-middle">
           <img src={menu} alt="Menu" className="size-8 cursor-pointer" />
         </SheetTrigger>
@@ -28,7 +34,7 @@ const MobileNav = () => {
           <Separator className="border border-primary-500/60" />
 
           <div className="pl-6">
-            <NavItems />
+             <NavItems onNavigate={() => setIsOpen(false)} />
           </div>
         </SheetContent>
       </Sheet>

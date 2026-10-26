@@ -239,7 +239,7 @@ const EventDetails = () => {
                         </div>
 
                         {/* Teilnahme */}
-                        <div className="flex flex-1 flex-col items-center justify-center gap-3 py-4">
+                        <div className="flexitems-center justify-center gap-3 py-4">
                             <Button
                                 className="w-full sm:w-fit"
                                 size="lg"

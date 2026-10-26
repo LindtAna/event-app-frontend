@@ -12,10 +12,13 @@ import userIcon from '@/assets/icons/username.svg'
 
 const Header = () => {
   const { isSignedIn, user, logout } = useAuth()
+
   const location = useLocation()
-const navigate = useNavigate()
+  const navigate = useNavigate()
+
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -29,26 +32,26 @@ const navigate = useNavigate()
   }, [])
 
   useEffect(() => {
-  const navigationState = location.state as
-    | { openLoginModal?: boolean }
-    | null
-  if (!navigationState?.openLoginModal) {
-    return
-  }
-  setIsLoginModalOpen(true)
+    const navigationState = location.state as
+      | { openLoginModal?: boolean }
+      | null
+    if (!navigationState?.openLoginModal) {
+      return
+    }
+    setIsLoginModalOpen(true)
 
-  navigate(
-    {
-      pathname: location.pathname,
-      search: location.search,
-      hash: location.hash,
-    },
-    {
-      replace: true,
-      state: null,
-    },
-  )
-}, [location, navigate])
+    navigate(
+      {
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+      },
+      {
+        replace: true,
+        state: null,
+      },
+    )
+  }, [location, navigate])
 
   const handleLogout = async () => {
     await logout()
@@ -76,27 +79,37 @@ const navigate = useNavigate()
         )}
 
         <div className="flex w-32 justify-end gap-3 items-center">
-         {isSignedIn ? (
+          {isSignedIn ? (
             <>
               {/* Benutzer-Pop-up-Menü */}
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                  className="flex items-center justify-center p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none"
+                  className="flex items-center justify-center p-1 rounded-full hover:bg-primary-500/50 transition-colors focus:outline-none"
                   title={user?.name || "Benutzerkonto"}
+                  aria-label={
+                    user?.name
+                      ? `Benutzerkonto von ${user.name}`
+                      : "Benutzerkonto"
+                  }
+                  aria-expanded={isUserMenuOpen}
                 >
                   <img
-                    src={userIcon}
-                    alt="User Menu"
+                    src={user?.avatarUrl || userIcon}
+                    alt=""
                     width={32}
                     height={32}
-                    className="cursor-pointer"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null
+                      event.currentTarget.src = userIcon
+                    }}
+                    className="size-8 cursor-pointer rounded-full object-cover"
                   />
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white py-2 shadow-xl ring-1 ring-black/5 z-50 border border-gray-100 animate-in fade-in zoom-in-95 duration-100">
-                    <div className="px-4 py-2 border-b border-gray-100">
+                  <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white py-2 shadow-xl ring-1 ring-black/5 z-50 border border-primary-500/50 animate-in fade-in zoom-in-95 duration-100">
+                    <div className="px-4 py-2 border-b border-primary-500/50">
                       <p className="text-xs text-gray-500">Angemeldet als</p>
                       <p className="text-sm font-semibold text-gray-800 truncate">
                         {user?.name || user?.email}
@@ -105,7 +118,7 @@ const navigate = useNavigate()
 
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors font-medium mt-1"
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-secondary/50 flex items-center gap-2 transition-colors font-medium mt-1"
                     >
                       Abmelden
                     </button>
@@ -133,9 +146,9 @@ const navigate = useNavigate()
         </div>
       </div>
 
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
     </header>
   )

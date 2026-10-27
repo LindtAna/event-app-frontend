@@ -29,15 +29,19 @@ export const DeleteConfirmation = ({
   const [isDeleting, setIsDeleting] = useState(false)
   const [open, setOpen] = useState(false)
 
- const handleDelete = async (e: React.MouseEvent) => {
+ const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
+
+    if (!accessToken) {
+      alert('Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.')
+      return
+    }
+
     try {
       setIsDeleting(true)
       await deleteEvent(eventId, accessToken,)
       setOpen(false)
-      if (onEventDeleted) {
-        onEventDeleted(eventId)
-      }
+      onEventDeleted?.(eventId)
     } catch (err) {
       console.error('Fehler beim Löschen des Events:', err)
       alert('Event konnte nicht gelöscht werden.')
@@ -47,7 +51,7 @@ export const DeleteConfirmation = ({
   }
 
   return (
-    <AlertDialog>
+      <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <button
           type="button"

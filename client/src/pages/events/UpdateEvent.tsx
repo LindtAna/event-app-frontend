@@ -78,13 +78,13 @@ return () => {
 
   return (
     <>
-      <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-5 md:py-10">
-        <h3 className="text-[28px] font-bold leading-tight md:text-[34px] lg:text-[48px] text-center">
+      <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-2 md:py-4">
+        <h3 className="text-[24px] font-bold leading-tight md:text-[30px] lg:text-[36px] text-center">
           Event bearbeiten
         </h3>
       </section>
 
-      <div className="wrapper my-8">
+      <div className="wrapper my-2">
         <EventForm
           type="Update"
           event={event}

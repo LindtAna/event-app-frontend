@@ -28,39 +28,39 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
 - Nicht angemeldete Besucher sehen eine öffentliche Landingpage mit Hero-Bild und einer Einführung in PlanFuchs.
 - Nach erfolgreicher Authentifizierung zeigt die Startseite eine Begrüßung sowie die Event-Übersicht.
 - Vor der Entscheidung, welche Ansicht angezeigt wird, wartet `Home` auf den Abschluss der Authentifizierungsprüfung.
-- Bei angemeldeten Benutzern werden die vollständige Event-Liste und die eigenen Teilnahme-Events parallel geladen.
+- Bei angemeldeten Benutzern werden die vollständige Event-Liste und die eigenen Teilnahme-Events parallel geladen. Beide Requests erhalten den aktuellen Access Token.
 - Die Suche nach Event-Titeln nutzt den URL-Suchparameter `query` und vergleicht Titel ohne Beachtung der Groß-/Kleinschreibung.
-- Der URL-Suchparameter `category` wird von `CategoryFilter` ID-basiert gesetzt. Die dokumentierte Filterlogik von `Home` berücksichtigt `event.categoryId` sowie IDs oder Namen in `event.categories`; ohne Kategorieparameter bzw. bei `All` ist kein Kategorie-Filter aktiv.
+- Der URL-Suchparameter `category` wird von `CategoryFilter` ID-basiert gesetzt. `Home` berücksichtigt `event.categoryId` sowie IDs oder Namen in `event.categories`. Ohne Kategorieparameter bzw. bei `All` ist kein Kategorie-Filter aktiv.
 - Bei Auswahl einer Kategorie entfernt `CategoryFilter` den Suchparameter `query`, sodass eine Kategorieauswahl die Textsuche zurücksetzt. Die Auswahl „Alle Kategorien“ entfernt den Parameter `category`.
-- `CategoryFilter` lädt die verfügbaren Kategorien über `GET /categories`, zeigt einen Ladezustand und stellt Ladefehler als Meldung dar. Alte URLs, in denen statt einer Kategorie-ID ein Kategoriename steht, werden bei passender Kategorie auf die ID umgestellt.
-- Die Ergebnisse werden über die wiederverwendbare `Collection`-Komponente dargestellt. Lade- und Fehlerzustände sind vorgesehen.
+- `CategoryFilter` lädt die verfügbaren Kategorien über `getCategories(accessToken)` und damit authentifiziert über `GET /categories`. Während des Abrufs wird ein Ladezustand angezeigt; Ladefehler werden als Meldung dargestellt. Alte URLs, in denen statt einer Kategorie-ID ein Kategoriename steht, werden bei passender Kategorie auf die ID umgestellt.
+- Die Event-Ergebnisse werden über die wiederverwendbare `Collection`-Komponente dargestellt. Lade- und Fehlerzustände sind vorgesehen.
 - Teilnahme-IDs werden im Frontend gehalten, damit Karten den Status als Veranstalter oder Teilnehmer darstellen können.
 
 ### Registrierung und Anmeldung
-- `LoginModal` bietet sowohl die Benutzeranmeldung als auch eine Auswahl des Registrierungsmoduы: beim Klick auf „Hier klicken“ wird innerhalb des bestehenden Modalfensters eine Auswahl mit zwei Registrierungsoptionen angezeigt:
+- `LoginModal` bietet sowohl die Benutzeranmeldung als auch eine Auswahl des Registrierungsmodus: beim Klick auf „Hier klicken“ wird innerhalb des bestehenden Modalfensters eine Auswahl mit zwei Registrierungsoptionen angezeigt:
   - **Neues Team erstellen:** Weiterleitung zu `/register?type=owner` für die Registrierung eines Tenant-Owners.
   - **Mit Einladung beitreten:** Weiterleitung zu `/register?type=member` für die Registrierung eines Tenant-Members.
-Die Auswahl erfolgt über die URL-Query-Parameter `type=owner` bzw. `type=member`. Vor der Navigation wird das Modalfenster geschlossen. Über „Zurück zur Anmeldung“ kann zur Login-Form zurückgekehrt werden, ohne das Modalfenster zu schließen.
+Vor der Navigation zur Registrierungsseite wird das Modalfenster geschlossen. Über „Zurück zur Anmeldung“ kann zur Login-Form zurückgekehrt werden, ohne das Modal zu schließen. Beim erneuten Öffnen des Modals wird wieder die Login-Ansicht angezeigt.
 - `Register` (`src/pages/profile/Register.tsx`) stellt die Überschrift „Account erstellen“, einen kurzen Einführungstext und anschließend die Komponente `RegisterForm` dar.
-- `RegisterForm` (`\src\components\shared\RegisterForm.tsx`) liest den Registrierungsmodus aus dem URL-Parameter type. Bei `owner `wird zusätzlich das Feld Teamsname angezeigt; bei `member` wird der Einladungscode abgefragt.
-Beide Registrierungsmodi verwenden gemeinsame Formularfelder für Name, E-Mail-Adresse, Passwort, Passwortbestätigung und optionalen Avatar. Vor dem Absenden des Registrierungsformulars wird ein ausgewählter Avatar über die vorhandene Cloudinary-Upload-Funktion hochgeladen. Ohne ausgewählten Avatar wird kein zusätzlicher Upload durchgeführt.
-Bei erfolgreicher Registrierung zeigt die Oberfläche eine Bestätigung an und die Schaltfläche Einloggen(der Benutzer wird zur Startseite gewechselt und das LoginModal geöffnet)
-Die Registrierung meldet den Benutzer nicht automatisch an.
-Fehler der Registrierung werden dem Benutzer angezeigt; das Formular kann nach einem fehlgeschlagenen Request erneut abgesendet werden.
-- Die clientseitige Formularvalidierung erfolgt über Zod und `zodResolver`.
-- Die Anmeldung wird über `LoginModal` angeboten. Der Authentifizierungszustand wird über `AuthProvider` und `useAuth` bereitgestellt.
-- Beim App-Start findet einen Aufruf von `POST /auth/refresh` zur Wiederherstellung einer Sitzung und statt beim Logout der Aufruf von `POST /auth/logout`. Der Auth-Kontext stellt unter anderem `user`, `accessToken`, `isSignedIn`, `isLoading`, `setAuth` und `logout` bereit.
+- `RegisterForm` (`\src\components\shared\RegisterForm.tsx`) liest den Registrierungsmodus aus dem URL-Parameter `type`. Bei `owner `wird zusätzlich das Feld Teamsname angezeigt; bei `member` wird der Einladungscode abgefragt.
+Beide Registrierungsmodi verwenden gemeinsame Formularfelder für Name, E-Mail-Adresse, Passwort, Passwortbestätigung und optionalen Avatar. Vor dem Absenden des Registrierungsformulars wird ein ausgewählter Avatar über die vorhandene Cloudinary-Upload-Funktion hochgeladen. Ohne ausgewählte Datei wird die vorhandene Formular-URL verwendet; ist diese nicht gesetzt, wird ein leerer String übermittelt.
+- Die Registrierung meldet den Benutzer nicht automatisch an. Nach erfolgreicher Registrierung zeigt `RegisterForm` eine Bestätigung an. Die Schaltfläche „Einloggen“ navigiert zur Startseite und übergibt den Navigationszustand `openLoginModal: true`; `Header` öffnet daraufhin das Login-Modal und entfernt anschließend den Navigationszustand aus der Browserhistorie.
+- Fehler der Registrierung werden dem Benutzer angezeigt; das Formular kann nach einem fehlgeschlagenen Request erneut abgesendet werden.
+- Die clientseitige Formularvalidierung erfolgt über `Zod` und `zodResolver`.
+- Die Anmeldung wird über `LoginModal` angeboten. Bei erfolgreicher Anmeldung übernimmt `setAuth` den zurückgegebenen Benutzer und Access Token in den Authentifizierungskontext. Danach wird das Modal geschlossen. Fehler werden dem Benutzer angezeigt.
+- Der Authentifizierungskontext (`AuthProvider` / `useAuth`) stellt unter anderem `user`, `accessToken`, `isSignedIn`, `isLoading`, `setAuth` und `logout` bereit. Beim App-Start wird die Sitzung über `POST /auth/refresh` wiederherzustellen versucht; beim Logout wird `POST /auth/logout` aufgerufen. `apiFetch` setzt `credentials: 'include'`, damit der Browser HttpOnly-Cookies mitsenden und verarbeiten kann.
 - Die Member-Registrierung verwendet einen zuvor von einem Tenant-Owner erstellten Einladungscode. Der Client übermittelt den Code im Feld Enladungscode. Ob die Einladung gültig, noch nicht verwendet, nicht widerrufen und nicht abgelaufen ist, wird vom Backend geprüft.
-
+- - Im angemeldeten Zustand zeigt `Header` das Benutzeravatar bzw. ein Fallback-Icon. Das Benutzermenü enthält den Namen bzw. die E-Mail-Adresse des Benutzers und die Abmeldeaktion. Nicht angemeldete Besucher öffnen über das Benutzer-Icon das `Login-Modal`.
 
 ### Einladungsverwaltung
 - Die Einladungsseite ermöglicht Tenant-Ownern, Einladungen für weitere Teammitglieder zu erstellen, bestehende Einladungen einzusehen und noch gültige Einladungen zu widerrufen.
-- Der Zugriff auf die Seite wird im Frontend auf angemeldete Benutzer mit der Rolle `owner` beschränkt. Nicht angemeldete Benutzer und Benutzer mit einer anderen Rolle werden zur Startseite weitergeleitet. Die verbindliche Berechtigungsprüfung erfolgt im Backend.
+- `NavItems` ergänzt den Navigationslink „Einladungen“ für Benutzer mit der Rolle `owner`. Die Seite prüft den Authentifizierungsstatus und leitet nicht angemeldete Benutzer sowie Benutzer mit einer anderen Rolle zur Startseite weiter. Die verbindliche Berechtigungsprüfung erfolgt im Backend.
+- Für alle Einladungsrequests wird der Access Token übergeben.
 - Beim Erstellen einer Einladung sendet der Client einen Ablaufzeitpunkt (`expiresAt`) im RFC3339-Format an die API. Aktuell wird dieser Zeitpunkt im Frontend auf sieben Tage nach der Erstellung gesetzt.
 - Das Backend gibt den neu generierten `invitationCode` bei der Erstellung einmalig zurück. Der Code wird im Frontend angezeigt und kann über die Zwischenablage kopiert werden. Er wird nicht erneut vom Backend abgerufen. Vor dem Ersetzen eines noch nicht als kopiert markierten Codes erscheint ein Bestätigungsdialog. Nach erfolgreichem Kopieren wird der entsprechende Status in der Oberfläche angezeigt.
 - Die Einladungsübersicht zeigt die ID sowie die Zeitpunkte der Erstellung, des Ablaufs, der Verwendung und des Widerrufs. Zeitstempel ohne Zeitzonenangabe werden vom Frontend als UTC interpretiert und für die Anzeige in deutscher Lokalzeit formatiert.
 - Bereits verwendete, widerrufene oder abgelaufene Einladungen können über die Oberfläche nicht widerrufen werden.
-- Nach einem erfolgreichen Widerruf wird der lokale Datensatz aktualisiert.
+- Nach einem erfolgreichen Widerruf wird der lokale Datensatz durch Setzen von `revokedAt` aktualisiert. Der DELETE-Request wird als `204 No Content` ohne Response-Body verarbeitet.
 - Lade-, Erstellungs- und Widerrufsfehler sowie erfolgreiche Aktionen werden dem Benutzer über sichtbare Statusmeldungen angezeigt.
 
 ### Profilverwaltung
@@ -74,27 +74,30 @@ Fehler der Registrierung werden dem Benutzer angezeigt; das Formular kann nach e
 
 
 ### Event-Verwaltung (CRUD)
-- Die Event-API unterstützt das Abrufen aller Events, eines einzelnen Events und der vom Benutzer organisierten Events sowie das Erstellen, Aktualisieren und Löschen von Events.
+- Die Event-API unterstützt das Abrufen aller Events, eines einzelnen Events und der vom Benutzer organisierten Events sowie das Erstellen, Aktualisieren und Löschen von Events. Alle Event-Funktionen erwarten einen Access Token.
 - Das gemeinsame Formular `EventForm` wird sowohl zum Erstellen als auch zum Bearbeiten verwendet.
 - Event-Daten umfassen Titel, Beschreibung, Kategorie, Start- und Enddatum mit Uhrzeit, Veranstaltungsort bzw. Online-Hinweis, Bild und optionale externe URL.
 - Die Datums- und Zeitauswahl erfolgt über `react-datepicker` mit deutscher Locale. Vor dem API-Aufruf werden Start- und Endzeit in ISO-Strings umgewandelt.
 - Wurde eine neue Bilddatei ausgewählt, wird sie zuerst zu Cloudinary hochgeladen. Die zurückgegebene URL wird als `imageUrl` in den Event-Payload übernommen. Ohne neue Datei wird die vorhandene Formular-URL beibehalten.
 - `Dropdown` lädt die verfügbaren Kategorien über `GET /categories`. Beim Anlegen einer neuen Kategorie wird zunächst nur ein temporärer Frontend-Eintrag mit einer ID im Format `new:<Name>` erzeugt; ein separater Kategorie-Erstellungsrequest wird von dieser Komponente nicht gesendet.
-- Bereits vorhandene Kategorien werden über `categoryId` übertragen. Beginnt der Kategorienwert mit `new:`, sendet `EventForm` stattdessen den bereinigten Namen als `categoryName`. Die dauerhafte Verarbeitung der Kategorie ist Aufgabe des Backends und anhand der hier vorliegenden Frontend-Dateien nicht verifiziert.
+- Bereits vorhandene Kategorien werden über `categoryId` übertragen. Beginnt der Kategorienwert mit `new:`, sendet `EventForm` stattdessen den bereinigten Namen als `categoryName`. Die dauerhafte Verarbeitung der Kategorie erfolgt im Rahmen der Event-Verarbeitung durch das Backend; ein separater Kategorie-Create-Endpunkt wird vom Client-Code nicht aufgerufen.
 - Nach erfolgreichem Erstellen oder Aktualisieren navigiert das Formular zur Detailseite des gespeicherten Events. Beim Erstellen wird das Formular zurückgesetzt; während des Speicherns ist der Submit-Button deaktiviert.
 - In Event-Karten können Veranstalter ihre eigenen Events über einen Bestätigungsdialog löschen. Nach erfolgreichem Löschen wird ein optionaler Callback zur lokalen Listenaktualisierung aufgerufen. Teilnehmer können nach Bestätigung ihre Teilnahme beenden.
 - `Collection` zeigt zunächst eine begrenzte Zahl von Events und bietet bei weiteren Ergebnissen die Schaltfläche **Mehr anzeigen**.
+- `EventDetails` lädt Event und Teilnehmerliste getrennt. Beide Requests benötigen einen Access Token. Ohne Token zeigt die Seite einen Hinweis zur Anmeldung, statt Eventdaten oder Teilnehmer abzurufen. Die Teilnahme-Aktion setzt einen angemeldeten Benutzer und einen Access Token voraus, verhindert doppelte lokale Anmeldungen und gleicht die Teilnehmerliste nach erfolgreichem Beitritt erneut mit dem Backend ab.
 
 
 ### Teilnahmesystem
 - Getrennte Ansicht von Events über Tab-Navigation:
   - **Ersteller** – vom Nutzer erstellte Veranstaltungen  
   - **Teilnehmer** – Events, bei denen er als Teilnehmer eingetragen ist
+- Die Detailseite eines Events zeigt die Teilnehmerliste und ermöglicht angemeldeten Benutzern, sich als Teilnehmer einzutragen. Die Teilnahme-Requests werden mit Access Token ausgeführt.
 
 
 ### Suche & Filterung
-- Suchleiste  
-- Kategorienfilter zum schnellen Auffinden passender Events  
+- Suchleiste zur Suche anhand des Event-Titels.
+- Kategorienfilter zum Auffinden passender Events; die ausgewählte Kategorie wird über den URL-Parameter `category` repräsentiert.
+- Die Suche verwendet den URL-Parameter `query`. Bei Auswahl einer konkreten Kategorie wird `query` zurückgesetzt, damit Textsuche und Kategorieauswahl sich gegenseitig ausschließen. 
 
 ---
 
@@ -128,9 +131,9 @@ Fehler der Registrierung werden dem Benutzer angezeigt; das Formular kann nach e
 
 ### API-Integration
 - Gemeinsamer API-Helper `apiFetch` aus `@/lib/api`
-- API-Module für Events, Teilnahmen und Benutzerprofile
-- Abruf von Kategorien über `apiFetch<Category[]>('/categories')` in `Dropdown` und `CategoryFilter`
-- JSON-Requests für die Event-Verwaltung und Profiländerungen
+- API-Module für Authentifizierung, Events, Teilnahmen, Kategorien, Einladungen und Benutzerprofile
+- Authentifizierte Requests mit Access Token; `apiFetch` bindet außerdem Cookies über `credentials: 'include'` ein
+- JSON-Requests für die Event-Verwaltung, Teilnahmeaktionen, Einladungen und Profiländerungen
 
 ---
 
@@ -158,6 +161,7 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   ├── invitations.ts  # API-Funktionen zur Einladungsverwaltung
 │   │   ├── events.ts       # API-Funktionen zur Event-Verwaltung
 │   │   ├── attendees.ts    # API-Funktionen zur Verwaltung von Event-Teilnahmen
+│   │   ├── categories.ts   # API-Funktion zum Abrufen von Kategorien
 │   │   ├── upload.ts       # Upload von Event- und Profilbildern zu Cloudinary
 │   │   └── users.ts        # API-Funktion zur Aktualisierung des Benutzerprofils
 │   ├── assets/
@@ -168,15 +172,15 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   │   ├── Card.tsx               # Karte einer einzelnen Veranstaltung (Event-Karte)
 │   │   │   ├── CategoryFilter.tsx     # Komponente zur Filterung von Events nach Kategorien
 │   │   │   ├── Collection.tsx         # Liste von Event-Karten
-│   │   │   ├── DeleteConfirmation.tsx # Modales Fenster zur Bestätigung der Event-Löschung
-│   │   │   ├── Dropdown.tsx           # Dropdown-Auswahlliste für Kategorien
+│   │   │   ├── DeleteConfirmation.tsx # Bestätigungsdialog für das Löschen eines Events
+│   │   │   ├── Dropdown.tsx           # Kategorieauswahl mit temporären Kategorien
 │   │   │   ├── EventForm.tsx          # Formular zum Erstellen / Bearbeiten von Events
 │   │   │   ├── FileUploader.tsx       # Drag-and-Drop-Upload für Bilder
 │   │   │   ├── Footer.tsx      
-│   │   │   ├── Header.tsx             # Header der Anwendung mit Logo und Navigation
-│   │   │   ├── LeaveConfirmation.tsx  # Modal.Fenster zur Bestätigung der Abmeldung(Event)
-│   │   │   ├── MobileNav.tsx          # Responsives Hamburger-Menü für mobile Geräte
-│   │   │   ├── NavItems.tsx           # Hauptelemente der Navigation (Links)
+│   │   │   ├── Header.tsx             # Header mit Logo, Benutzer-Menü und Login-Modal
+│   │   │   ├── LeaveConfirmation.tsx  # Bestätigungsdialog zum Verlassen eines Events
+│   │   │   ├── MobileNav.tsx          # Responsives Hamburger-Menü
+│   │   │   ├── NavItems.tsx           # Navigationslinks, einschließlich Owner-Link zu Einladungen
 │   │   │   ├── ProfileForm.tsx        # Formular zur Bearbeitung des Benutzerprofils
 │   │   │   ├── RegisterForm.tsx       # Formular zur Registrierung neuer Benutzer
 │   │   │   ├── LoginModal.tsx         # Modales Fenster zur Benutzeranmeldung (Login)
@@ -192,17 +196,17 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │       ├── textarea.tsx
 │   │       └── ..usw
 │   ├── constants/
-│   │   ├── index.ts   # Konstanten und Standardwerte (eventDefaultValues,registerDefaultValues)
-│   │   └── dummy-data.ts   # Test- / Mock-Daten
+│   │   └── index.ts   # Konstanten und Standardwerte (eventDefaultValues,registerDefaultValues)
 │   ├── hooks/
-│   │   └── useAuth.tsx  # Verwaltung des Authentifizierungsstatus.Wiederherstellung der Sitzung über HttpOnly-Cookies
+│   │   └── useAuth.tsx          # Authentifizierungsstatus und Sitzungswiederherstellung
 │   ├── layouts/
-│   │   └── RootLayout.tsx       # Hauptlayout der Anwendung (Header + <Outlet /> + Footer)
+│   │   └── RootLayout.tsx       # Hauptlayout der Anwendung (Header, Outlet und Footer)
 │   ├── lib/
-│   │   ├── api.ts  # Zentrale API-Funktion für HTTP-Anfragen mit Token- und Cookie-Authentifizierung sowie Fehlerbehandlung   
+│   │   ├── api.ts               # Zentraler HTTP-Helper mit Token- und Cookie-Handling   
 │   │   ├── utils.ts             # Hilfsfunktionen / Utilities (cn, getInitials etc.)
 │   │   └── validator.ts         # Zod-Validierungsschemata (eventFormSchema, profileFormSchema)
 │   ├── pages/
+│   │   ├── Home.tsx                # Landingpage bzw. Event-Übersicht
 │   │   ├── events/
 │   │   │   ├── CreateEvent.tsx     # Seite zum Erstellen eines neuen Events
 │   │   │   ├── EventDetails.tsx    # Detailseite eines Events
@@ -268,20 +272,21 @@ Im `src/App.tsx` registrierten Routen sind:
 |---|---|---|
 | `/` | `Home` | Landingpage bzw. Event-Übersicht |
 | `/register` | `Register` | Registrierung; Auswahl des Modus über ?type=owner oder ?type=member |
-| `/invitations` | `InvitationPage` | Einladungen für Teammitglieder verwalten; Zugriff für Owner |
+| `/invitations` | `InvitationPage` | Einladungen für Teammitglieder verwalten; im Frontend auf Owner beschränkt |
 | `/events/:id` | `EventDetails` | Event-Details und Teilnahme |
 | `/events/create` | `CreateEvent` | Neues Event erstellen |
 | `/events/:id/update` | `UpdateEvent` | Event bearbeiten |
 | `/profile` | `Profile` | Eigenes Profil und eigene Events |
 | `/profile/update` | `UpdateProfile` | Profil bearbeiten |
 
-Alle Routen werden innerhalb des `RootLayout` gerendert; `AuthProvider` stellt den Authentifizierungszustand bereit.
+Alle Routen werden innerhalb des `RootLayout` gerendert.
+`AuthProvider` umschließt den Router und stellt den Authentifizierungszustand bereit. Die rollenabhängige Navigation wird über `NavItems` gesteuert; die Berechtigungsprüfung muss zusätzlich im Backend erfolgen.
 
 ---
 
 ## Zentrale Komponenten und Datenflüsse
 ### `Home` (`src/pages/Home.tsx`)
-Bei angemeldeten Benutzern lädt `Home` `getAllEvents()` und `getEventsByAttendee(user.id)` mit `Promise.all`. Während Authentifizierungs- und Event-Daten geladen werden, zeigt die Seite Ladezustände an. Fehler beim Laden führen zu einer sichtbaren Fehlermeldung. Bei erfolgreichem Abruf speichert der Client Events und Teilnahme-IDs separat. Löschen eines Events entfernt es aus der lokalen Event-Liste; Verlassen eines Events entfernt dessen ID aus den Teilnahme-IDs. Bei Gästen wird stattdessen die Landingpage angezeigt.
+Bei angemeldeten Benutzern lädt `Home` `getAllEvents(accessToken)` und `getEventsByAttendee(user.id, accessToken)` mit `Promise.all`. Während Authentifizierungs- und Event-Daten geladen werden, zeigt die Seite Ladezustände an. Fehler beim Laden führen zu einer sichtbaren Fehlermeldung. Bei erfolgreichem Abruf speichert der Client Events und Teilnahme-IDs separat. Löschen eines Events entfernt es aus der lokalen Event-Liste; Verlassen eines Events entfernt dessen ID aus den Teilnahme-IDs. Bei Gästen wird stattdessen die Landingpage angezeigt.
 
 ### `EventForm` (`src/components/shared/EventForm.tsx`)
 Das Formular verwendet `useForm`, `zodResolver(eventFormSchema)`, `DatePicker`, `Dropdown` und `FileUploader`. Die DatePicker sind auf Deutsch lokalisiert und zeigen Datum und Uhrzeit im Format `dd.MM.yyyy HH:mm` an. Im Update-Modus werden vorhandene Event-Daten als Initialwerte verwendet und Start- sowie Endzeit in `Date`-Objekte umgewandelt. Für die Kategorie wird `event.categoryId` bevorzugt; als Fallback prüft der Code zusätzlich `(event as any).category?.id`.
@@ -295,9 +300,9 @@ Die Auswahl einer normalen Kategorie wird unmittelbar an das Formular weitergege
 
 ### `CategoryFilter` (`src/components/shared/CategoryFilter.tsx`)
 
-`CategoryFilter` lädt die Kategorien über `GET /categories` und schreibt die ausgewählte Kategorie-ID in den URL-Parameter `category`. Die Option „Alle Kategorien“ entfernt diesen Parameter. Bei Auswahl einer konkreten Kategorie wird außerdem `query` entfernt, wodurch die vorherige Textsuche zurückgesetzt wird. Die Änderungen erfolgen mit `setSearchParams(..., { replace: true })`, also ohne einen zusätzlichen Eintrag in der Browserhistorie.
+`CategoryFilter` wartet zunächst auf die Authentifizierungsprüfung und lädt Kategorien anschließend mit `getCategories(accessToken)` über `GET /categories` . Ohne Access Token werden keine Kategorien geladen und eine entsprechende Meldung wird angezeigt. Die ausgewählte Kategorie-ID wird in den URL-Parameter `category` geschrieben. Die Option „Alle Kategorien“ entfernt diesen Parameter. Bei Auswahl einer konkreten Kategorie wird außerdem `query` entfernt, wodurch die vorherige Textsuche zurückgesetzt wird. Die Änderungen erfolgen mit `setSearchParams(..., { replace: true })`, also ohne einen zusätzlichen Eintrag in der Browserhistorie.
 
-Für ältere URLs, die statt einer Kategorie-ID einen Kategorienamen enthalten, sucht der Filter nach einem case-insensitiven Namens-Match und ersetzt den URL-Wert durch die passende ID. Die Komponente zeigt während des Abrufs einen Ladeeintrag und bei Fehlern eine sichtbare Fehlermeldung an.
+Für ältere URLs, die statt einer Kategorie-ID einen Kategorienamen enthalten, sucht der Filter nach einem case-insensitiven Namens-Match und ersetzt den URL-Wert durch die passende ID. Während des Abrufs wird ein Ladeeintrag angezeigt; Fehler werden sichtbar dargestellt.
 
 ### `UpdateEvent` (`src/pages/events/UpdateEvent.tsx`)
 
@@ -305,7 +310,9 @@ Die Seite liest die Event-ID aus dem URL-Parameter, lädt die Veranstaltung übe
 
 ### `EventDetails` (`src/pages/events/EventDetails.tsx`)
 
-Event und Teilnehmerliste werden separat geladen. Die Effekte nutzen ein `cancelled`-Flag, damit nach dem Aufräumen kein Ergebnis mehr in den Komponentenstatus übernommen wird. Die Teilnahme-Aktion verlangt `user` und `accessToken`, verhindert doppelte lokale Anmeldungen und aktualisiert nach erfolgreichem Request den Teilnehmerstatus. Anschließend wird versucht, die Teilnehmerliste erneut mit dem Backend abzugleichen.
+Event und Teilnehmerliste werden getrennt geladen, nachdem die Authentifizierungsprüfung abgeschlossen ist. Beide Requests benötigen einen Access Token. Ist kein Token vorhanden, wird das Laden abgebrochen und ein Hinweis zur Anmeldung angezeigt. Die Effekte nutzen ein `cancelled`-Flag, damit nach dem Aufräumen kein Ergebnis mehr in den Komponentenstatus übernommen wird.
+
+Die Teilnahme-Aktion setzt einen angemeldeten Benutzer und einen Access Token voraus, verhindert doppelte lokale Anmeldungen und aktualisiert nach erfolgreichem Request zunächst den lokalen Teilnehmerstatus. Anschließend wird versucht, die Teilnehmerliste erneut mit dem Backend abzugleichen. Ein Fehler beim erneuten Laden macht die bereits erfolgreiche Teilnahme nicht rückgängig.
 
 ### `Card` und `Collection`
 
@@ -325,13 +332,15 @@ Die Komponente stellt einen Bestätigungsdialog für das dauerhafte Löschen ein
 
 ### `LoginModal` (`src/components/shared/LoginModal.tsx`)
 
-`LoginModal` verwaltet die Login-Form sowie die Auswahl des Registrierungsmodus innerhalb desselben Modalfensters. Die Ansicht wird abhängig vom internen Komponentenstatus zwischen Login-Form und Registrierungsauswahl umgeschaltet.
+`LoginModal` verwaltet die Login-Form sowie die Auswahl des Registrierungsmodus innerhalb desselben Modalfensters. Die Ansicht wird abhängig vom internen Komponentenstatus zwischen Login-Form und Registrierungsauswahl umgeschaltet. Bei erneutem Öffnen wird die Login-Ansicht aktiviert.
 Die Anmeldung erfolgt über die Funktion `loginUser` aus `src/api/auth.ts`. Bei erfolgreicher Anmeldung werden der Benutzer und der Access Token über `setAuth` in den Authentifizierungskontext übernommen. Anschließend wird das Modalfenster geschlossen.
 Die Registrierungsauswahl bietet zwei Optionen: die Owner-Registrierung mit einem neuen Team und den Beitritt als Member über einen Einladungscode. Die gewählte Option wird über den Query-Parameter `type` an die Registrierungsseite übergeben.
 
 ### `Register` (`src/pages/profile/Register.tsx`)
 
 Die Seite rendert den Bereich mit der Überschrift „Account erstellen“, einen kurzen Registrierungshinweis und anschließend `RegisterForm`. Die Felder und der Request-Ablauf sind an die separate Formular-Komponente delegiert.
+
+Nach erfolgreicher Registrierung zeigt `RegisterForm` eine Bestätigung. Die Schaltfläche „Einloggen“ navigiert zur Startseite und übergibt `openLoginModal: true` im Navigation State. `Header` erkennt diesen Zustand, öffnet das Login-Modal und entfernt anschließend den Zustand durch Navigation mit `replace: true`.
 
 ### Authentifizierungszustand (`src/hooks/useAuth.tsx`)
 
@@ -343,8 +352,8 @@ Der bisher dokumentierte Ablauf sieht einen globalen Auth-Kontext vor, der Benut
 
 - `User`: `id: number`, `tenantId: number`, `role: "owner"`,  `email: string`; `name`, `bio` und `avatarUrl` sind optional.
 - Invitation: `id: number`, `tenantId: number`, `createdBy: number`, `expiresAt: string` und `createdAt: string`; `usedAt` und `revokedAt` sind optional und können `string | null` sein.
-- `Category`: `id: string`, `name: string`.
-- `Event`: `id: number`, `ownerId: number`, `title` ist erforderlich. `description`, `location`, `imageUrl`, `url`, `categories`, `categoryId` und `owner` sind optional. `startDateTime` und `endDateTime`: `string | Date`, `categories: [Category]`; `owner`:`User | null`.
+- `Category`: `id: string`, `name: string`; `isDefault` ist optional.
+- `Event`: `id: number`, `ownerId: number`, `title: string`. `description`, `location`, `imageUrl`, `url`, `categoryName`, `categories`, `categoryId` und `owner` sind optional. `startDateTime` und `endDateTime` haben den Typ `string | Date`; `categories` ist ein Array aus `Category`, `owner` hat den Typ `User | null`.
 - `Attendee`: `id`, `userId: number`, `eventId: number`, `user`: `User[] | null`.
 - `EventWithDetails`: erweitert `Event` um `attendees: User[]`.
 
@@ -352,16 +361,20 @@ Der bisher dokumentierte Ablauf sieht einen globalen Auth-Kontext vor, der Benut
 
 ## Integration mit der Backend-API
 Alle folgenden Pfade sind relativ zur konfigurierten API-Basis-URL zu verstehen.
-Die tatsächliche Zusammensetzung der URL sowie Header- und Fehlerbehandlung werden in `apiFetch` implementiert.
+Die tatsächliche Zusammensetzung der URL sowie Header- und Fehlerbehandlung werden in `apiFetch` implementiert. Bei den hier dokumentierten geschützten Endpunkten übergeben die API-Funktionen den Access Token an `apiFetch`.
 
 ### Authentifizierung (`src/api/auth.ts`)
 
 | Funktion | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
 | `loginUser(payload)` | `POST /auth/login` | Benutzer anmelden und Benutzerobjekt sowie Access Token abrufen |
+| `registerUser(payload)` | `POST /auth/register` | Owner oder Member registrieren 
 
-`LoginPayload` enthält die Felder `email` und `password`. Die Antwort wird über den Typ `LoginResponse` mit den Feldern `user` und `accessToken` typisiert.
-Die Funktion `loginUser` verwendet den zentralen HTTP-Helper `apiFetch` aus `src/lib/api.ts`. Dadurch werden die konfigurierte API-Basis-URL, die Standard-Header, die Verarbeitung der JSON-Antworten und die Fehlerbehandlung zentral verwaltet.`apiFetch` setzt außerdem `credentials: 'include'`, damit der Browser HttpOnly-Cookies verarbeiten kann. Der Backend-Login setzt auf diese Weise das Refresh-Token-Cookie; der Access Token wird separat in der JSON-Antwort zurückgegeben.
+`LoginPayload` enthält die Felder `email` und `password`. Die Antwort wird über den Typ `LoginResponse` mit den Feldern `user` und `accessToken` typisiert.Bei erfolgreicher Anmeldung setzt `LoginModal` diese Werte über `setAuth` in den Auth-Kontext.
+
+`RegisterPayload` ist eine Union aus zwei Varianten: `registrationType: "owner"` mit `companyName` oder `registrationType: "member"` mit `invitationCode`. Beide Varianten enthalten `name`, `email`, `password` sowie optional `avatarUrl` und `bio`. Die Registrierung löst keine automatische Anmeldung aus.
+
+Die API-Funktionen verwenden den zentralen HTTP-Helper `apiFetch` aus `src/lib/api.ts`. Dieser verwaltet die konfigurierte API-Basis-URL, Standard-Header, JSON-Antworten und die Fehlerbehandlung.`apiFetch` setzt außerdem `credentials: 'include'`, damit der Browser HttpOnly-Cookies mitsenden und verarbeiten kann. Das Backend liefert den Access Token separat in der JSON-Antwort und setzt das Refresh-Token-Cookie. 
 
 ### Einladungen (`src/api/invitations.ts`)
 
@@ -371,11 +384,9 @@ Die Funktion `loginUser` verwendet den zentralen HTTP-Helper `apiFetch` aus `src
 | `getInvitations(token)` | `GET /invitations` | Einladungen des authentifizierten Tenants abrufen |
 | `revokeInvitation(invitationId, token)` | `DELETE /invitations/:id` | Eine widerrufbare Einladung widerrufen |
 
-`createInvitation` übermittelt den Ablaufzeitpunkt im Feld expiresAt. Die Antwort enthält den neu generierten `invitationCode` sowie den zugehörigen Einladungsdatensatz. Der Klartextcode wird vom Client nur für die Anzeige und das Kopieren verwendet.
+`createInvitation` übermittelt den Ablaufzeitpunkt im Feld `expiresAt`. Die Antwort enthält den neu generierten `invitationCode` sowie den zugehörigen Einladungsdatensatz. Der Klartextcode wird vom Client nur für die Anzeige und das Kopieren verwendet.
 
-`getInvitations` liefert die Einladungsdatensätze für die Übersicht. 
-
-`revokeInvitation` verarbeitet eine erfolgreiche `DELETE`-Antwort ohne Response-Body `(204 No Content)`. Nach erfolgreichem Widerruf aktualisiert InvitationPage den lokalen Einladungsdatensatz.
+`getInvitations` liefert die Einladungsdatensätze für die Übersicht. `revokeInvitation` verarbeitet eine erfolgreiche `DELETE`-Antwort ohne Response-Body (`204 No Content`). Nach erfolgreichem Widerruf aktualisiert `InvitationPage` den lokalen Einladungsdatensatz.
 
 Die Berechtigungsprüfung und die tatsächliche Gültigkeit einer Einladung werden serverseitig durchgesetzt. Die Einschränkung der verfügbaren Aktionen im Frontend dient ausschließlich der Benutzerführung und ersetzt keine Backend-Autorisierung.
 
@@ -383,14 +394,16 @@ Die Berechtigungsprüfung und die tatsächliche Gültigkeit einer Einladung werd
 
 | Funktion | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
-| `getAllEvents()` | `GET /events` | Alle Events abrufen |
-| `getOrganizedEvents(userId)` | `GET /events?ownerId=<userId>` | Events eines Veranstalters abrufen |
-| `getEventById(id)` | `GET /events/:id` | Einzelnes Event abrufen |
-| `createEvent(payload, token?)` | `POST /events` | Event erstellen |
-| `updateEvent(eventId, payload, token?)` | `PUT /events/:id` | Event aktualisieren |
-| `deleteEvent(eventId, token?)` | `DELETE /events/:id` | Event löschen |
+| `getAllEvents(token)` | `GET /events` | Alle Events abrufen |
+| `getOrganizedEvents(userId. token)` | `GET /events?ownerId=<userId>` | Events eines Veranstalters abrufen |
+| `getEventById(id, token)` | `GET /events/:id` | Einzelnes Event abrufen |
+| `createEvent(payload, token)` | `POST /events` | Event erstellen |
+| `updateEvent(eventId, payload, token)` | `PUT /events/:id` | Event aktualisieren |
+| `deleteEvent(eventId, token)` | `DELETE /events/:id` | Event löschen |
 
-`EventPayload` verlangt die Felder `title`, `description`, `imageUrl`, `location`, `startDateTime`, `endDateTime` und `url`. `categoryId` und `categoryName` sind optional; das Formular überträgt je nach Kategorie entweder die ID oder den Namen. Der Access-Token ist bei den Schreibfunktionen optional typisiert und wird an `apiFetch` weitergegeben.
+Alle oben aufgeführten Funktionen erwarten einen Access Token und übergeben ihn an `apiFetch`.
+
+`EventPayload` verlangt `title`, `description`, `imageUrl`, `location`, `startDateTime`, `endDateTime` und `url`. `categoryId` und `categoryName` sind optional; das Formular überträgt je nach Kategorie entweder die ID oder den Namen. `EventForm` wandelt `startDateTime` und `endDateTime` vor dem Request in ISO-Strings u
 
 ### Teilnahmen (`src/api/attendees.ts`)
 
@@ -401,7 +414,7 @@ Die Berechtigungsprüfung und die tatsächliche Gültigkeit einer Einladung werd
 | `addEventAttendee(eventId, userId, token)` | `POST /events/:eventId/attendees/:userId` | Benutzer als Teilnehmer hinzufügen |
 | `leaveEvent(eventId, userId, token)` | `DELETE /events/:eventId/attendees/:userId` | Teilnahme beenden |
 
-Für das Hinzufügen und Beenden einer Teilnahme ist ein Token als erforderlicher Funktionsparameter vorgesehen. `getEventsByAttendee` wird sowohl auf der Startseite als auch im Profil zur Ermittlung der Teilnahme-Events verwendet.
+Alle Teilnahme-Funktionen erwarten einen Access Token. `getEventsByAttendee` wird auf der Startseite und im Profil zur Ermittlung der Teilnahme-Events verwendet. `getEventAttendees` liefert die Teilnehmer als `User[]`; die Detailseite behandelt zusätzlich eine mögliche `null`-Antwort des Backends als leere Liste.
 
 ### Benutzerprofil (`src/api/users.ts`)
 
@@ -411,17 +424,18 @@ Für das Hinzufügen und Beenden einer Teilnahme ist ein Token als erforderliche
 
 Der Payload-Typ `UpdateProfilePayload` enthält `name` als Pflichtfeld sowie `bio` und `avatarUrl` als optionale Felder. Die Antwort ist als `UpdateProfileResponse` mit einem `user`-Objekt und optionaler `message` typisiert.
 
-### Kategorien (`Dropdown` und `CategoryFilter`)
+### Kategorien (`src/api/categories.ts`, `Dropdown` und `CategoryFilter`)
 
 | Aufruf | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
-| `apiFetch<Category[]>('/categories')` | `GET /categories` | Verfügbare Kategorien laden |
+| `getCategories(token)` | `GET /categories` | Verfügbare Kategorien authentifiziert laden |
+| `apiFetch<Category[]>("/categories", { token })` in `Dropdown` | `GET /categories` | Verfügbare Kategorien für die Event-Formularauswahl laden |
 
-Sowohl `Dropdown` als auch `CategoryFilter` laden die Kategorien beim ersten Rendern. Beide Komponenten behandeln Ladefehler separat und zeigen eine Fehlermeldung an.
+`CategoryFilter` verwendet `getCategories`; `Dropdown` ruft `apiFetch` direkt auf. Beide Requests benötigen einen Access Token. Die Komponenten behandeln Ladefehler separat und zeigen eine Fehlermeldung an.
 
 ### Event-Payload und Kategorien
 
-`EventForm` erzeugt vor dem Request ein Payload-Objekt und wandelt `startDateTime` und `endDateTime` mit `toISOString()` um. Bei einer bestehenden Kategorie wird `categoryId` gesendet. Ein vom Dropdown erzeugter temporärer Wert mit dem Präfix `new:` wird in `categoryName` umgewandelt. Das Feld `url` wird bei leerem Formularwert als leerer String übertragen. Die konkrete Persistenz- und Bereinigungslogik für Kategorien ist im Backend zu prüfen.
+`EventForm` erzeugt vor dem Request ein Payload-Objekt und wandelt `startDateTime` und `endDateTime` mit `toISOString()` um. Bei einer bestehenden Kategorie wird `categoryId` gesendet. Ein vom Dropdown erzeugter temporärer Wert mit dem Präfix `new:` wird in `categoryName` umgewandelt. Das Dropdown sendet keinen eigenständigen Request zur Kategorieerstellung; die Verarbeitung des Namens erfolgt im Rahmen des Event-Requests durch das Backend.
 
 ---
 ## Bilder und Dateien: Cloudinary

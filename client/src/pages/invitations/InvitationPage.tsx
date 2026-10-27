@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 
 import type { Invitation } from "@/types"
-import { createInvitation, getInvitations, revokeInvitation } from "@/api/invitations"
+import { createInvitation, getInvitations, revokeInvitation, deleteInvitation } from "@/api/invitations"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -84,6 +84,10 @@ const getErrorMessage = (
             "Der Ablaufzeitpunkt der Einladung ist ungültig.",
         "expiresAt must be in the future":
             "Der Ablaufzeitpunkt muss in der Zukunft liegen.",
+        "Failed to delete invitation":
+            "Die Einladung konnte nicht gelöscht werden.",
+        "Invitation not found":
+            "Die Einladung wurde nicht gefunden oder bereits gelöscht.",
     }
 
     return knownMessages[error.message] ?? fallback
@@ -105,6 +109,7 @@ const InvitationPage = () => {
 
     const [isCreating, setIsCreating] = useState(false)
     const [revokingId, setRevokingId] = useState<number | null>(null)
+    const [deletingId, setDeletingId] = useState<number | null>(null)
 
     const [listError, setListError] = useState<string | null>(null)
     const [actionError, setActionError] = useState<string | null>(null)
@@ -291,6 +296,46 @@ const InvitationPage = () => {
         }
     }
 
+    const handleDeleteInvitation = async (
+        invitation: Invitation,
+    ) => {
+        if (!accessToken) {
+            setActionError(
+                "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an.",
+            )
+            return
+        }
+
+        const confirmed = window.confirm(
+            "Möchtest du diese Einladung dauerhaft löschen? " +
+            "Dieser Vorgang kann nicht rückgängig gemacht werden.",
+        )
+
+        if (!confirmed) return
+
+        setDeletingId(invitation.id)
+        setActionError(null)
+        setStatusMessage(null)
+
+        try {
+            await deleteInvitation(invitation.id, accessToken)
+            // Die Einladung nach erfolgreicher Löschung aus der Liste entfernen.
+            setInvitations((current) =>
+                current.filter((item) => item.id !== invitation.id),
+            )
+            setStatusMessage("Die Einladung wurde gelöscht.")
+        } catch (error) {
+            setActionError(
+                getErrorMessage(
+                    error,
+                    "Beim Löschen der Einladung ist ein Fehler aufgetreten.",
+                ),
+            )
+        } finally {
+            setDeletingId(null)
+        }
+    }
+
     if (isAuthLoading) {
         return (
             <section className="wrapper my-8">
@@ -450,9 +495,8 @@ const InvitationPage = () => {
                                     ) : (
                                         invitations.map((invitation) => {
                                             const revocable = canRevoke(invitation)
-                                            const isRevoking =
-                                                revokingId === invitation.id
-
+                                            const isRevoking = revokingId === invitation.id
+                                            const isDeleting = deletingId === invitation.id
                                             return (
                                                 <tr
                                                     key={invitation.id}
@@ -484,7 +528,7 @@ const InvitationPage = () => {
                                                             size="sm"
                                                             variant="outline"
                                                             className="rounded-lg border-secondary-dark text-secondary-dark hover:bg-red-700 hover:border-red-700"
-                                                            disabled={!revocable || isRevoking}
+                                                            disabled={!revocable || isRevoking || isDeleting}
                                                             onClick={() =>
                                                                 handleRevokeInvitation(invitation)
                                                             }
@@ -494,19 +538,17 @@ const InvitationPage = () => {
                                                                 : "Widerrufen"}
                                                         </Button>
                                                     </td>
+
                                                     <td className="whitespace-nowrap py-3 text-center">
-                                                       {/* Platzhalter;das Löschen aus der DB muss zunächst im Backend implementiert werden */}
                                                         <Button
                                                             type="button"
                                                             size="sm"
                                                             variant="outline"
                                                             className="rounded-lg border-secondary-dark text-secondary-dark hover:bg-red-700 hover:border-red-700"
-                                                            disabled={!revocable || isRevoking}
-                                                            onClick={() =>
-                                                                handleRevokeInvitation(invitation)
-                                                            }
+                                                            disabled={isDeleting || isRevoking}
+                                                            onClick={() => handleDeleteInvitation(invitation)}
                                                         >
-                                                            {isRevoking
+                                                            {isDeleting
                                                                 ? "Wird gelöscht..."
                                                                 : "Löschen"}
                                                         </Button>

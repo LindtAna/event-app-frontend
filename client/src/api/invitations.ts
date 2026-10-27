@@ -36,3 +36,13 @@ export const revokeInvitation = (
     token,
   })
 }
+
+export const deleteInvitation = (
+  invitationId: number,
+  token: string,
+): Promise<void> => {
+  return apiFetch<void>(`/invitations/${invitationId}/permanent`, {
+    method: "DELETE",
+    token,
+  })
+}

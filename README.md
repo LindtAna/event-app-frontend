@@ -60,8 +60,9 @@ Beide Registrierungsmodi verwenden gemeinsame Formularfelder für Name, E-Mail-A
 - Das Backend gibt den neu generierten `invitationCode` bei der Erstellung einmalig zurück. Der Code wird im Frontend angezeigt und kann über die Zwischenablage kopiert werden. Er wird nicht erneut vom Backend abgerufen. Vor dem Ersetzen eines noch nicht als kopiert markierten Codes erscheint ein Bestätigungsdialog. Nach erfolgreichem Kopieren wird der entsprechende Status in der Oberfläche angezeigt.
 - Die Einladungsübersicht zeigt die ID sowie die Zeitpunkte der Erstellung, des Ablaufs, der Verwendung und des Widerrufs. Zeitstempel ohne Zeitzonenangabe werden vom Frontend als UTC interpretiert und für die Anzeige in deutscher Lokalzeit formatiert.
 - Bereits verwendete, widerrufene oder abgelaufene Einladungen können über die Oberfläche nicht widerrufen werden.
-- Nach einem erfolgreichen Widerruf wird der lokale Datensatz durch Setzen von `revokedAt` aktualisiert. Der DELETE-Request wird als `204 No Content` ohne Response-Body verarbeitet.
-- Lade-, Erstellungs- und Widerrufsfehler sowie erfolgreiche Aktionen werden dem Benutzer über sichtbare Statusmeldungen angezeigt.
+- Die Aktion „Widerrufen“ steht nur für aktive, noch nicht verwendete, nicht widerrufene und nicht abgelaufene Einladungen zur Verfügung. Nach einem erfolgreichen Widerruf wird der lokale Datensatz durch Setzen von `revokedAt` aktualisiert. Der DELETE-Request wird als `204 No Content` ohne Response-Body verarbeitet.
+- Über die Aktion „Löschen“ können Einladungen unabhängig von ihrem Status dauerhaft aus der Datenbank entfernt werden. Vor dem Löschen wird eine Bestätigung angefordert, da die Operation nicht rückgängig gemacht werden kann. Nach erfolgreicher Löschung entfernt `InvitationPage` den betreffenden Datensatz aus dem lokalen React State, ohne die gesamte Liste erneut laden zu müssen. Das dauerhafte Löschen verwendet den Endpoint `DELETE /invitations/:id/permanent`. Es wird zusätzlich die Tenant-Zugehörigkeit der Einladung geprüft.
+- Lade-, Erstellungs- Widerrufs- und Löschfehler sowie erfolgreiche Aktionen werden dem Benutzer über sichtbare Statusmeldungen angezeigt.
 
 ### Profilverwaltung
 - Die Profilseite zeigt Avatar, Namen, E-Mail-Adresse und – sofern vorhanden – die Biografie (`bio`). Fehlt ein anzeigbares Avatarbild, werden die Initialen des Namens als Fallback verwendet.
@@ -216,7 +217,7 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   │   ├── Register.tsx        # Seite zur Erstellung eines neuen Benutzerkontos
 │   │   │   └── UpdateProfile.tsx   # Seite zum Bearbeiten des Profils
 │   │   └── inviations/
-│   │       └── InvitationPage.tsx  # Erstellen, Anzeigen und Widerrufen von Einladungen
+│   │       └── InvitationPage.tsx  # Erstellen, Anzeigen, Widerrufen und Löschen von Einladungen
 │   ├── types/
 │   │   └── index.ts             # Globale TypeScript-Interfaces (User, Event, Attendee)
 │   ├── App.tsx                  # Hauptkomponente für das Routing
@@ -288,6 +289,25 @@ Alle Routen werden innerhalb des `RootLayout` gerendert.
 ### `Home` (`src/pages/Home.tsx`)
 Bei angemeldeten Benutzern lädt `Home` `getAllEvents(accessToken)` und `getEventsByAttendee(user.id, accessToken)` mit `Promise.all`. Während Authentifizierungs- und Event-Daten geladen werden, zeigt die Seite Ladezustände an. Fehler beim Laden führen zu einer sichtbaren Fehlermeldung. Bei erfolgreichem Abruf speichert der Client Events und Teilnahme-IDs separat. Löschen eines Events entfernt es aus der lokalen Event-Liste; Verlassen eines Events entfernt dessen ID aus den Teilnahme-IDs. Bei Gästen wird stattdessen die Landingpage angezeigt.
 
+### `LoginModal` (`src/components/shared/LoginModal.tsx`)
+`LoginModal` verwaltet die Login-Form sowie die Auswahl des Registrierungsmodus innerhalb desselben Modalfensters. Die Ansicht wird abhängig vom internen Komponentenstatus zwischen Login-Form und Registrierungsauswahl umgeschaltet. Bei erneutem Öffnen wird die Login-Ansicht aktiviert.
+Die Anmeldung erfolgt über die Funktion `loginUser` aus `src/api/auth.ts`. Bei erfolgreicher Anmeldung werden der Benutzer und der Access Token über `setAuth` in den Authentifizierungskontext übernommen. Anschließend wird das Modalfenster geschlossen.
+Die Registrierungsauswahl bietet zwei Optionen: die Owner-Registrierung mit einem neuen Team und den Beitritt als Member über einen Einladungscode. Die gewählte Option wird über den Query-Parameter `type` an die Registrierungsseite übergeben.
+
+### `Register` (`src/pages/profile/Register.tsx`)
+Die Seite rendert den Bereich mit der Überschrift „Account erstellen“, einen kurzen Registrierungshinweis und anschließend `RegisterForm`. Die Felder und der Request-Ablauf sind an die separate Formular-Komponente delegiert.
+
+Nach erfolgreicher Registrierung zeigt `RegisterForm` eine Bestätigung. Die Schaltfläche „Einloggen“ navigiert zur Startseite und übergibt `openLoginModal: true` im Navigation State. `Header` erkennt diesen Zustand, öffnet das Login-Modal und entfernt anschließend den Zustand durch Navigation mit `replace: true`.
+
+### Authentifizierungszustand (`src/hooks/useAuth.tsx`)
+Der Ablauf sieht einen globalen Auth-Kontext vor, der Benutzer und Access-Token verwaltet. Beim App-Start wird versucht, eine Sitzung über `/auth/refresh` wiederherzustellen; `isLoading` kennzeichnet die laufende Prüfung. `useAuth` wird unter anderem in `Home`, `EventForm`, `EventDetails`, `Profile` und `DeleteConfirmation` verwendet. 
+
+### `Profile` (`src/pages/profile/Profile.tsx`)
+Die Seite zeigt Avatar, Namen, E-Mail-Adresse und – sofern vorhanden – `bio`. Für Avatar wird bei fehlendem der Fallback verwendet: fehlende Avatarbilder werden über die Initialen-Fallback-Komponente dargestellt. Links zur Profilbearbeitung werden für mobile und Desktop-Ansichten unterschiedlich gerendert.
+
+Nach Vorliegen einer Benutzer-ID ruft die Seite `getOrganizedEvents(currentUser.id)` und `getEventsByAttendee(currentUser.id)` parallel ab. Standardmäßig ist der Tab `Ersteller` ausgewählt; der andere Tab heißt `Teilnehmer`. Die Seite zeigt Lade- und Fehlerzustände und übergibt der `Collection` die passende Ereignisliste mit `limit={6}`. Nach Löschen oder Verlassen einer Veranstaltung wird die entsprechende lokale Liste anhand der Event-ID gefiltert. Ein Cleanup-Flag verhindert, dass Ergebnisse nach dem Aufräumen des Effekts noch in den Zustand übernommen werden.
+Wenn kein angemeldeter Benutzer vorhanden ist, rendert die Komponente `null`.
+
 ### `EventForm` (`src/components/shared/EventForm.tsx`)
 Das Formular verwendet `useForm`, `zodResolver(eventFormSchema)`, `DatePicker`, `Dropdown` und `FileUploader`. Die DatePicker sind auf Deutsch lokalisiert und zeigen Datum und Uhrzeit im Format `dd.MM.yyyy HH:mm` an. Im Update-Modus werden vorhandene Event-Daten als Initialwerte verwendet und Start- sowie Endzeit in `Date`-Objekte umgewandelt. Für die Kategorie wird `event.categoryId` bevorzugt; als Fallback prüft der Code zusätzlich `(event as any).category?.id`.
 
@@ -299,52 +319,34 @@ Beim Absenden wird – sofern eine Datei ausgewählt wurde – die erste Datei a
 Die Auswahl einer normalen Kategorie wird unmittelbar an das Formular weitergegeben. Werden neue Kategorien angelegt, während der initiale API-Request noch läuft, führt die Komponente die zurückgegebenen Daten mit zwischenzeitlich angelegten temporären Kategorien zusammen, sofern nicht bereits eine Kategorie gleichen Namens existiert. Ladefehler werden als Meldung unter dem Dropdown angezeigt. Das Dialogfenster und das Select-Dropdown haben getrennte Öffnungszustände.
 
 ### `CategoryFilter` (`src/components/shared/CategoryFilter.tsx`)
-
 `CategoryFilter` wartet zunächst auf die Authentifizierungsprüfung und lädt Kategorien anschließend mit `getCategories(accessToken)` über `GET /categories` . Ohne Access Token werden keine Kategorien geladen und eine entsprechende Meldung wird angezeigt. Die ausgewählte Kategorie-ID wird in den URL-Parameter `category` geschrieben. Die Option „Alle Kategorien“ entfernt diesen Parameter. Bei Auswahl einer konkreten Kategorie wird außerdem `query` entfernt, wodurch die vorherige Textsuche zurückgesetzt wird. Die Änderungen erfolgen mit `setSearchParams(..., { replace: true })`, also ohne einen zusätzlichen Eintrag in der Browserhistorie.
 
 Für ältere URLs, die statt einer Kategorie-ID einen Kategorienamen enthalten, sucht der Filter nach einem case-insensitiven Namens-Match und ersetzt den URL-Wert durch die passende ID. Während des Abrufs wird ein Ladeeintrag angezeigt; Fehler werden sichtbar dargestellt.
 
 ### `UpdateEvent` (`src/pages/events/UpdateEvent.tsx`)
-
 Die Seite liest die Event-ID aus dem URL-Parameter, lädt die Veranstaltung über `getEventById` und unterscheidet zwischen Lade-, Fehler- und Erfolgszustand. Bei Erfolg übergibt sie das Event sowie dessen ID als String an `EventForm` im Modus `Update`.
 
 ### `EventDetails` (`src/pages/events/EventDetails.tsx`)
-
 Event und Teilnehmerliste werden getrennt geladen, nachdem die Authentifizierungsprüfung abgeschlossen ist. Beide Requests benötigen einen Access Token. Ist kein Token vorhanden, wird das Laden abgebrochen und ein Hinweis zur Anmeldung angezeigt. Die Effekte nutzen ein `cancelled`-Flag, damit nach dem Aufräumen kein Ergebnis mehr in den Komponentenstatus übernommen wird.
 
 Die Teilnahme-Aktion setzt einen angemeldeten Benutzer und einen Access Token voraus, verhindert doppelte lokale Anmeldungen und aktualisiert nach erfolgreichem Request zunächst den lokalen Teilnehmerstatus. Anschließend wird versucht, die Teilnehmerliste erneut mit dem Backend abzugleichen. Ein Fehler beim erneuten Laden macht die bereits erfolgreiche Teilnahme nicht rückgängig.
 
 ### `Card` und `Collection`
-
  `Collection` legt anhand des `collectionType` eine Standardrolle fest: `Events_Organized` übergibt `owner`, `My_Events` übergibt `attendee`; für `All_Events` wird keine Rolle vorgegeben. `Card` verwendet eine übergebene Rolle vorrangig. Fehlt sie, wird bei vorhandenem `currentUserId` zunächst `event.ownerId` verglichen und anschließend geprüft, ob `event.id` in `attendeeEventIds` enthalten ist. Die Karte zeigt die erste Kategorie, Startdatum und -uhrzeit, Titel, Veranstalternamen und Veranstaltungsort. Veranstalter erhalten Bearbeiten- und Löschen-Aktionen, Teilnehmer eine Aktion zum Verlassen des Events.
 `Collection` zeigt standardmäßig 10 Einträge an; die Profilseite übergibt den Wert 6. Jeder Klick auf **Mehr anzeigen** erhöht die sichtbare Anzahl um das jeweilige Limit. Wenn keine Daten vorhanden sind, wird ein konfigurierbarer Leerzustand angezeigt; ein Button zum Erstellen eines Events kann optional eingeblendet werden.
 
-### `Profile` (`src/pages/profile/Profile.tsx`)
-
-Die Seite zeigt Avatar, Namen, E-Mail-Adresse und – sofern vorhanden – `bio`. Für Avatar wird bei fehlendem der Fallback verwendet: fehlende Avatarbilder werden über die Initialen-Fallback-Komponente dargestellt. Links zur Profilbearbeitung werden für mobile und Desktop-Ansichten unterschiedlich gerendert.
-
-Nach Vorliegen einer Benutzer-ID ruft die Seite `getOrganizedEvents(currentUser.id)` und `getEventsByAttendee(currentUser.id)` parallel ab. Standardmäßig ist der Tab `Ersteller` ausgewählt; der andere Tab heißt `Teilnehmer`. Die Seite zeigt Lade- und Fehlerzustände und übergibt der `Collection` die passende Ereignisliste mit `limit={6}`. Nach Löschen oder Verlassen einer Veranstaltung wird die entsprechende lokale Liste anhand der Event-ID gefiltert. Ein Cleanup-Flag verhindert, dass Ergebnisse nach dem Aufräumen des Effekts noch in den Zustand übernommen werden.
-Wenn kein angemeldeter Benutzer vorhanden ist, rendert die Komponente `null`.
-
 ### `DeleteConfirmation` (`src/components/shared/DeleteConfirmation.tsx`)
-
 Die Komponente stellt einen Bestätigungsdialog für das dauerhafte Löschen eines Events dar. Beim Bestätigen ruft sie `deleteEvent(eventId, accessToken)` auf. Während der Anfrage ist die Aktion deaktiviert und der Buttontext wechselt zu „Wird gelöscht...“. Bei einem Fehler wird dieser in der Konsole protokolliert und eine Fehlermeldung per `alert` angezeigt. Nach erfolgreichem Löschen wird der optionale Callback `onEventDeleted(eventId)` aufgerufen, sodass übergeordnete Listen lokal aktualisiert werden können.
 
-### `LoginModal` (`src/components/shared/LoginModal.tsx`)
 
-`LoginModal` verwaltet die Login-Form sowie die Auswahl des Registrierungsmodus innerhalb desselben Modalfensters. Die Ansicht wird abhängig vom internen Komponentenstatus zwischen Login-Form und Registrierungsauswahl umgeschaltet. Bei erneutem Öffnen wird die Login-Ansicht aktiviert.
-Die Anmeldung erfolgt über die Funktion `loginUser` aus `src/api/auth.ts`. Bei erfolgreicher Anmeldung werden der Benutzer und der Access Token über `setAuth` in den Authentifizierungskontext übernommen. Anschließend wird das Modalfenster geschlossen.
-Die Registrierungsauswahl bietet zwei Optionen: die Owner-Registrierung mit einem neuen Team und den Beitritt als Member über einen Einladungscode. Die gewählte Option wird über den Query-Parameter `type` an die Registrierungsseite übergeben.
+**### `InvitationPage` (`src/pages/inviations/InvitationPage.tsx`)**
+Die Seite ermöglicht Tenant-Ownern die Verwaltung ihrer Einladungen. Nach Abschluss der Authentifizierungsprüfung werden die Einladungen über `getInvitations(accessToken)` geladen. 
+Neue Einladungen werden über `createInvitation` angelegt. Vor dem Ersetzen eines noch nicht als kopiert markierten Codes erscheint ein Bestätigungsdialog.
 
-### `Register` (`src/pages/profile/Register.tsx`)
+Die Aktion „Widerrufen“ verwendet `revokeInvitation`. Nach erfolgreichem Widerruf aktualisiert die Seite `revokedAt` im lokalen Datensatz.
+Die Aktion „Löschen“ verwendet `deleteInvitation` und entfernt einen Einladungsdatensatz dauerhaft aus der Datenbank. Nach erfolgreicher Antwort `204 No Content` wird der Datensatz aus dem lokalen React State entfernt. 
 
-Die Seite rendert den Bereich mit der Überschrift „Account erstellen“, einen kurzen Registrierungshinweis und anschließend `RegisterForm`. Die Felder und der Request-Ablauf sind an die separate Formular-Komponente delegiert.
-
-Nach erfolgreicher Registrierung zeigt `RegisterForm` eine Bestätigung. Die Schaltfläche „Einloggen“ navigiert zur Startseite und übergibt `openLoginModal: true` im Navigation State. `Header` erkennt diesen Zustand, öffnet das Login-Modal und entfernt anschließend den Zustand durch Navigation mit `replace: true`.
-
-### Authentifizierungszustand (`src/hooks/useAuth.tsx`)
-
-Der bisher dokumentierte Ablauf sieht einen globalen Auth-Kontext vor, der Benutzer und Access-Token verwaltet. Beim App-Start wird versucht, eine Sitzung über `/auth/refresh` wiederherzustellen; `isLoading` kennzeichnet die laufende Prüfung. `useAuth` wird unter anderem in `Home`, `EventForm`, `EventDetails`, `Profile` und `DeleteConfirmation` verwendet. 
+Die frontendseitige Rollenprüfung dient der Benutzerführung; die verbindliche Autorisierung und Tenant-Isolation werden vom Backend durchgesetzt.
 
 ---
 
@@ -383,10 +385,13 @@ Die API-Funktionen verwenden den zentralen HTTP-Helper `apiFetch` aus `src/lib/a
 | `createInvitation(expiresAt, token)` | `POST /invitations` | Einladung erstellen und den einmalig zurückgegebenen Einladungscode abrufen |
 | `getInvitations(token)` | `GET /invitations` | Einladungen des authentifizierten Tenants abrufen |
 | `revokeInvitation(invitationId, token)` | `DELETE /invitations/:id` | Eine widerrufbare Einladung widerrufen |
+| `deleteInvitation(invitationId, token)` | `DELETE /invitations/:id/permanent` | Eine Einladung unabhängig von ihrem Status dauerhaft aus der Datenbank löschen |
 
 `createInvitation` übermittelt den Ablaufzeitpunkt im Feld `expiresAt`. Die Antwort enthält den neu generierten `invitationCode` sowie den zugehörigen Einladungsdatensatz. Der Klartextcode wird vom Client nur für die Anzeige und das Kopieren verwendet.
 
 `getInvitations` liefert die Einladungsdatensätze für die Übersicht. `revokeInvitation` verarbeitet eine erfolgreiche `DELETE`-Antwort ohne Response-Body (`204 No Content`). Nach erfolgreichem Widerruf aktualisiert `InvitationPage` den lokalen Einladungsdatensatz.
+
+`deleteInvitation` führt einen authentifizierten `DELETE`-Request an `/invitations/:id/permanent` aus. Das Backend löscht den Datensatz dauerhaft, sofern die Einladung zum Tenant des angemeldeten Owners gehört. 
 
 Die Berechtigungsprüfung und die tatsächliche Gültigkeit einer Einladung werden serverseitig durchgesetzt. Die Einschränkung der verfügbaren Aktionen im Frontend dient ausschließlich der Benutzerführung und ersetzt keine Backend-Autorisierung.
 

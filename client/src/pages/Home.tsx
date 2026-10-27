@@ -164,18 +164,18 @@ export default function Home() {
   // Guest - unauthorisierte Benutzer
   return (
     <>
-      <section className="bg-primary-50 bg-dotted-pattern bg-contain py-5 md:py-10">
+      <section className="bg-primary-50 bg-dotted-pattern bg-contain">
         <div className="wrapper grid grid-cols-1 gap-5 md:grid-cols-2 2xl:gap-0">
-          <div className="flex flex-col justify-center gap-8">
-            <h1 className="text-[28px] font-bold leading-tight md:text-[34px] lg:text-[48px]">
+          <div className="flex flex-col justify-center gap-4">
+            <h1 className="text-[24px] font-bold leading-tight md:text-[30px] lg:text-[36px]">
               Ihre Veranstaltung, einfach geplant und organisiert
             </h1>
-            <p className="p-regular-16 md:p-regular-24 max-w-[50ch]">
+            <p className="p-regular-14 md:p-regular-18 max-w-[50ch]">
               Aufgaben und Termine immer im Blick behalten.<br />
               Zeitpläne in Echtzeit aktualisieren – ganz ohne Papier.
             </p>
             <Button asChild className="w-full sm:w-fit" size="lg">
-              <Link to="/sign-in">Jetzt loslegen</Link>
+              <Link to="/register">Jetzt loslegen</Link>
             </Button>
           </div>
           <img src={hero} alt="PlanFuchs Dashboard" className="max-h-[70vh] w-full object-contain object-center" />
@@ -186,12 +186,12 @@ export default function Home() {
         <h2 className="h2-bold text-center">Wie funktioniert PlanFuchs?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="border border-primary-500/40 rounded-xl p-6">
-            <h3 className="font-semibold text-lg mb-2">1. Event erstellen</h3>
-            <p className="text-sm">Alle Infos und Bilder im Handumdrehen hinzufügen.</p>
+            <h3 className="font-semibold text-lg mb-2">1. Team erstellen</h3>
+            <p className="text-sm">Account erstellen und einen gemeinsamen Bereich für dein Team einrichten.</p>
           </div>
           <div className="border border-primary-500/40 rounded-xl p-6">
             <h3 className="font-semibold text-lg mb-2">2. Team einladen</h3>
-            <p className="text-sm">Kollegen einladen und Zusagen im Blick behalten.</p>
+            <p className="text-sm">Kolleg:innen per Einladungscode in deinen Team-Bereich aufnehmen.</p>
           </div>
           <div className="border border-primary-500/40 rounded-xl p-6">
             <h3 className="font-semibold text-lg mb-2">3. Überblick behalten</h3>

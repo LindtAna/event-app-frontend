@@ -90,9 +90,10 @@ Beide Registrierungsmodi verwenden gemeinsame Formularfelder für Name, E-Mail-A
 
 ### Teilnahmesystem
 - Getrennte Ansicht von Events über Tab-Navigation:
-  - **Ersteller** – vom Nutzer erstellte Veranstaltungen  
-  - **Teilnehmer** – Events, bei denen er als Teilnehmer eingetragen ist
+  - **Ersteller** – vom Nutzer erstellte Veranstaltungen.
+  - **Teilnehmer** – Events, bei denen er als Teilnehmer eingetragen ist.
 - Die Detailseite eines Events zeigt die Teilnehmerliste und ermöglicht angemeldeten Benutzern, sich als Teilnehmer einzutragen. Die Teilnahme-Requests werden mit Access Token ausgeführt.
+- Die  EventsDetail-Seite zeigt die Teilnehmer über die wiederverwendbare Komponente AttendeeCarousel als horizontale Reihe runder Avatare. Die Anzahl der sichtbaren Avatare passt sich der Bildschirmbreite an. Über Pfeil-Buttons kann die Liste schrittweise durchlaufen werden. Beim Überfahren, Fokussieren oder Anklicken eines Avatars wird der Name des Teilnehmers als Tooltip angezeigt.
 
 
 ### Suche & Filterung
@@ -170,6 +171,7 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │     └── images/
 │   ├── components/
 │   │   ├── shared/                    # Wiederverwendbare Komponenten der Geschäftslogik
+│   │   │   ├── AttendeeCarousel.tsx   # Responsive Teilnehmer-Avatare mit Navigation und Tooltips
 │   │   │   ├── Card.tsx               # Karte einer einzelnen Veranstaltung (Event-Karte)
 │   │   │   ├── CategoryFilter.tsx     # Komponente zur Filterung von Events nach Kategorien
 │   │   │   ├── Collection.tsx         # Liste von Event-Karten

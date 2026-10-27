@@ -8,6 +8,7 @@ import { getEventAttendees, addEventAttendee } from '@/api/attendees'
 
 import { formatDateTime } from '@/lib/utils'
 
+import AttendeeCarousel from '@/components/shared/AttendeeCarousel'
 import { Button } from '@/components/ui/button'
 
 import calendar from '@/assets/icons/calendar.svg'
@@ -303,38 +304,11 @@ const EventDetails = () => {
                         </div>
 
                         {/* Teilnehmer */}
-                        <div className="flex flex-col gap-2">
-                            <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
-                                Teilnehmer ({attendees.length})
-                            </p>
-
-                            {isAttendeesLoading ? (
-                                <p className="text-sm text-gray-500">
-                                    Teilnehmer werden geladen...
-                                </p>
-                            ) : attendeesError ? (
-                                <p className="text-sm text-red-500">
-                                    {attendeesError}
-                                </p>
-                            ) : attendees.length === 0 ? (
-                                <p className="text-sm text-gray-500">
-                                    Noch keine Teilnehmer.
-                                </p>
-                            ) : (
-                                <ul className="flex flex-wrap gap-2 pt-1">
-                                    {attendees.map((attendee) => (
-                                        <li
-                                            key={attendee.id}
-                                            className="rounded-full border border-secondary-dark/30 bg-secondary/50 px-3 py-1.5 text-sm text-black"
-                                        >
-                                            {attendee.name ||
-                                                `Teilnehmer #${attendee.id}`}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-
-                        </div>
+                        <AttendeeCarousel
+                            attendees={attendees}
+                            isLoading={isAttendeesLoading}
+                            error={attendeesError}
+                        />
                     </div>
                 </div>
             </section>

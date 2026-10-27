@@ -1,5 +1,3 @@
-// Go+SQLite Backend-kompatibel + Frontend-Erweiterungen
-
 export type User = {
   id: number;
   tenantId: number;
@@ -9,7 +7,6 @@ export type User = {
   bio?: string;
   avatarUrl?: string;
 };
-
 
 export type Invitation = {
   id: number;

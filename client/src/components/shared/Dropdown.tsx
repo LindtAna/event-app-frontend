@@ -33,11 +33,29 @@ type DropdownProps = {
   onChangeHandler?: (value: string) => void
 }
 
+type CategoryState = {
+  token: string | null;
+  categories: Category[];
+  loadError: string;
+};
+
 const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
 
-  const [categories, setCategories] = useState<Category[]>([])
   const [newCategory, setNewCategory] = useState("")
-  const [loadError, setLoadError] = useState("")
+
+  const [categoryState, setCategoryState] = useState<CategoryState>(
+    () => ({
+      token,
+      categories: [],
+      loadError: "",
+    }),
+  );
+
+  const currentCategoryState =
+    categoryState.token === token ? categoryState : null;
+
+  const categories = currentCategoryState?.categories ?? [];
+  const loadError = currentCategoryState?.loadError ?? "";
 
   // Steuerungs-States für unabhängige öffnen/schließen
   // von Select-Dropdown und Erstellungs-Dialog 
@@ -46,70 +64,79 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
 
   // Lädt beim Start alle Kategorien vom Go-Backend
   // Bewahrt temporäre Kategorien bei zeitgleichen Aktionen
+  // Lädt beim Start alle Kategorien vom Go-Backend
+  // Bewahrt temporäre Kategorien bei zeitgleichen Aktionen
   useEffect(() => {
-  let cancelled = false;
+    if (!token) return;
 
-  if (!token) {
-    setCategories([]);
-    setLoadError("");
+    let cancelled = false;
+
+    const loadCategories = async () => {
+      try {
+        const data = await apiFetch<Category[]>("/categories", {
+          token,
+        });
+
+        if (!cancelled) {
+          setCategoryState((current) => {
+            const currentCategories =
+              current.token === token
+                ? current.categories
+                : [];
+
+            const temporaryCategories = currentCategories.filter(
+              (category) =>
+                category.id.startsWith(NEW_CATEGORY_PREFIX),
+            );
+
+            const merged = [...data];
+
+            for (const temporary of temporaryCategories) {
+              const alreadyExists = merged.some(
+                (category) =>
+                  category.name.toLowerCase() ===
+                  temporary.name.toLowerCase(),
+              );
+
+              if (!alreadyExists) {
+                merged.push(temporary);
+              }
+            }
+
+            return {
+              token,
+              categories: merged,
+              loadError: "",
+            };
+          });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setCategoryState((current) => ({
+            token,
+            categories:
+              current.token === token
+                ? current.categories
+                : [],
+            loadError:
+              error instanceof Error
+                ? error.message
+                : "Kategorien konnten nicht geladen werden.",
+          }));
+        }
+      }
+    };
+
+    void loadCategories();
 
     return () => {
       cancelled = true;
     };
-  }
+  }, [token]);
 
-  const loadCategories = async () => {
-    try {
-      const data = await apiFetch<Category[]>("/categories", {
-        token,
-      });
-
-      if (!cancelled) {
-        setCategories((current) => {
-          const temporaryCategories = current.filter((category) =>
-            category.id.startsWith(NEW_CATEGORY_PREFIX)
-          );
-
-          const merged = [...data];
-
-          for (const temporary of temporaryCategories) {
-            const alreadyExists = merged.some(
-              (category) =>
-                category.name.toLowerCase() ===
-                temporary.name.toLowerCase()
-            );
-
-            if (!alreadyExists) {
-              merged.push(temporary);
-            }
-          }
-
-          return merged;
-        });
-
-        setLoadError("");
-      }
-    } catch (error) {
-      if (!cancelled) {
-        setLoadError(
-          error instanceof Error
-            ? error.message
-            : "Kategorien konnten nicht geladen werden."
-        );
-      }
-    }
-  };
-
-  void loadCategories();
-
-  return () => {
-    cancelled = true;
-  };
-}, [token]);
-
-// Fängt die Auswahl im Dropdown ab
-// Öffnet den Dialog oder
-// übergibt den Wert an React Hook Form
+  // Fängt die Auswahl im Dropdown ab
+  // Öffnet den Dialog oder
+  // übergibt den Wert an React Hook Form
   const handleSelectValueChange = (nextValue: string) => {
     if (nextValue === CREATE_CATEGORY_VALUE) {
       // Zuerst das Select-Dropdown schließen
@@ -118,7 +145,7 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
       setIsDialogOpen(true)
       return
     }
-// Reguläre Kategorie ausgewählt
+    // Reguläre Kategorie ausgewählt
     onChangeHandler?.(nextValue)
   }
 
@@ -144,13 +171,17 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
     // damit das Backend erkennt, dass es eine neue Kategorie ist
     const temporaryId = `${NEW_CATEGORY_PREFIX}${name}`
 
-    setCategories((current) => [
-      ...current,
-      {
-        id: temporaryId,
-        name,
-      },
-    ])
+   setCategoryState((current) => ({
+    token,
+    categories: [
+        ...(current.token === token ? current.categories : []),
+        {
+            id: temporaryId,
+            name,
+        },
+    ],
+    loadError: current.token === token ? current.loadError : "",
+}));
 
     // Aktualisiert das React-Hook-Form-Feld
     onChangeHandler?.(temporaryId)
@@ -200,7 +231,7 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
         </p>
       )}
 
-{/* Dialogfenster zum Eingeben und Hinzufügen einer neuen Kategorie */}
+      {/* Dialogfenster zum Eingeben und Hinzufügen einer neuen Kategorie */}
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>

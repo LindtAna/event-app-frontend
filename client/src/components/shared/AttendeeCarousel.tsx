@@ -56,24 +56,26 @@ const AttendeeCarousel = ({
 
     const maxStartIndex = Math.max(0, attendees.length - visibleCount);
 
-    useEffect(() => {
-        setStartIndex((currentIndex) => Math.min(currentIndex, maxStartIndex));
-    }, [maxStartIndex]);
+const effectiveStartIndex = Math.min(startIndex, maxStartIndex);
 
     const visibleAttendees = attendees.slice(
-        startIndex,
-        startIndex + visibleCount,
+    effectiveStartIndex,
+    effectiveStartIndex + visibleCount,
+);
+
+   const showPrevious = () => {
+    setStartIndex((currentIndex) =>
+        Math.max(0, Math.min(currentIndex, maxStartIndex) - 1),
     );
+    setPinnedAttendeeId(null);
+};
 
-    const showPrevious = () => {
-        setStartIndex((currentIndex) => Math.max(0, currentIndex - 1));
-        setPinnedAttendeeId(null);
-    };
-
-    const showNext = () => {
-        setStartIndex((currentIndex) => Math.min(maxStartIndex, currentIndex + 1));
-        setPinnedAttendeeId(null);
-    };
+const showNext = () => {
+    setStartIndex((currentIndex) =>
+        Math.min(maxStartIndex, currentIndex + 1),
+    );
+    setPinnedAttendeeId(null);
+};
 
     const getDisplayName = (attendee: User) =>
         attendee.name?.trim() || `Teilnehmer #${attendee.id}`;
@@ -96,7 +98,7 @@ const AttendeeCarousel = ({
                         <button
                             type="button"
                             onClick={showPrevious}
-                            disabled={startIndex === 0}
+                            disabled={effectiveStartIndex === 0}
                             aria-label="Vorherige Teilnehmer anzeigen"
                             className="flex size-7 shrink-0 items-center justify-center disabled:cursor-not-allowed disabled:opacity-30"
                         >
@@ -175,7 +177,7 @@ const AttendeeCarousel = ({
                         <button
                             type="button"
                             onClick={showNext}
-                            disabled={startIndex >= maxStartIndex}
+                            disabled={effectiveStartIndex >= maxStartIndex}
                             aria-label="Weitere Teilnehmer anzeigen"
                             className="flex size-7 shrink-0 items-center justify-center rounded-full disabled:cursor-not-allowed disabled:opacity-30"
                         >

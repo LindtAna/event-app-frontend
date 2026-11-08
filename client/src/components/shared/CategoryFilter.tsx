@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom'
 
 import {
@@ -15,55 +15,76 @@ import type { Category } from '@/types'
 
 const ALL_CATEGORIES_VALUE = 'All'
 
+type CategoryLoadResult = {
+    token: string;
+    categories: Category[];
+    error: string;
+};
+
 const CategoryFilter = () => {
     const { accessToken, isLoading: isAuthLoading } = useAuth()
     const [searchParams, setSearchParams] = useSearchParams()
 
-    const [categories, setCategories] = useState<Category[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    const [loadError, setLoadError] = useState("")
+    const [categoryResult, setCategoryResult] =
+        useState<CategoryLoadResult | null>(null);
 
     // Lädt alle verfügbaren Kategorien beim ersten Rendern vom Go-Backend
+    // Lädt alle verfügbaren Kategorien beim ersten Rendern vom Go-Backend
     useEffect(() => {
-        if (isAuthLoading) return
+        if (isAuthLoading || !accessToken) return;
 
-        if (!accessToken) {
-            setCategories([])
-            setLoadError('Bitte melden Sie sich an, um Kategorien zu laden.')
-            setIsLoading(false)
-            return
-        }
-        let cancelled = false
+        let cancelled = false;
 
         const fetchCategories = async () => {
-             setIsLoading(true)
-            setLoadError('')
-
             try {
-                const data = await getCategories(accessToken)
+                const data = await getCategories(accessToken);
 
                 if (!cancelled) {
-                    setCategories(data ?? [])
-                    setLoadError('')
+                    setCategoryResult({
+                        token: accessToken,
+                        categories: data ?? [],
+                        error: "",
+                    });
                 }
             } catch (error) {
                 if (!cancelled) {
-                    setLoadError(
-                        error instanceof Error
-                            ? error.message
-                            : 'Kategorien konnten nicht geladen werden.')
-                }
-            } finally {
-                if (!cancelled) {
-                    setIsLoading(false)
+                    setCategoryResult({
+                        token: accessToken,
+                        categories: [],
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : "Kategorien konnten nicht geladen werden.",
+                    });
                 }
             }
-        }
-        void fetchCategories()
+        };
+
+        void fetchCategories();
+
         return () => {
-            cancelled = true
-        }
-    }, [accessToken, isAuthLoading])
+            cancelled = true;
+        };
+    }, [accessToken, isAuthLoading]);
+
+    const currentResult =
+        accessToken && categoryResult?.token === accessToken
+            ? categoryResult
+            : null;
+
+    const categories = useMemo(
+    () => currentResult?.categories ?? [],
+    [currentResult],
+);
+
+    const isLoading =
+        isAuthLoading || (!!accessToken && !currentResult);
+
+    const loadError = isAuthLoading
+        ? ""
+        : !accessToken
+            ? "Bitte melden Sie sich an, um Kategorien zu laden."
+            : currentResult?.error ?? "";
 
     // Aktuelle Kategorie aus den URL-Suchparametern abrufen
     const currentCategory = searchParams.get('category') || ''
@@ -118,7 +139,7 @@ const CategoryFilter = () => {
                     <SelectItem
                         value={ALL_CATEGORIES_VALUE}
                         className="select-item p-regular-14"
-                        >
+                    >
                         Alle Kategorien
                     </SelectItem>
 

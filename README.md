@@ -48,7 +48,8 @@ Beide Registrierungsmodi verwenden gemeinsame Formularfelder für Name, E-Mail-A
 - Fehler der Registrierung werden dem Benutzer angezeigt; das Formular kann nach einem fehlgeschlagenen Request erneut abgesendet werden.
 - Die clientseitige Formularvalidierung erfolgt über `Zod` und `zodResolver`.
 - Die Anmeldung wird über `LoginModal` angeboten. Bei erfolgreicher Anmeldung übernimmt `setAuth` den zurückgegebenen Benutzer und Access Token in den Authentifizierungskontext. Danach wird das Modal geschlossen. Fehler werden dem Benutzer angezeigt.
-- Der Authentifizierungskontext (`AuthProvider` / `useAuth`) stellt unter anderem `user`, `accessToken`, `isSignedIn`, `isLoading`, `setAuth` und `logout` bereit. Beim App-Start wird die Sitzung über `POST /auth/refresh` wiederherzustellen versucht; beim Logout wird `POST /auth/logout` aufgerufen. `apiFetch` setzt `credentials: 'include'`, damit der Browser HttpOnly-Cookies mitsenden und verarbeiten kann.
+- Der Authentifizierungszustand wird über die React Context API bereitgestellt. Der `AuthProvider` verwaltet die Authentifizierungsdaten und stellt unter anderem `user`, `accessToken`, `isSignedIn`, `isLoading`, `setAuth` und `logout` über den Authentifizierungskontext zur Verfügung. Der Hook `useAuth` ermöglicht den Zugriff auf diesen Kontext innerhalb der React-Komponenten.
+Beim App-Start wird versucht, die Sitzung über `POST /auth/refresh` wiederherzustellen. Beim Logout wird `POST /auth/logout` aufgerufen. `apiFetch` setzt `credentials: 'include'`, damit der Browser HttpOnly-Cookies mitsenden und verarbeiten kann.
 - Die Member-Registrierung verwendet einen zuvor von einem Tenant-Owner erstellten Einladungscode. Der Client übermittelt den Code im Feld Enladungscode. Ob die Einladung gültig, noch nicht verwendet, nicht widerrufen und nicht abgelaufen ist, wird vom Backend geprüft.
 - - Im angemeldeten Zustand zeigt `Header` das Benutzeravatar bzw. ein Fallback-Icon. Das Benutzermenü enthält den Namen bzw. die E-Mail-Adresse des Benutzers und die Abmeldeaktion. Nicht angemeldete Besucher öffnen über das Benutzer-Icon das `Login-Modal`.
 
@@ -111,7 +112,7 @@ Beide Registrierungsmodi verwenden gemeinsame Formularfelder für Name, E-Mail-A
 
 ### Routing und Anwendungszustand
 - React Router DOM
-- React Context API für die Authentifizierung (`AuthProvider` / `useAuth`) 
+- React Context API für die globale Authentifizierung (`AuthContext`, `AuthProvider` und `useAuth`)
 
 ### Styling und UI
 - Tailwind CSS
@@ -201,7 +202,10 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   ├── constants/
 │   │   └── index.ts   # Konstanten und Standardwerte (eventDefaultValues,registerDefaultValues)
 │   ├── hooks/
-│   │   └── useAuth.tsx          # Authentifizierungsstatus und Sitzungswiederherstellung
+│   │   ├── auth-context.ts      # Erstellt und typisiert den Authentifizierungskontext
+│   │   ├── AuthProvider.tsx     # Verwaltet den globalen Authentifizierungszustand und die Sitzungswiederherstellung
+│   │   └── useAuth.ts           # Stellt einen Hook für den Zugriff auf den Authentifizierungskontext bereit
+│   │
 │   ├── layouts/
 │   │   └── RootLayout.tsx       # Hauptlayout der Anwendung (Header, Outlet und Footer)
 │   ├── lib/
@@ -301,8 +305,13 @@ Die Seite rendert den Bereich mit der Überschrift „Account erstellen“, eine
 
 Nach erfolgreicher Registrierung zeigt `RegisterForm` eine Bestätigung. Die Schaltfläche „Einloggen“ navigiert zur Startseite und übergibt `openLoginModal: true` im Navigation State. `Header` erkennt diesen Zustand, öffnet das Login-Modal und entfernt anschließend den Zustand durch Navigation mit `replace: true`.
 
-### Authentifizierungszustand (`src/hooks/useAuth.tsx`)
-Der Ablauf sieht einen globalen Auth-Kontext vor, der Benutzer und Access-Token verwaltet. Beim App-Start wird versucht, eine Sitzung über `/auth/refresh` wiederherzustellen; `isLoading` kennzeichnet die laufende Prüfung. `useAuth` wird unter anderem in `Home`, `EventForm`, `EventDetails`, `Profile` und `DeleteConfirmation` verwendet. 
+### Authentifizierungszustand (`src/hooks/`)
+Der globale Authentifizierungszustand wird über drei separate Dateien innerhalb von `src/hooks/` implementiert:
+- `auth-context.ts`: Erstellt und typisiert den React-Kontext für die Authentifizierung.
+- `AuthProvider.tsx`: Verwaltet den Benutzerstatus und den Access-Token. Beim App-Start wird versucht, die Sitzung über `POST /auth/refresh` wiederherzustellen. Außerdem stellt der Provider die Funktionen `setAuth` und `logout` bereit.
+- `useAuth.ts`: Stellt den benutzerdefinierten Hook `useAuth` bereit, über den React-Komponenten auf den Authentifizierungskontext zugreifen können.
+
+Der `AuthProvider` umschließt die Anwendung in `App.tsx`. `useAuth` wird unter anderem in `Home`, `EventForm`, `EventDetails`, `Profile` und `DeleteConfirmation` verwendet.
 
 ### `Profile` (`src/pages/profile/Profile.tsx`)
 Die Seite zeigt Avatar, Namen, E-Mail-Adresse und – sofern vorhanden – `bio`. Für Avatar wird bei fehlendem der Fallback verwendet: fehlende Avatarbilder werden über die Initialen-Fallback-Komponente dargestellt. Links zur Profilbearbeitung werden für mobile und Desktop-Ansichten unterschiedlich gerendert.

@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, ApiError } from "@/lib/api";
 import type { User } from "@/types";
 import { AuthContext } from "./auth-context";
 
@@ -10,6 +10,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Beim Start die Gültigkeit des HttpOnly-Cookies über /refresh überprüfen
     useEffect(() => {
+        const controller = new AbortController();
+
         const restoreSession = async () => {
             try {
                 const data = await apiFetch<{
@@ -17,18 +19,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     accessToken: string;
                 }>("/auth/refresh", {
                     method: "POST",
+                    signal: controller.signal,
                 });
+                if (controller.signal.aborted) return;
 
                 setUser(data.user);
                 setAccessToken(data.accessToken);
             } catch (error) {
-                console.error("Session restore failed:", error);
+                // Abgebrochene Anfragen nicht als Fehler behandeln
+                if (controller.signal.aborted) return;
+
+                // Kein gültiger Refresh-Cookie bedeutet: anonymer Benutzer
+                if (error instanceof ApiError && error.status === 401) {
+                    return;
+                }
+
+                console.error("Session restore failed:", error)
             } finally {
-                setIsLoading(false);
+                if (!controller.signal.aborted) {
+                    setIsLoading(false)
+            }
             }
         };
 
-        restoreSession();
+        void restoreSession()
+
+        return () => {
+            controller.abort()
+        }
     }, []);
 
     const setAuth = (userData: User, token: string) => {

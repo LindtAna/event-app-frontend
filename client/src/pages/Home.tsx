@@ -22,20 +22,33 @@ export default function Home() {
   const searchQuery = searchParams.get('query') || ''
   const categoryQuery = searchParams.get('category') || ''
 
-  const [events, setEvents] = useState<Event[]>([])
-  const [attendeeEventIds, setAttendeeEventIds] = useState<number[]>([])
-  const [isEventsLoading, setIsEventsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const userId = user?.id
+
+const [events, setEvents] = useState<Event[]>([])
+const [attendeeEventIds, setAttendeeEventIds] = useState<number[]>([])
+const [isEventsLoading, setIsEventsLoading] = useState(false)
+const [error, setError] = useState<string | null>(null)
+const [loadedUserId, setLoadedUserId] = useState<typeof userId>()
+
+// Sicherstellen, dass nur Daten des aktuell angemeldeten Benutzers angezeigt werden
+const hasCurrentUserData =
+  userId !== undefined && loadedUserId === userId
+
+const visibleEvents = hasCurrentUserData ? events : []
+const visibleAttendeeEventIds = hasCurrentUserData ? attendeeEventIds : []
+const visibleError = hasCurrentUserData ? error : null
+
+const visibleLoading =
+  userId !== undefined && (!hasCurrentUserData || isEventsLoading)
 
 // für den angemeldeten Benutzer alle Veranstaltungen und Teilnahmen laden 
-  useEffect(() => {
-    if (isAuthLoading) return
-
-  if (!isSignedIn || !user || !accessToken) {
-    setEvents([])
-    setAttendeeEventIds([])
-    setIsEventsLoading(false)
-    setError(null)
+  // Für den angemeldeten Benutzer alle Veranstaltungen und Teilnahmen laden
+useEffect(() => {
+  if (
+    isAuthLoading ||
+    userId === undefined ||
+    !accessToken
+  ) {
     return
   }
 
@@ -44,36 +57,42 @@ export default function Home() {
   const fetchData = async () => {
     setIsEventsLoading(true)
     setError(null)
+
     try {
-        const [eventsData, myEventsData] = await Promise.all([
-          getAllEvents(accessToken),
-          getEventsByAttendee(user.id, accessToken),
-        ])
+      const [eventsData, myEventsData] = await Promise.all([
+        getAllEvents(accessToken),
+        getEventsByAttendee(userId, accessToken),
+      ])
 
-        if (!cancelled) {
-          setEvents(eventsData ?? [])
-          setAttendeeEventIds((myEventsData ?? []).map((event) => event.id))
-        }
-      } catch (err) {
-        console.error('Fehler beim Laden der Daten:', err)
+      if (!cancelled) {
+        setEvents(eventsData ?? [])
+        setAttendeeEventIds(
+          (myEventsData ?? []).map((event) => event.id)
+        )
+        setLoadedUserId(userId)
+      }
+    } catch (err) {
+      console.error('Fehler beim Laden der Daten:', err)
 
-        if (!cancelled) {
-          setError('Veranstaltungen konnten nicht geladen werden.')
-          setAttendeeEventIds([])
-        }
-      } finally {
-        if (!cancelled) {
-          setIsEventsLoading(false)
-        }
+      if (!cancelled) {
+        setEvents([])
+        setAttendeeEventIds([])
+        setLoadedUserId(userId)
+        setError('Veranstaltungen konnten nicht geladen werden.')
+      }
+    } finally {
+      if (!cancelled) {
+        setIsEventsLoading(false)
       }
     }
+  }
 
-    void fetchData()
+  void fetchData()
 
-    return () => {
-      cancelled = true
-    }
-  }, [isAuthLoading, isSignedIn, user?.id, accessToken])
+  return () => {
+    cancelled = true
+  }
+}, [isAuthLoading, userId, accessToken])
 
  // Entfernen des Events aus local State ( nach erfolgreichem DELETE aus der Card)
   const handleEventDeleted = (eventId: number | string) => {
@@ -87,7 +106,7 @@ export default function Home() {
 }
 
   // Filtern nach Suchanfrage und Kategorie
-  const filteredEvents = events.filter((event) => {
+  const filteredEvents = visibleEvents.filter((event) => {
     const matchQuery = searchQuery
       ? event.title.toLowerCase().includes(searchQuery.toLowerCase())
       : true
@@ -131,13 +150,13 @@ export default function Home() {
           <CategoryFilter />
         </div>
 
-        {isEventsLoading ? (
+        {visibleLoading ? (
           <div className="flex items-center justify-center min-h-[200px] text-grey-500">
             Veranstaltungen werden geladen...
           </div>
-        ) : error ? (
+        ) : visibleError ? (
           <div className="flex items-center justify-center min-h-[200px] text-red-500">
-            {error}
+            {visibleError}
           </div>
         ) : (
           <Collection
@@ -151,7 +170,7 @@ export default function Home() {
             emptyStateShowButton={!searchQuery && !categoryQuery}
             collectionType="All_Events"
             currentUserId={user.id}
-            attendeeEventIds={attendeeEventIds}
+            attendeeEventIds={visibleAttendeeEventIds}
             limit={10}
             onEventDeleted={handleEventDeleted}
             onEventLeft={handleEventLeft}

@@ -46,14 +46,22 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
     const { accessToken } = useAuth();
 
     const initialValues =
-        event && type === "Update"
-            ? {
-                ...event,
-                categoryId: event.categoryId || (event as any).category?.id || "",
-                startDateTime: new Date(event.startDateTime),
-                endDateTime: new Date(event.endDateTime),
-            }
-            : eventDefaultValues;
+    event && type === "Update"
+        ? {
+            ...event,
+            categoryId:
+                event.categoryId ||
+                ("category" in event &&
+                event.category !== null &&
+                typeof event.category === "object" &&
+                "id" in event.category &&
+                typeof event.category.id === "string"
+                    ? event.category.id
+                    : ""),
+            startDateTime: new Date(event.startDateTime),
+            endDateTime: new Date(event.endDateTime),
+        }
+        : eventDefaultValues;
 
     // Zod-Validierung via Resolver + Festlegung des Formulardatentyps
     const form = useForm<z.infer<typeof eventFormSchema>>({

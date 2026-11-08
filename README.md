@@ -63,7 +63,8 @@
 - [Bilder und Dateien: Cloudinary](#bilder-und-dateien-cloudinary)
 - [Tests](#tests)
   - [Testkonfiguration](#testkonfiguration)
-  - [Testabdeckung](#testabdeckung)
+  - [Unit Tests](#unit-tests)
+  - [Component and Hook Tests](#component-and-hook-tests)
   - [Testausführung](#testausführung)
 ---
 
@@ -72,7 +73,7 @@
 
 Der EventApp Client ist die clientseitige Anwendung einer Event-Management-Plattform, entwickelt auf Basis von React und TypeScript. Die Anwendung bietet Nutzern eine moderne Benutzeroberfläche zur Registrierung, Erstellung eigener Events, Profilverwaltung sowie zur Anmeldung als Teilnehmer für Veranstaltungen anderer Nutzer.
 
-Der Client kommuniziert über eine REST-API mit einem Backend auf Basis von Go (Golang), Gin und SQLite. Formulare verwenden React Hook Form und Zod zur Validierung.
+Der Client kommuniziert über eine REST-API mit einem Backend auf Basis von Go (Golang), Gin und PostgreSQL. Formulare verwenden React Hook Form und Zod zur Validierung.
 Event-Bilder und Profilavatare werden über Cloudinary hochgeladen.
 Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clientseitiger Datenvalidierung und responsiver Benutzeroberfläche (Responsive Design).
 
@@ -227,7 +228,11 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   ├── attendees.ts    # API-Funktionen zur Verwaltung von Event-Teilnahmen
 │   │   ├── categories.ts   # API-Funktion zum Abrufen von Kategorien
 │   │   ├── upload.ts       # Upload von Event- und Profilbildern zu Cloudinary
-│   │   └── users.ts        # API-Funktion zur Aktualisierung des Benutzerprofils
+│   │   ├── users.ts        # API-Funktion zur Aktualisierung des Benutzerprofils
+│   │   │
+│   │   ├── auth.test.ts    # Unit-Tests für Login und Registrierung
+│   │   └── upload.test.ts  # Unit-Tests für Cloudinary-Uploads
+│   │
 │   ├── assets/
 │   │     ├── icons/
 │   │     └── images/
@@ -275,7 +280,8 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   ├── utils.ts             # Hilfsfunktionen / Utilities (cn, getInitials etc.)
 │   │   ├── validator.ts         # Zod-Validierungsschemata (eventFormSchema, profileFormSchema)
 │   │   │
-│   │   └── api.test.ts          # Unit-Tests für den zentralen HTTP-Helper
+│   │   ├── api.test.ts          # Unit-Tests für den zentralen HTTP-Helper
+│   │   └── validator.test.ts    # Unit-Tests der Validierung(Formulare)
 │   │
 │   ├── pages/
 │   │   ├── Home.tsx                # Landingpage bzw. Event-Übersicht
@@ -542,9 +548,9 @@ Die resultierende URL wird für Events als `imageUrl` und für Benutzerprofile a
 ## Tests
 [Zurück 🡡](#inhaltsverzeichnis)
 
-Für die Qualitätssicherung des Frontends werden **Vitest** und **React Testing Library** eingesetzt. Die Tests überprüfen die zentrale Authentifizierungslogik sowie die HTTP-Kommunikation mit der Backend-API.
+Für die Qualitätssicherung des Frontends werden Vitest und React Testing Library eingesetzt. Die Tests überprüfen die zentrale Authentifizierungslogik, die HTTP-Kommunikation, die API-Funktionen für die Authentifizierung sowie den Upload von Bildern zu Cloudinary.
 
-Die Tests laufen in einer simulierten Browserumgebung auf Basis von **jsdom**. Externe HTTP-Anfragen werden durch Mock-Funktionen ersetzt, sodass die Tests unabhängig vom laufenden Backend und der Datenbank ausgeführt werden können.
+Die Tests laufen in einer simulierten Browserumgebung auf Basis von jsdom. Externe HTTP-Anfragen werden durch Mock-Funktionen ersetzt. Dadurch können die Tests unabhängig vom laufenden Backend, der Datenbank und dem Cloudinary-Dienst ausgeführt werden.
 
 ### Testkonfiguration
 
@@ -555,23 +561,9 @@ Die Tests laufen in einer simulierten Browserumgebung auf Basis von **jsdom**. E
 
 Die zentrale Testkonfiguration befindet sich in `vite.config.ts`. Die gemeinsame Testinitialisierung erfolgt über `src/test/setup.ts`.
 
-### Testabdeckung
+### Unit Tests
 
-**1. AuthProvider und useAuth (`src/hooks/AuthProvider.test.tsx`)**
-
-Die Tests überprüfen den globalen Authentifizierungszustand und die Wiederherstellung einer bestehenden Sitzung.
-
-- Initialisierung des Authentifizierungszustands
-- Erfolgreiche Sitzungswiederherstellung über `POST /auth/refresh`
-- Behandlung einer fehlgeschlagenen Authentifizierung (HTTP 401)
-- Behandlung von Netzwerk- und Serverfehlern
-- Aktualisierung des Authentifizierungszustands über `setAuth`
-- Erfolgreicher Logout und Zurücksetzen des Zustands
-- Zurücksetzen des Zustands auch bei fehlgeschlagenem Logout
-- Abbruch der laufenden Sitzungsanfrage beim Unmount des Providers
-- Fehlerbehandlung bei der Verwendung von `useAuth` außerhalb eines `AuthProvider`
-
-**2. API-Helper (`src/lib/api.test.ts`)**
+**1. API-Helper (`src/lib/api.test.ts`)**
 
 Die Tests überprüfen die zentrale HTTP-Funktion `apiFetch`, die von den API-Modulen der Anwendung verwendet wird.
 
@@ -584,6 +576,55 @@ Die Tests überprüfen die zentrale HTTP-Funktion `apiFetch`, die von den API-Mo
 - Weitergabe von Netzwerkfehlern
 
 Die Funktion `fetch` wird gemockt, sodass die HTTP-Kommunikation isoliert getestet werden kann.
+
+**2. Authentifizierungs-API (`src/api/auth.test.ts`)**
+
+Tests überprüfen die API-Funktionen loginUser und registerUser:
+- Übermittlung der Login-Daten an POST /auth/login
+- Übermittlung der Registrierungsdaten für einen Tenant-Owner
+- Übermittlung der Registrierungsdaten für einen Tenant-Member einschließlich Einladungscode
+- Weitergabe von API-Fehlern an den aufrufenden Code
+
+Dabei wird apiFetch gemockt. Die Tests prüfen insbesondere die korrekte Zuordnung der Request-Parameter und die Serialisierung der Payloads.
+
+**3. Cloudinary-Upload (`src/api/upload.test.ts`)**
+
+Tests überprüfen die Funktion uploadToCloudinary, die Event-Bilder und Profilavatare direkt zu Cloudinary hochlädt:
+- Upload eines Event-Bildes mit dem standardmäßig verwendeten Event-Preset
+- Verwendung des separaten Avatar-Presets
+- Behandlung einer fehlenden Cloudinary-Cloud-Konfiguration
+- Behandlung eines fehlenden Event-Upload-Presets
+- Behandlung eines fehlenden Avatar-Upload-Presets
+- Weitergabe der von Cloudinary zurückgegebenen Fehlermeldung
+- Verwendung einer Standardfehlermeldung, wenn Cloudinary keine konkrete Fehlermeldung liefert
+
+Zusätzlich wird geprüft, ob die Datei und das ausgewählte Upload-Preset korrekt in einem FormData-Objekt übermittelt werden und ob die Funktion die zurückgegebene secure_url liefert.
+
+Die externe fetch-Anfrage wird gemockt. Die Tests benötigen daher keine tatsächliche Verbindung zu Cloudinary.
+
+**4. Validierung (`src/lib/validator.test.ts`)**
+
+Tests überprüfen die Validierung der Event-, Registrierungs- und Profilformulare:
+- **Events:** Feldlängen, erforderliche Kategorie, optionale URL und zeitliche Reihenfolge von Start- und Enddatum
+- **Registrierung:** Owner- und Member-Registrierung, Passwortbestätigung, Passwortlänge und erforderliche registrierungstypspezifische Angaben
+- **Profil:** Pflichtfelder, gültige E-Mail-Adresse, Mindestlänge des Namens und maximale Bio-Länge
+- **Datenbereinigung:** Trimmen von Name und E-Mail-Adresse vor der Rückgabe der validierten Daten
+
+
+### Component and Hook Tests
+
+**1. AuthProvider und useAuth (`src/hooks/AuthProvider.test.tsx`)**
+
+Die Tests überprüfen den globalen Authentifizierungszustand und die Wiederherstellung einer bestehenden Sitzung:
+- Initialisierung des Authentifizierungszustands
+- Erfolgreiche Sitzungswiederherstellung über `POST /auth/refresh`
+- Behandlung einer fehlgeschlagenen Authentifizierung (HTTP 401)
+- Behandlung von Netzwerk- und Serverfehlern
+- Aktualisierung des Authentifizierungszustands über `setAuth`
+- Erfolgreicher Logout und Zurücksetzen des Zustands
+- Zurücksetzen des Zustands auch bei fehlgeschlagenem Logout
+- Abbruch der laufenden Sitzungsanfrage beim Unmount des Providers
+- Fehlerbehandlung bei der Verwendung von `useAuth` außerhalb eines `AuthProvider`
 
 ### Testausführung
 | Befehl | Beschreibung |

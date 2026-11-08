@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 
@@ -40,13 +40,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     defaultValues: { email: '', password: '' },
   })
 
-  // Bei erneutem Öffnen immer die Login-Ansicht anzeigen.
-  useEffect(() => {
-    if (isOpen) {
-      setView("login")
-    }
-  }, [isOpen])
-
+  const handleClose = () => {
+  setView("login")
+  onClose()
+}
   if (!isOpen) return null
 
 async function onSubmit(values: z.infer<typeof loginFormSchema>) {
@@ -54,7 +51,7 @@ async function onSubmit(values: z.infer<typeof loginFormSchema>) {
     const data = await loginUser(values)
 
     setAuth(data.user, data.accessToken)
-    onClose()
+    handleClose()
   } catch (error) {
     alert(
       error instanceof Error
@@ -68,15 +65,16 @@ const handleShowRegistrationOptions = () => {
     setView("registration-choice")
   }
 
-   const handleRegistrationRedirect = (type: RegistrationType) => {
-    onClose()
-    navigate(`/register?type=${type}`)
-  }
+  const handleRegistrationRedirect = (type: RegistrationType) => {
+  setView("login")
+  navigate(`/register?type=${type}`)
+}
 
   const handleBackToLogin = () => {
     setView("login")
   }
 
+  
   return (
     <div className="fixed inset-0 z-50 px-6 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-lg bg-white border border-primary-500/70 p-6 shadow-lg md:p-8">
@@ -87,7 +85,7 @@ const handleShowRegistrationOptions = () => {
           variant="ghost"
           size="icon-lg"
           className="absolute right-3 top-3"
-          onClick={onClose}
+          onClick={handleClose}
         >
           <XIcon className="size-6" />
         </Button>

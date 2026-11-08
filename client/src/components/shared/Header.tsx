@@ -16,7 +16,11 @@ const Header = () => {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const navigationState = location.state as
+    | { openLoginModal?: boolean }
+    | null
+  const isLoginModalOpen = navigationState?.openLoginModal === true
+
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   const menuRef = useRef<HTMLDivElement>(null)
@@ -30,28 +34,6 @@ const Header = () => {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
-
-  useEffect(() => {
-    const navigationState = location.state as
-      | { openLoginModal?: boolean }
-      | null
-    if (!navigationState?.openLoginModal) {
-      return
-    }
-    setIsLoginModalOpen(true)
-
-    navigate(
-      {
-        pathname: location.pathname,
-        search: location.search,
-        hash: location.hash,
-      },
-      {
-        replace: true,
-        state: null,
-      },
-    )
-  }, [location, navigate])
 
   const handleLogout = async () => {
     await logout()
@@ -130,7 +112,18 @@ const Header = () => {
             </>
           ) : (
             <button
-              onClick={() => setIsLoginModalOpen(true)}
+              onClick={() =>
+                navigate(
+                  {
+                    pathname: location.pathname,
+                    search: location.search,
+                    hash: location.hash,
+                  },
+                  {
+                    state: { openLoginModal: true },
+                  },
+                )
+              }
               className="hover:scale-105 transition-transform"
               title="Anmelden"
             >
@@ -148,7 +141,19 @@ const Header = () => {
 
       <LoginModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={() =>
+          navigate(
+            {
+              pathname: location.pathname,
+              search: location.search,
+              hash: location.hash,
+            },
+            {
+              replace: true,
+              state: null,
+            },
+          )
+        }
       />
     </header>
   )

@@ -276,7 +276,7 @@ const RegisterForm = () => {
         </div>
 
         {/* Steuerungstasten */}
-        <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4 w-full">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full">
          
           <Button
             type="submit"

@@ -7,7 +7,7 @@ import UpdateEvent from "./pages/events/UpdateEvent"
 import Profile from "./pages/profile/Profile"
 import UpdateProfile from "./pages/profile/UpdateProfile"
 import Register from "./pages/profile/Register"
-import { AuthProvider } from "./hooks/useAuth"
+import { AuthProvider } from "./hooks/AuthProvider";
 import InvitationPage from "./pages/invitations/InvitationPage"
 
 export default function App() {

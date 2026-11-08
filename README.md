@@ -12,7 +12,63 @@
 ![Custom Select](https://img.shields.io/badge/Custom_Select-latest-lightgrey.svg)
 ![File Uploader](https://img.shields.io/badge/File_Uploader-latest-lightgrey.svg)
 
+## Inhaltsverzeichnis
+
+- [Über das Projekt](#uber-das-projekt)
+- [Hauptfunktionen](#hauptfunktionen)
+  - [Startseite und Event-Übersicht](#startseite-und-event-ubersicht)
+  - [Registrierung und Anmeldung](#registrierung-und-anmeldung)
+  - [Einladungsverwaltung](#einladungsverwaltung)
+  - [Profilverwaltung](#profilverwaltung)
+  - [Event-Verwaltung (CRUD)](#event-verwaltung-crud)
+  - [Teilnahmesystem](#teilnahmesystem)
+  - [Suche & Filterung](#suche--filterung)
+- [Tech-Stack](#tech-stack)
+  - [Core](#core)
+  - [Routing und Anwendungszustand](#routing-und-anwendungszustand)
+  - [Styling und UI](#styling-und-ui)
+  - [Formulare und Validierung](#formulare-und-validierung)
+  - [Datei-Uploads](#datei-uploads)
+  - [API-Integration](#api-integration)
+- [Konfiguration](#konfiguration)
+- [Repository-Struktur](#repository-struktur)
+- [Formularvalidierung](#formularvalidierung)
+  - [Event-Formular](#event-formular)
+  - [Registrierung](#registrierung)
+  - [Profilbearbeitung](#profilbearbeitung)
+- [Routing](#routing)
+- [Zentrale Komponenten und Datenflüsse](#zentrale-komponenten-und-datenflusse)
+  - [Home](#home)
+  - [LoginModal](#loginmodal)
+  - [Register](#register)
+  - [Authentifizierungszustand](#authentifizierungszustand)
+  - [Profile](#profile)
+  - [EventForm](#eventform)
+  - [Dropdown](#dropdown)
+  - [CategoryFilter](#categoryfilter)
+  - [UpdateEvent](#updateevent)
+  - [EventDetails](#eventdetails)
+  - [Card und Collection](#card-und-collection)
+  - [DeleteConfirmation](#deleteconfirmation)
+  - [InvitationPage](#invitationpage)
+- [TypeScript-Datenmodelle](#typescript-datenmodelle)
+- [Integration mit der Backend-API](#integration-mit-der-backend-api)
+  - [Authentifizierung](#authentifizierung)
+  - [Einladungen](#einladungen)
+  - [Events](#events)
+  - [Teilnahmen](#teilnahmen)
+  - [Benutzerprofil](#benutzerprofil)
+  - [Kategorien](#kategorien)
+  - [Event-Payload und Kategorien](#event-payload-und-kategorien)
+- [Bilder und Dateien: Cloudinary](#bilder-und-dateien-cloudinary)
+- [Tests](#tests)
+  - [Testkonfiguration](#testkonfiguration)
+  - [Testabdeckung](#testabdeckung)
+  - [Testausführung](#testausführung)
+---
+
 ## Über das Projekt
+[Zurück 🡡](#inhaltsverzeichnis)
 
 Der EventApp Client ist die clientseitige Anwendung einer Event-Management-Plattform, entwickelt auf Basis von React und TypeScript. Die Anwendung bietet Nutzern eine moderne Benutzeroberfläche zur Registrierung, Erstellung eigener Events, Profilverwaltung sowie zur Anmeldung als Teilnehmer für Veranstaltungen anderer Nutzer.
 
@@ -23,6 +79,7 @@ Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clie
 ---
 
 ## Hauptfunktionen
+[Zurück 🡡](#inhaltsverzeichnis)
 
 ### Startseite und Event-Übersicht
 - Nicht angemeldete Besucher sehen eine öffentliche Landingpage mit Hero-Bild und einer Einführung in PlanFuchs.
@@ -105,6 +162,8 @@ Beim App-Start wird versucht, die Sitzung über `POST /auth/refresh` wiederherzu
 ---
 
 ## Tech-Stack
+[Zurück 🡡](#inhaltsverzeichnis)
+
 ### Core
 - React  
 - TypeScript  
@@ -141,6 +200,7 @@ Beim App-Start wird versucht, die Sitzung über `POST /auth/refresh` wiederherzu
 ---
 
 ## Konfiguration
+[Zurück 🡡](#inhaltsverzeichnis)
 
 Die Beispiel-Konfiguration liegt unter `client/.env.example`. Für die lokale Entwicklung sollte eine lokale Umgebungsdatei mit den passenden Werten angelegt werden.
 Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In diesen Variablen sollten daher keine geheimen Schlüssel oder privaten Zugangsdaten abgelegt werden.
@@ -154,6 +214,7 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 ---
 
 ## Repository-Struktur
+[Zurück 🡡](#inhaltsverzeichnis)
 
 ```
 .
@@ -202,16 +263,20 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   ├── constants/
 │   │   └── index.ts   # Konstanten und Standardwerte (eventDefaultValues,registerDefaultValues)
 │   ├── hooks/
-│   │   ├── auth-context.ts      # Erstellt und typisiert den Authentifizierungskontext
-│   │   ├── AuthProvider.tsx     # Verwaltet den globalen Authentifizierungszustand und die Sitzungswiederherstellung
-│   │   └── useAuth.ts           # Stellt einen Hook für den Zugriff auf den Authentifizierungskontext bereit
+│   │   ├── auth-context.ts        # Erstellt und typisiert den Authentifizierungskontext
+│   │   ├── AuthProvider.tsx       # Verwaltet den globalen Authentifizierungszustand und die Sitzungswiederherstellung
+│   │   ├── useAuth.ts             # Stellt einen Hook für den Zugriff auf den Authentifizierungskontext bereit
+│   │   └── AuthProvider.test.tsx  # Unit-Tests für AuthProvider und useAuth
 │   │
 │   ├── layouts/
 │   │   └── RootLayout.tsx       # Hauptlayout der Anwendung (Header, Outlet und Footer)
 │   ├── lib/
 │   │   ├── api.ts               # Zentraler HTTP-Helper mit Token- und Cookie-Handling   
 │   │   ├── utils.ts             # Hilfsfunktionen / Utilities (cn, getInitials etc.)
-│   │   └── validator.ts         # Zod-Validierungsschemata (eventFormSchema, profileFormSchema)
+│   │   ├── validator.ts         # Zod-Validierungsschemata (eventFormSchema, profileFormSchema)
+│   │   │
+│   │   └── api.test.ts          # Unit-Tests für den zentralen HTTP-Helper
+│   │
 │   ├── pages/
 │   │   ├── Home.tsx                # Landingpage bzw. Event-Übersicht
 │   │   ├── events/
@@ -222,24 +287,30 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   │   ├── Profile.tsx         # Persönlicher Benutzerbereich (Informationen und Tabs)
 │   │   │   ├── Register.tsx        # Seite zur Erstellung eines neuen Benutzerkontos
 │   │   │   └── UpdateProfile.tsx   # Seite zum Bearbeiten des Profils
-│   │   └── inviations/
+│   │   └── invitations/
 │   │       └── InvitationPage.tsx  # Erstellen, Anzeigen, Widerrufen und Löschen von Einladungen
+│   │
+│   ├── test/
+│   │   └── setup.ts  # Gemeinsame Initialisierung der Testumgebung
+│   │
 │   ├── types/
-│   │   └── index.ts             # Globale TypeScript-Interfaces (User, Event, Attendee)
-│   ├── App.tsx                  # Hauptkomponente für das Routing
-│   ├── index.css                # Globale Tailwind-CSS-Styles und Custom Utilities
-│   └── main.tsx                 # Einstiegspunkt der React-Anwendung
-├── index.html                   # Haupt-HTML-Template (Vite)
-├── tailwind.config.js           # Tailwind-Konfiguration für Styles und Farbpalette
-├── tsconfig.json                # Einstellungen des TypeScript-Compilers
-└── package.json                 # Abhängigkeiten und npm-Skripte
+│   │   └── index.ts  # Globale TypeScript-Interfaces (User, Event, Attendee)
+│   │
+│   ├── App.tsx           # Hauptkomponente für das Routing
+│   ├── index.css         # Globale Tailwind-CSS-Styles und Custom Utilities
+│   └── main.tsx          # Einstiegspunkt der React-Anwendung
+├── index.html            # Haupt-HTML-Template (Vite)
+├── tailwind.config.js    # Tailwind-Konfiguration für Styles und Farbpalette
+├── tsconfig.json         # Einstellungen des TypeScript-Compilers
+└── package.json          # Abhängigkeiten und npm-Skripte
 
 ```
 ---
 
 ## Formularvalidierung (`src/lib/validator.ts`)
-### Event-Formular
+[Zurück 🡡](#inhaltsverzeichnis)
 
+### Event-Formular
 | Feld | Validierungsregel |
 |---|---|
 | `title` | String, mindestens 3 und höchstens 100 Zeichen |
@@ -273,8 +344,9 @@ Bei den Feldern `companyName` und `invitationCode` bleibt die serverseitige Vali
 ---
 
 ## Routing
-Im `src/App.tsx` registrierten Routen sind:
+[Zurück 🡡](#inhaltsverzeichnis)
 
+Im `src/App.tsx` registrierten Routen sind:
 | Pfad | Komponente | Zweck |
 |---|---|---|
 | `/` | `Home` | Landingpage bzw. Event-Übersicht |
@@ -292,6 +364,8 @@ Alle Routen werden innerhalb des `RootLayout` gerendert.
 ---
 
 ## Zentrale Komponenten und Datenflüsse
+[Zurück 🡡](#inhaltsverzeichnis)
+
 ### `Home` (`src/pages/Home.tsx`)
 Bei angemeldeten Benutzern lädt `Home` `getAllEvents(accessToken)` und `getEventsByAttendee(user.id, accessToken)` mit `Promise.all`. Während Authentifizierungs- und Event-Daten geladen werden, zeigt die Seite Ladezustände an. Fehler beim Laden führen zu einer sichtbaren Fehlermeldung. Bei erfolgreichem Abruf speichert der Client Events und Teilnahme-IDs separat. Löschen eines Events entfernt es aus der lokalen Event-Liste; Verlassen eines Events entfernt dessen ID aus den Teilnahme-IDs. Bei Gästen wird stattdessen die Landingpage angezeigt.
 
@@ -362,6 +436,7 @@ Die frontendseitige Rollenprüfung dient der Benutzerführung; die verbindliche 
 ---
 
 ## TypeScript-Datenmodelle (`src/types/index.ts`)
+[Zurück 🡡](#inhaltsverzeichnis)
 
 - `User`: `id: number`, `tenantId: number`, `role: "owner"`,  `email: string`; `name`, `bio` und `avatarUrl` sind optional.
 - Invitation: `id: number`, `tenantId: number`, `createdBy: number`, `expiresAt: string` und `createdAt: string`; `usedAt` und `revokedAt` sind optional und können `string | null` sein.
@@ -373,11 +448,12 @@ Die frontendseitige Rollenprüfung dient der Benutzerführung; die verbindliche 
 ---
 
 ## Integration mit der Backend-API
+[Zurück 🡡](#inhaltsverzeichnis)
+
 Alle folgenden Pfade sind relativ zur konfigurierten API-Basis-URL zu verstehen.
 Die tatsächliche Zusammensetzung der URL sowie Header- und Fehlerbehandlung werden in `apiFetch` implementiert. Bei den hier dokumentierten geschützten Endpunkten übergeben die API-Funktionen den Access Token an `apiFetch`.
 
 ### Authentifizierung (`src/api/auth.ts`)
-
 | Funktion | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
 | `loginUser(payload)` | `POST /auth/login` | Benutzer anmelden und Benutzerobjekt sowie Access Token abrufen |
@@ -390,7 +466,6 @@ Die tatsächliche Zusammensetzung der URL sowie Header- und Fehlerbehandlung wer
 Die API-Funktionen verwenden den zentralen HTTP-Helper `apiFetch` aus `src/lib/api.ts`. Dieser verwaltet die konfigurierte API-Basis-URL, Standard-Header, JSON-Antworten und die Fehlerbehandlung.`apiFetch` setzt außerdem `credentials: 'include'`, damit der Browser HttpOnly-Cookies mitsenden und verarbeiten kann. Das Backend liefert den Access Token separat in der JSON-Antwort und setzt das Refresh-Token-Cookie. 
 
 ### Einladungen (`src/api/invitations.ts`)
-
 | Funktion | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
 | `createInvitation(expiresAt, token)` | `POST /invitations` | Einladung erstellen und den einmalig zurückgegebenen Einladungscode abrufen |
@@ -407,7 +482,6 @@ Die API-Funktionen verwenden den zentralen HTTP-Helper `apiFetch` aus `src/lib/a
 Die Berechtigungsprüfung und die tatsächliche Gültigkeit einer Einladung werden serverseitig durchgesetzt. Die Einschränkung der verfügbaren Aktionen im Frontend dient ausschließlich der Benutzerführung und ersetzt keine Backend-Autorisierung.
 
 ### Events (`src/api/events.ts`)
-
 | Funktion | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
 | `getAllEvents(token)` | `GET /events` | Alle Events abrufen |
@@ -422,7 +496,6 @@ Alle oben aufgeführten Funktionen erwarten einen Access Token und übergeben ih
 `EventPayload` verlangt `title`, `description`, `imageUrl`, `location`, `startDateTime`, `endDateTime` und `url`. `categoryId` und `categoryName` sind optional; das Formular überträgt je nach Kategorie entweder die ID oder den Namen. `EventForm` wandelt `startDateTime` und `endDateTime` vor dem Request in ISO-Strings u
 
 ### Teilnahmen (`src/api/attendees.ts`)
-
 | Funktion | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
 | `getEventAttendees(eventId)` | `GET /events/:eventId/attendees` | Teilnehmer eines Events abrufen; Rückgabetyp `User[]` |
@@ -433,7 +506,6 @@ Alle oben aufgeführten Funktionen erwarten einen Access Token und übergeben ih
 Alle Teilnahme-Funktionen erwarten einen Access Token. `getEventsByAttendee` wird auf der Startseite und im Profil zur Ermittlung der Teilnahme-Events verwendet. `getEventAttendees` liefert die Teilnehmer als `User[]`; die Detailseite behandelt zusätzlich eine mögliche `null`-Antwort des Backends als leere Liste.
 
 ### Benutzerprofil (`src/api/users.ts`)
-
 | Funktion | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
 | `updateUserProfile(payload, token?)` | `PUT /users/profile` | Profil aktualisieren |
@@ -441,7 +513,6 @@ Alle Teilnahme-Funktionen erwarten einen Access Token. `getEventsByAttendee` wir
 Der Payload-Typ `UpdateProfilePayload` enthält `name` als Pflichtfeld sowie `bio` und `avatarUrl` als optionale Felder. Die Antwort ist als `UpdateProfileResponse` mit einem `user`-Objekt und optionaler `message` typisiert.
 
 ### Kategorien (`src/api/categories.ts`, `Dropdown` und `CategoryFilter`)
-
 | Aufruf | HTTP-Methode und Pfad | Zweck |
 |---|---|---|
 | `getCategories(token)` | `GET /categories` | Verfügbare Kategorien authentifiziert laden |
@@ -455,6 +526,7 @@ Der Payload-Typ `UpdateProfilePayload` enthält `name` als Pflichtfeld sowie `bi
 
 ---
 ## Bilder und Dateien: Cloudinary
+[Zurück 🡡](#inhaltsverzeichnis)
 
 `uploadToCloudinary(file, type = 'events')` lädt die ausgewählte Datei direkt zu Cloudinary hoch:
 
@@ -465,3 +537,59 @@ Der Payload-Typ `UpdateProfilePayload` enthält `name` als Pflichtfeld sowie `bi
 5. Fehlt die Cloudinary-Konfiguration oder schlägt der Request fehl, wird ein Fehler ausgelöst. Die Fehlermeldung von Cloudinary wird bevorzugt, sofern sie verfügbar ist.
 
 Die resultierende URL wird für Events als `imageUrl` und für Benutzerprofile als `avatarUrl` gespeichert. Die Cloudinary-Funktion verwendet die beiden `VITE_`-Variablen für den Cloud-Namen und die Presets; geheime Schlüssel dürfen nicht als Frontend-Umgebungsvariablen hinterlegt werden.
+
+
+## Tests
+[Zurück 🡡](#inhaltsverzeichnis)
+
+Für die Qualitätssicherung des Frontends werden **Vitest** und **React Testing Library** eingesetzt. Die Tests überprüfen die zentrale Authentifizierungslogik sowie die HTTP-Kommunikation mit der Backend-API.
+
+Die Tests laufen in einer simulierten Browserumgebung auf Basis von **jsdom**. Externe HTTP-Anfragen werden durch Mock-Funktionen ersetzt, sodass die Tests unabhängig vom laufenden Backend und der Datenbank ausgeführt werden können.
+
+### Testkonfiguration
+
+- **Vitest:** Test-Runner und Assertion-Framework
+- **React Testing Library:** Rendering von React-Komponenten und Überprüfung ihres Verhaltens
+- **jest-dom:** Zusätzliche DOM-Assertions
+- **jsdom:** Simulierte Browserumgebung für React-Tests
+
+Die zentrale Testkonfiguration befindet sich in `vite.config.ts`. Die gemeinsame Testinitialisierung erfolgt über `src/test/setup.ts`.
+
+### Testabdeckung
+
+**1. AuthProvider und useAuth (`src/hooks/AuthProvider.test.tsx`)**
+
+Die Tests überprüfen den globalen Authentifizierungszustand und die Wiederherstellung einer bestehenden Sitzung.
+
+- Initialisierung des Authentifizierungszustands
+- Erfolgreiche Sitzungswiederherstellung über `POST /auth/refresh`
+- Behandlung einer fehlgeschlagenen Authentifizierung (HTTP 401)
+- Behandlung von Netzwerk- und Serverfehlern
+- Aktualisierung des Authentifizierungszustands über `setAuth`
+- Erfolgreicher Logout und Zurücksetzen des Zustands
+- Zurücksetzen des Zustands auch bei fehlgeschlagenem Logout
+- Abbruch der laufenden Sitzungsanfrage beim Unmount des Providers
+- Fehlerbehandlung bei der Verwendung von `useAuth` außerhalb eines `AuthProvider`
+
+**2. API-Helper (`src/lib/api.test.ts`)**
+
+Die Tests überprüfen die zentrale HTTP-Funktion `apiFetch`, die von den API-Modulen der Anwendung verwendet wird.
+
+- Korrekte URL- und Header-Konfiguration
+- Übermittlung von HTTP-Methode, Request-Body und benutzerdefinierten Headern
+- Einbindung des Bearer-Tokens in den Authorization-Header
+- Verarbeitung von HTTP-Fehlern und Erstellung von `ApiError`
+- Auswertung der Fehlermeldungen aus der Serverantwort
+- Behandlung ungültiger oder fehlender JSON-Antworten
+- Weitergabe von Netzwerkfehlern
+
+Die Funktion `fetch` wird gemockt, sodass die HTTP-Kommunikation isoliert getestet werden kann.
+
+### Testausführung
+| Befehl | Beschreibung |
+|---|---|
+| `npm run test:run` | Führt alle Tests einmalig aus |
+| `npm run build` | Überprüft TypeScript und erstellt den Produktions-Build |
+| `npm run lint` | Führt die statische Codeanalyse mit ESLint aus |
+
+Die Tests können unabhängig vom Backend ausgeführt werden.

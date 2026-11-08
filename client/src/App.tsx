@@ -1,14 +1,18 @@
+
+import { lazy } from "react"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Home from "./pages/Home"
 import RootLayout from "./layouts/RootLayout"
-import EventDetails from "./pages/events/EventDetails"
-import CreateEvent from "./pages/events/CreateEvent"
-import UpdateEvent from "./pages/events/UpdateEvent"
-import Profile from "./pages/profile/Profile"
-import UpdateProfile from "./pages/profile/UpdateProfile"
-import Register from "./pages/profile/Register"
-import { AuthProvider } from "./hooks/AuthProvider";
-import InvitationPage from "./pages/invitations/InvitationPage"
+import { AuthProvider } from "./hooks/AuthProvider"
+
+// Pages are loaded on demand when their routes are visited.
+const Home = lazy(() => import("./pages/Home"))
+const EventDetails = lazy(() => import("./pages/events/EventDetails"))
+const CreateEvent = lazy(() => import("./pages/events/CreateEvent"))
+const UpdateEvent = lazy(() => import("./pages/events/UpdateEvent"))
+const Profile = lazy(() => import("./pages/profile/Profile"))
+const UpdateProfile = lazy(() => import("./pages/profile/UpdateProfile"))
+const Register = lazy(() => import("./pages/profile/Register"))
+const InvitationPage = lazy(() => import("./pages/invitations/InvitationPage"))
 
 export default function App() {
   return (
@@ -19,8 +23,8 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/events/:id" element={<EventDetails />} />
-            <Route path="/events/create" element={<CreateEvent/>} />
-            <Route path="/events/:id/update" element={<UpdateEvent/>} />
+            <Route path="/events/create" element={<CreateEvent />} />
+            <Route path="/events/:id/update" element={<UpdateEvent />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/update" element={<UpdateProfile />} />
             <Route path="/invitations" element={<InvitationPage />} />

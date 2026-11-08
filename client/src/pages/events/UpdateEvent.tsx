@@ -15,50 +15,52 @@ const UpdateEvent = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
+  const isMissingId = !id
+const isMissingToken = !isAuthLoading && !accessToken
+
+const displayError = isMissingId
+  ? 'Keine Veranstaltungs-ID angegeben.'
+  : isMissingToken
+    ? 'Bitte melde dich an, um die Veranstaltung zu bearbeiten.'
+    : error
+
   useEffect(() => {
-     if (isAuthLoading) return
+  if (isAuthLoading || !id || !accessToken) return
 
-    if (!id) {
-      setError('Keine Veranstaltungs-ID angegeben.')
-      setIsLoading(false)
-      return
-    }
+  let cancelled = false
 
-    if (!accessToken) {
-      setError('Bitte melde dich an, um die Veranstaltung zu bearbeiten.')
-      setIsLoading(false)
-      return
-    }
-    let cancelled = false
+  const fetchEvent = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
 
-    const fetchEvent = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-    
-        const data = await getEventById(id, accessToken)
-        if (!cancelled) {
-          setEvent(data)
-        }
-      } catch (err) {
-        console.error('Fehler beim Laden des Events:', err)
-        if (!cancelled) {
-          setError('Veranstaltung konnte nicht geladen werden.')
-        }
-      } finally {
-          if (!cancelled) {
-          setIsLoading(false)
-        }
+      const data = await getEventById(id, accessToken)
+
+      if (!cancelled) {
+        setEvent(data)
+      }
+    } catch (err) {
+      console.error('Fehler beim Laden des Events:', err)
+
+      if (!cancelled) {
+        setError('Veranstaltung konnte nicht geladen werden.')
+        setEvent(null)
+      }
+    } finally {
+      if (!cancelled) {
+        setIsLoading(false)
       }
     }
-void fetchEvent()
+  }
 
-return () => {
-      cancelled = true
-    }
-  }, [id, accessToken, isAuthLoading])
+  void fetchEvent()
 
-  if (isAuthLoading || isLoading) {
+  return () => {
+    cancelled = true
+  }
+}, [id, accessToken, isAuthLoading])
+
+  if (isAuthLoading || (!isMissingId && !isMissingToken && isLoading)) {
     return (
       <div className="wrapper my-8 text-center text-gray-500 font-medium">
         Veranstaltung wird geladen...
@@ -66,11 +68,11 @@ return () => {
     )
   }
 
-  if (error || !event) {
+  if (displayError || !event) {
     return (
       <div className="wrapper my-8 text-center">
         <h2 className="text-2xl font-bold text-red-500">
-          {error || 'Veranstaltung nicht gefunden'}
+          {displayError || 'Veranstaltung nicht gefunden'}
         </h2>
       </div>
     )

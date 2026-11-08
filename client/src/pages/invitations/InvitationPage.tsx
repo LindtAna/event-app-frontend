@@ -101,6 +101,9 @@ const InvitationPage = () => {
         isLoading: isAuthLoading,
     } = useAuth()
 
+    const ownerId = user?.id
+
+    const [loadedOwnerId, setLoadedOwnerId] = useState<typeof ownerId>()
     const [invitations, setInvitations] = useState<Invitation[]>([])
     const [isLoadingInvitations, setIsLoadingInvitations] = useState(true)
 
@@ -115,20 +118,41 @@ const InvitationPage = () => {
     const [actionError, setActionError] = useState<string | null>(null)
     const [statusMessage, setStatusMessage] = useState<string | null>(null)
 
+    const isOwner = isSignedIn && user?.role === "owner"
+
+    const isMissingAccessToken =
+        !isAuthLoading && isOwner && !accessToken
+
+    const hasCurrentOwnerData =
+        ownerId !== undefined &&
+        !!accessToken &&
+        loadedOwnerId === ownerId
+
+    const visibleInvitations = hasCurrentOwnerData
+        ? invitations
+        : []
+
+    const displayListError = isMissingAccessToken
+        ? "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an."
+        : hasCurrentOwnerData
+            ? listError
+            : null
+
+    const shouldShowInvitationLoading =
+        isOwner &&
+        ownerId !== undefined &&
+        !!accessToken &&
+        (!hasCurrentOwnerData || isLoadingInvitations)
+
     // Einladungen des authentifizierten Owner laden
     useEffect(() => {
-        if (isAuthLoading) return
-
-        if (!isSignedIn || user?.role !== "owner") {
-            setIsLoadingInvitations(false)
-            return
-        }
-
-        if (!accessToken) {
-            setListError(
-                "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an.",
-            )
-            setIsLoadingInvitations(false)
+        if (
+            isAuthLoading ||
+            !isSignedIn ||
+            user?.role !== "owner" ||
+            ownerId === undefined ||
+            !accessToken
+        ) {
             return
         }
 
@@ -143,9 +167,13 @@ const InvitationPage = () => {
 
                 if (!cancelled) {
                     setInvitations(data)
+                    setLoadedOwnerId(ownerId)
                 }
             } catch (error) {
                 if (!cancelled) {
+                    setInvitations([])
+                    setLoadedOwnerId(ownerId)
+
                     setListError(
                         getErrorMessage(
                             error,
@@ -169,6 +197,7 @@ const InvitationPage = () => {
         isAuthLoading,
         isSignedIn,
         user?.role,
+        ownerId,
         accessToken,
     ])
 
@@ -434,13 +463,13 @@ const InvitationPage = () => {
                         Meine Einladungen
                     </h4>
 
-                    {listError && (
+                    {displayListError && (
                         <p role="alert" className="mb-4 text-sm text-red-600">
-                            {listError}
+                            {displayListError}
                         </p>
                     )}
 
-                    {isLoadingInvitations ? (
+                    {shouldShowInvitationLoading ? (
                         <p className="text-grey-500">
                             Einladungen werden geladen...
                         </p>
@@ -483,7 +512,7 @@ const InvitationPage = () => {
                                 </thead>
 
                                 <tbody className="divide-y divide-gray-200">
-                                    {invitations.length === 0 ? (
+                                    {visibleInvitations.length === 0 ? (
                                         <tr>
                                             <td
                                                 colSpan={7}
@@ -493,7 +522,7 @@ const InvitationPage = () => {
                                             </td>
                                         </tr>
                                     ) : (
-                                        invitations.map((invitation) => {
+                                        visibleInvitations.map((invitation) => {
                                             const revocable = canRevoke(invitation)
                                             const isRevoking = revokingId === invitation.id
                                             const isDeleting = deletingId === invitation.id

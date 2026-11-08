@@ -19,7 +19,11 @@ import infoIcon from '@/assets/icons/bio.svg'
 type TabType = 'teilnehmer' | 'ersteller'
 
 const Profile = () => {
-  const { user: currentUser, accessToken, isLoading: isAuthLoading,} = useAuth()
+  const { user: currentUser, accessToken, isLoading: isAuthLoading, } = useAuth()
+
+  const currentUserId = currentUser?.id
+
+  const [loadedUserId, setLoadedUserId] = useState<typeof currentUserId>()
 
   // standart auf 'ersteller' umschalten oder 'teilnehmer' beibehalten
   const [activeTab, setActiveTab] = useState<TabType>('ersteller')
@@ -29,54 +33,87 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  const attendeeEventIds = participatingEvents.map((event) => event.id)
+  const hasCurrentUserData =
+    currentUserId !== undefined &&
+    !!accessToken &&
+    loadedUserId === currentUserId
+
+  const isMissingAccessToken =
+    !isAuthLoading &&
+    currentUserId !== undefined &&
+    !accessToken
+
+  const displayError = isMissingAccessToken
+    ? 'Die Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.'
+    : hasCurrentUserData
+      ? error
+      : null
+
+  const visibleOrganizedEvents = hasCurrentUserData
+    ? organizedEvents
+    : []
+
+  const visibleParticipatingEvents = hasCurrentUserData
+    ? participatingEvents
+    : []
+
+  const shouldShowLoading =
+    isAuthLoading ||
+    (
+      currentUserId !== undefined &&
+      !!accessToken &&
+      (!hasCurrentUserData || isLoading)
+    )
+
+  const attendeeEventIds = visibleParticipatingEvents.map(
+    (event) => event.id
+  )
 
   useEffect(() => {
-      // Warten, bis die Authentifizierung wiederhergestellt wurde.
-  if (isAuthLoading) return
-  if (!currentUser?.id || !accessToken) {
-    setIsLoading(false)
-
-    if (currentUser?.id) {
-      setError('Die Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.')
-    }
+  // Warten, bis die Authentifizierung wiederhergestellt wurde.
+  if (isAuthLoading || currentUserId === undefined || !accessToken) {
     return
   }
-    let cancelled = false
 
-    const fetchUserEvents = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
+  let cancelled = false
 
-        const [organizedData, participatingData] = await Promise.all([
-          getOrganizedEvents(currentUser.id, accessToken),
-          getEventsByAttendee(currentUser.id, accessToken),
-        ])
+  const fetchUserEvents = async () => {
+    setIsLoading(true)
+    setError(null)
 
-        if (!cancelled) {
-          setOrganizedEvents(organizedData ?? [])
-          setParticipatingEvents(participatingData ?? [])
-        }
-      } catch (err) {
-        console.error('Fehler beim Laden der Events:', err)
+    try {
+      const [organizedData, participatingData] = await Promise.all([
+        getOrganizedEvents(currentUserId, accessToken),
+        getEventsByAttendee(currentUserId, accessToken),
+      ])
 
-        if (!cancelled) {
-          setError('Fehler beim Laden der Events.')
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false)
-        }
+      if (!cancelled) {
+        setOrganizedEvents(organizedData ?? [])
+        setParticipatingEvents(participatingData ?? [])
+        setLoadedUserId(currentUserId)
+      }
+    } catch (err) {
+      console.error('Fehler beim Laden der Events:', err)
+
+      if (!cancelled) {
+        setOrganizedEvents([])
+        setParticipatingEvents([])
+        setLoadedUserId(currentUserId)
+        setError('Fehler beim Laden der Events.')
+      }
+    } finally {
+      if (!cancelled) {
+        setIsLoading(false)
       }
     }
+  }
 
-    void fetchUserEvents()
+  void fetchUserEvents()
 
-    return () => {
-      cancelled = true
-    }
-  }, [currentUser?.id, accessToken, isAuthLoading])
+  return () => {
+    cancelled = true
+  }
+}, [currentUserId, accessToken, isAuthLoading])
 
   if (!currentUser) return null
 
@@ -183,17 +220,17 @@ const Profile = () => {
 
         {/* Tab-Inhalte */}
         <div>
-          {isLoading ? (
+          {shouldShowLoading ? (
             <div className="flex-center min-h-[200px] text-gray-500 font-medium">
               Events werden geladen...
             </div>
-          ) : error ? (
+          ) : displayError ? (
             <div className="flex-center min-h-[200px] text-red-500 font-medium">
-              {error}
+              {displayError}
             </div>
           ) : activeTab === 'teilnehmer' ? (
             <Collection
-              data={participatingEvents}
+              data={visibleParticipatingEvents}
               emptyTitle="Noch keine Event-Zusagen"
               emptyStateSubtext="Sie nehmen derzeit an keinen Events teil."
               emptyStateShowButton={false}
@@ -205,7 +242,7 @@ const Profile = () => {
             />
           ) : (
             <Collection
-              data={organizedEvents}
+              data={visibleOrganizedEvents}
               emptyTitle="Noch keine Events erstellt"
               emptyStateSubtext="Erstellen Sie jetzt Ihr erstes Event."
               emptyStateShowButton={true}

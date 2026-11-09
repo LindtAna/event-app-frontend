@@ -67,6 +67,7 @@
   - [Component and Hook Tests](#component-and-hook-tests)
   - [Testausführung](#testausführung)
 ---
+---
 
 ## Über das Projekt
 [Zurück 🡡](#inhaltsverzeichnis)
@@ -77,6 +78,7 @@ Der Client kommuniziert über eine REST-API mit einem Backend auf Basis von Go (
 Event-Bilder und Profilavatare werden über Cloudinary hochgeladen.
 Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clientseitiger Datenvalidierung und responsiver Benutzeroberfläche (Responsive Design).
 
+---
 ---
 
 ## Hauptfunktionen
@@ -254,7 +256,11 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   │   ├── ProfileForm.tsx        # Formular zur Bearbeitung des Benutzerprofils
 │   │   │   ├── RegisterForm.tsx       # Formular zur Registrierung neuer Benutzer
 │   │   │   ├── LoginModal.tsx         # Modales Fenster zur Benutzeranmeldung (Login)
-│   │   │   └── Search.tsx             # Suchleiste zur Filterung von Events
+│   │   │   ├── Search.tsx             # Suchleiste zur Filterung von Events
+│   │   │   │
+│   │   │   ├──  EventForm.integration.test.tsx  # Integration Tests für das Erstellen und Bearbeiten von Events
+│   │   │   ├──  LoginModal.integration.test.tsx  # Integration Tests für Anmeldung und Registrierungsnavigation
+│   │   │   └──  RegisterForm.integration.test.tsx  # Integration Tests für Owner-/Member-Registrierung, Avatar-Upload und Navigation
 │   │   │
 │   │   └── ui/                  # Atomare Basis-UI-Komponenten (shadcn/ui)
 │   │       ├── avatar.tsx
@@ -284,17 +290,24 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   └── validator.test.ts    # Unit-Tests der Validierung(Formulare)
 │   │
 │   ├── pages/
-│   │   ├── Home.tsx                # Landingpage bzw. Event-Übersicht
+│   │   ├── Home.tsx                  # Landingpage bzw. Event-Übersicht
+│   │   ├── Home.integration.test.tsx # Integrationstests für Event-Ladevorgänge, Suche, Kategorie-Filter und URL-Synchronisierung
+│   │   │
 │   │   ├── events/
 │   │   │   ├── CreateEvent.tsx     # Seite zum Erstellen eines neuen Events
 │   │   │   ├── EventDetails.tsx    # Detailseite eines Events
-│   │   │   └── UpdateEvent.tsx     # Seite zum Bearbeiten eines Events
+│   │   │   ├── UpdateEvent.tsx     # Seite zum Bearbeiten eines Events
+│   │   │   │
+│   │   │   └── EventDetails.integration.test.tsx  # Integration Tests für Event-Ladevorgänge, Teilnehmerliste und Event-Teilnahme
 │   │   ├── profile/
 │   │   │   ├── Profile.tsx         # Persönlicher Benutzerbereich (Informationen und Tabs)
 │   │   │   ├── Register.tsx        # Seite zur Erstellung eines neuen Benutzerkontos
 │   │   │   └── UpdateProfile.tsx   # Seite zum Bearbeiten des Profils
+│   │   │   └── Profile.integration.test.tsx  # Integrationstests für Profilansicht, Event-Tabs und lokale Aktualisierung der Eventlisten
+│   │   │
 │   │   └── invitations/
-│   │       └── InvitationPage.tsx  # Erstellen, Anzeigen, Widerrufen und Löschen von Einladungen
+│   │       ├── InvitationPage.tsx                    # Erstellen, Anzeigen, Widerrufen und Löschen von Einladungen
+│   │       └── InvitationPage.integration.test.tsx   # Integrationstests für Einladungsverwaltung, Code-Erstellung, Kopieren, Widerrufen und Löschen
 │   │
 │   ├── test/
 │   │   └── setup.ts  # Gemeinsame Initialisierung der Testumgebung
@@ -418,9 +431,19 @@ Für ältere URLs, die statt einer Kategorie-ID einen Kategorienamen enthalten, 
 Die Seite liest die Event-ID aus dem URL-Parameter, lädt die Veranstaltung über `getEventById` und unterscheidet zwischen Lade-, Fehler- und Erfolgszustand. Bei Erfolg übergibt sie das Event sowie dessen ID als String an `EventForm` im Modus `Update`.
 
 ### `EventDetails` (`src/pages/events/EventDetails.tsx`)
-Event und Teilnehmerliste werden getrennt geladen, nachdem die Authentifizierungsprüfung abgeschlossen ist. Beide Requests benötigen einen Access Token. Ist kein Token vorhanden, wird das Laden abgebrochen und ein Hinweis zur Anmeldung angezeigt. Die Effekte nutzen ein `cancelled`-Flag, damit nach dem Aufräumen kein Ergebnis mehr in den Komponentenstatus übernommen wird.
+### `EventDetails` (`src/pages/events/EventDetails.tsx`)
 
-Die Teilnahme-Aktion setzt einen angemeldeten Benutzer und einen Access Token voraus, verhindert doppelte lokale Anmeldungen und aktualisiert nach erfolgreichem Request zunächst den lokalen Teilnehmerstatus. Anschließend wird versucht, die Teilnehmerliste erneut mit dem Backend abzugleichen. Ein Fehler beim erneuten Laden macht die bereits erfolgreiche Teilnahme nicht rückgängig.
+Die Event-Detailseite lädt das Event und die zugehörige Teilnehmerliste über zwei getrennte `useEffect`-Hooks, sobald die Authentifizierungsprüfung abgeschlossen ist. Beide Requests benötigen einen Access Token. Ist kein Token vorhanden, werden die Requests nicht ausgeführt und ein entsprechender Hinweis zur Anmeldung angezeigt.
+
+Die Effekte verwenden jeweils ein `cancelled`-Flag, damit nach dem Aufräumen eines Effekts keine verspäteten API-Antworten mehr in den Komponentenstatus übernommen werden. Lade- und Fehlerzustände werden für das Event und die Teilnehmerliste getrennt verwaltet. Ein Fehler beim Laden der Teilnehmer verhindert nicht die Darstellung der Event-Details.
+
+Die Teilnehmer werden über die wiederverwendbare Komponente `AttendeeCarousel` dargestellt. 
+
+Die Teilnahme-Aktion setzt einen angemeldeten Benutzer und einen Access Token voraus.
+
+Nach erfolgreichem Aufruf von `addEventAttendee` wird der aktuelle Benutzer zunächst unmittelbar in die lokale Teilnehmerliste übernommen. Anschließend wird versucht, die Teilnehmerliste erneut über `getEventAttendees` mit dem Backend abzugleichen. Ein Fehler bei diesem Refresh macht die bereits erfolgreiche Teilnahme nicht rückgängig. Fehler bei der eigentlichen Anmeldung werden dem Benutzer angezeigt.
+
+Das Verlassen eines Events wird über die Event-Karte (`Card`) und die Funktion `leaveEvent` umgesetzt.
 
 ### `Card` und `Collection`
  `Collection` legt anhand des `collectionType` eine Standardrolle fest: `Events_Organized` übergibt `owner`, `My_Events` übergibt `attendee`; für `All_Events` wird keine Rolle vorgegeben. `Card` verwendet eine übergebene Rolle vorrangig. Fehlt sie, wird bei vorhandenem `currentUserId` zunächst `event.ownerId` verglichen und anschließend geprüft, ob `event.id` in `attendeeEventIds` enthalten ist. Die Karte zeigt die erste Kategorie, Startdatum und -uhrzeit, Titel, Veranstalternamen und Veranstaltungsort. Veranstalter erhalten Bearbeiten- und Löschen-Aktionen, Teilnehmer eine Aktion zum Verlassen des Events.
@@ -430,12 +453,13 @@ Die Teilnahme-Aktion setzt einen angemeldeten Benutzer und einen Access Token vo
 Die Komponente stellt einen Bestätigungsdialog für das dauerhafte Löschen eines Events dar. Beim Bestätigen ruft sie `deleteEvent(eventId, accessToken)` auf. Während der Anfrage ist die Aktion deaktiviert und der Buttontext wechselt zu „Wird gelöscht...“. Bei einem Fehler wird dieser in der Konsole protokolliert und eine Fehlermeldung per `alert` angezeigt. Nach erfolgreichem Löschen wird der optionale Callback `onEventDeleted(eventId)` aufgerufen, sodass übergeordnete Listen lokal aktualisiert werden können.
 
 
-**### `InvitationPage` (`src/pages/inviations/InvitationPage.tsx`)**
-Die Seite ermöglicht Tenant-Ownern die Verwaltung ihrer Einladungen. Nach Abschluss der Authentifizierungsprüfung werden die Einladungen über `getInvitations(accessToken)` geladen. 
-Neue Einladungen werden über `createInvitation` angelegt. Vor dem Ersetzen eines noch nicht als kopiert markierten Codes erscheint ein Bestätigungsdialog.
+**### `InvitationPage` (`src/pages/invitations/InvitationPage.tsx`)**
+Die Seite ermöglicht Tenant-Ownern die Verwaltung ihrer Einladungen. Nach Abschluss der Authentifizierungsprüfung werden die Einladungen über `getInvitations(accessToken)` geladen. Ein Cleanup-Flag verhindert, dass verspätete API-Antworten nach dem Unmount der Komponente noch in den React State übernommen werden.
 
-Die Aktion „Widerrufen“ verwendet `revokeInvitation`. Nach erfolgreichem Widerruf aktualisiert die Seite `revokedAt` im lokalen Datensatz.
-Die Aktion „Löschen“ verwendet `deleteInvitation` und entfernt einen Einladungsdatensatz dauerhaft aus der Datenbank. Nach erfolgreicher Antwort `204 No Content` wird der Datensatz aus dem lokalen React State entfernt. 
+Neue Einladungen werden über `createInvitation` erstellt. Der Client übermittelt einen Ablaufzeitpunkt im RFC3339-Format, der aktuell sieben Tage nach dem Erstellungszeitpunkt liegt. Der vom Backend einmalig zurückgegebene Einladungscode wird angezeigt und kann über die Zwischenablage kopiert werden. Vor dem Ersetzen eines noch nicht kopierten Codes fordert die Seite eine Bestätigung an.
+Die Aktion „Widerrufen“ verwendet `revokeInvitation`. Sie steht ausschließlich für aktive Einladungen zur Verfügung. Nach erfolgreichem Widerruf aktualisiert die Seite `revokedAt` im lokalen Datensatz, ohne die gesamte Einladungsübersicht erneut zu laden.
+Die Aktion „Löschen“ verwendet `deleteInvitation` und entfernt einen Einladungsdatensatz dauerhaft aus der Datenbank. Nach erfolgreicher Antwort `204 No Content` wird der Datensatz unmittelbar aus dem lokalen React State entfernt.
+Lade-, Erstellungs-, Kopier-, Widerrufs- und Löschvorgänge werden durch sichtbare Statusmeldungen begleitet. Fehler beim Laden oder Ausführen einer Aktion werden dem Benutzer ebenfalls angezeigt.
 
 Die frontendseitige Rollenprüfung dient der Benutzerführung; die verbindliche Autorisierung und Tenant-Isolation werden vom Backend durchgesetzt.
 
@@ -531,6 +555,8 @@ Der Payload-Typ `UpdateProfilePayload` enthält `name` als Pflichtfeld sowie `bi
 `EventForm` erzeugt vor dem Request ein Payload-Objekt und wandelt `startDateTime` und `endDateTime` mit `toISOString()` um. Bei einer bestehenden Kategorie wird `categoryId` gesendet. Ein vom Dropdown erzeugter temporärer Wert mit dem Präfix `new:` wird in `categoryName` umgewandelt. Das Dropdown sendet keinen eigenständigen Request zur Kategorieerstellung; die Verarbeitung des Namens erfolgt im Rahmen des Event-Requests durch das Backend.
 
 ---
+---
+
 ## Bilder und Dateien: Cloudinary
 [Zurück 🡡](#inhaltsverzeichnis)
 
@@ -548,7 +574,7 @@ Die resultierende URL wird für Events als `imageUrl` und für Benutzerprofile a
 ## Tests
 [Zurück 🡡](#inhaltsverzeichnis)
 
-Für die Qualitätssicherung des Frontends werden Vitest und React Testing Library eingesetzt. Die Tests überprüfen die zentrale Authentifizierungslogik, die HTTP-Kommunikation, die API-Funktionen für die Authentifizierung sowie den Upload von Bildern zu Cloudinary.
+Für die Qualitätssicherung des Frontends werden Vitest und React Testing Library eingesetzt. Die Tests überprüfen die zentrale Authentifizierungslogik, die HTTP-Kommunikation, die API-Funktionendie Formularvalidierung sowie das Verhalten ausgewählter React-Komponenten und deren Integration mit der API.
 
 Die Tests laufen in einer simulierten Browserumgebung auf Basis von jsdom. Externe HTTP-Anfragen werden durch Mock-Funktionen ersetzt. Dadurch können die Tests unabhängig vom laufenden Backend, der Datenbank und dem Cloudinary-Dienst ausgeführt werden.
 
@@ -559,7 +585,9 @@ Die Tests laufen in einer simulierten Browserumgebung auf Basis von jsdom. Exter
 - **jest-dom:** Zusätzliche DOM-Assertions
 - **jsdom:** Simulierte Browserumgebung für React-Tests
 
-Die zentrale Testkonfiguration befindet sich in `vite.config.ts`. Die gemeinsame Testinitialisierung erfolgt über `src/test/setup.ts`.
+Die zentrale Testkonfiguration befindet sich in `vite.config.ts`. Die gemeinsame Testinitialisierung erfolgt über `src/test/setup.ts`. Neben dem automatischen Cleanup nach jedem Test stellt die Setup-Datei zusätzliche Browser-APIs für die Radix-UI-Komponenten bereit.
+
+Da jsdom Pointer Events und Pointer-Capture-Methoden nicht vollständig implementiert, werden `PointerEvent`, `hasPointerCapture`, `setPointerCapture` und `releasePointerCapture` in der Testumgebung ergänzt. Zusätzlich wird `scrollIntoView` bereitgestellt. Dadurch kann insbesondere das Radix Select in den Integrationstests ohne Austausch der eigentlichen UI-Komponente getestet werden.
 
 ### Unit Tests
 
@@ -625,6 +653,106 @@ Die Tests überprüfen den globalen Authentifizierungszustand und die Wiederhers
 - Zurücksetzen des Zustands auch bei fehlgeschlagenem Logout
 - Abbruch der laufenden Sitzungsanfrage beim Unmount des Providers
 - Fehlerbehandlung bei der Verwendung von `useAuth` außerhalb eines `AuthProvider`
+
+**2. LoginModal (`src/components/shared/LoginModal.integration.test.tsx`)**
+
+Die Integrationstests überprüfen das Verhalten des Login-Modals und die Zusammenarbeit mit dem Authentifizierungskontext:
+- Erfolgreiche Anmeldung: Aufruf von `loginUser`, Übernahme des Benutzers und Access Tokens in den Authentifizierungskontext sowie Schließen des Modals
+- Fehlgeschlagene Anmeldung: Anzeige einer Fehlermeldung; das Modal bleibt geöffnet und der Benutzer bleibt nicht authentifiziert
+- Formularvalidierung: Ungültige E-Mail-Adresse und leeres Passwort verhindern den API-Aufruf
+- Owner-Registrierung: Navigation zu `/register?type=owner`
+- Member-Registrierung: Navigation zu `/register?type=member`
+
+Die Funktion `apiFetch` wird gemockt; der tatsächliche `AuthProvider` bleibt Bestandteil des Tests. Die Navigation wird über einen `MemoryRouter` überprüft. Dadurch können die Interaktionen einschließlich der Aktualisierung des Authentifizierungszustands ohne laufendes Backend getestet werden.
+
+**3. EventForm (`src/components/shared/EventForm.integration.test.tsx`)**
+
+Die Integrationstests überprüfen die wichtigsten Abläufe des gemeinsamen Formulars zum Erstellen und Bearbeiten von Events:
+- Erfolgreiches Erstellen eines Events: Aufruf von `createEvent` mit dem korrekten Payload und anschließende Navigation zur Event-Detailseite
+- Erfolgreiches Bearbeiten eines bestehenden Events: Aufruf von `updateEvent` mit der korrekten Event-ID und den aktualisierten Daten; die vorhandene Bild-URL bleibt erhalten, wenn kein neues Bild hochgeladen wird
+- Formularvalidierung: Ungültige Formulardaten verhindern den API-Aufruf
+- Bild-Upload: Aufruf von `uploadToCloudinary` und Übernahme der zurückgegebenen URL in das Event-Payload
+- Fehlender Access Token: Anzeige einer Warnmeldung; es wird kein API-Aufruf ausgeführt
+- Fehlgeschlagenes Speichern: Anzeige einer Fehlermeldung; eine Navigation zur Event-Detailseite findet nicht statt
+
+Die Event-API, der Cloudinary-Upload und der Authentifizierungskontext werden gemockt. Die Navigation wird über einen `MemoryRouter` überprüft. Für die Formularfelder werden die relevanten UI-Komponenten durch kontrollierte Testimplementierungen ersetzt. Dadurch lassen sich die Formularabläufe unabhängig vom Backend und von Cloudinary testen.
+
+
+**4. RegisterForm (`src/components/shared/RegisterForm.integration.test.tsx`)**
+
+Die Integrationstests überprüfen die Registrierungsabläufe für Tenant-Owner und Tenant-Member sowie die zugehörigen Formularaktionen:
+- **Owner-Registrierung:** Erfolgreiche Registrierung mit dem Teamnamen; Überprüfung des korrekten API-Payloads.
+- **Member-Registrierung:** Erfolgreiche Registrierung mit dem Einladungscode; Überprüfung des korrekten API-Payloads.
+- **Avatar-Upload:** Hochladen eines ausgewählten Profilbildes über Cloudinary und Übernahme der zurückgegebenen URL als `avatarUrl` in den Registrierungspayload.
+- **Formularvalidierung:** Fehlende Pflichtangaben und nicht übereinstimmende Passwörter verhindern den Registrierungsrequest.
+- **Fehler bei der Registrierung:** Anzeige einer Fehlermeldung; das Formular bleibt geöffnet und kann erneut abgesendet werden.
+- **Fehler beim Avatar-Upload:** Anzeige einer Fehlermeldung; die Registrierung wird nicht an die API übermittelt.
+- **Navigation nach erfolgreicher Registrierung:** Die Schaltfläche „Einloggen“ navigiert zur Startseite und übergibt den Navigationszustand `openLoginModal: true`.
+- **Abbrechen der Registrierung:** Die Schaltfläche „Abbrechen“ navigiert zur Startseite, ohne einen Registrierungsrequest auszuführen.
+
+Zusätzlich wird geprüft, ob Name, E-Mail-Adresse, Teamname und Einladungscode vor der Übermittlung durch `trim()` bereinigt werden.
+Die Registrierungs-API (`registerUser`), der Cloudinary-Upload (`uploadToCloudinary`) und die `FileUploader`-Komponente werden gemockt. Die Formularvalidierung mit React Hook Form und Zod sowie die Navigation über einen `MemoryRouter` bleiben Bestandteil des tatsächlichen Tests. Dadurch werden die Registrierungsabläufe und die Zusammenarbeit der beteiligten Komponenten ohne laufendes Backend oder eine tatsächliche Verbindung zu Cloudinary überprüft.
+
+**5. EventDetails (`src/pages/events/EventDetails.integration.test.tsx`)**
+
+Die Integrationstests überprüfen das Laden der Event-Detailseite, die Darstellung der Teilnehmerliste und die Anmeldung eines Benutzers zu einem Event:
+- **Event laden:** Erfolgreicher Abruf eines Events über `getEventById` und Darstellung der Event-Informationen, einschließlich Titel, Veranstalter, Beschreibung und Veranstaltungsort.
+- **Teilnehmer laden:** Erfolgreicher Abruf der Teilnehmer über `getEventAttendees` und Darstellung in der `AttendeeCarousel`-Komponente.
+- **Leere Teilnehmerliste:** Behandlung einer `null`-Antwort des Backend-Endpunkts als leere Liste; es wird der Hinweis „Noch keine Teilnehmer.“ angezeigt.
+- **Fehler beim Laden des Events:** Anzeige einer Fehlermeldung, wenn der Event-Request fehlschlägt. Die Event-Detailinformationen werden nicht dargestellt.
+- **Fehler beim Laden der Teilnehmer:** Anzeige einer Fehlermeldung für die Teilnehmerliste, während die Event-Detailseite weiterhin verfügbar bleibt.
+- **Fehlender Access Token:** Anzeige eines Authentifizierungshinweises; die Requests zum Laden des Events und der Teilnehmer werden nicht ausgeführt.
+- **Erfolgreiche Teilnahme:** Aufruf von `addEventAttendee` mit der korrekten Event-ID, Benutzer-ID und dem Access Token. Der angemeldete Benutzer wird unmittelbar in die lokale Teilnehmerliste übernommen. Anschließend wird die Liste erneut vom Backend geladen und der Teilnahmestatus in der Benutzeroberfläche aktualisiert.
+- **Fehlgeschlagene Teilnahme:** Anzeige einer Fehlermeldung; der Benutzer kann die Teilnahme erneut versuchen.
+- **Fehler beim Aktualisieren der Teilnehmerliste:** Eine bereits erfolgreiche Anmeldung bleibt bestehen, auch wenn der anschließende Refresh der Teilnehmerliste fehlschlägt.
+
+Die Event-API (`getEventById`), die Teilnehmer-API (`getEventAttendees`, `addEventAttendee`) und der Authentifizierungshook (`useAuth`) werden gemockt. Die eigentliche `EventDetails`-Komponente, die `AttendeeCarousel`-Komponente und die Navigation über einen `MemoryRouter` bleiben Bestandteil des Tests.
+Dadurch werden die wichtigsten Interaktionen zwischen Event-Detailseite, Authentifizierungszustand, API-Funktionen und Teilnehmerdarstellung ohne laufendes Backend überprüft.
+
+
+6. InvitationPage (src/pages/invitations/InvitationPage.integration.test.tsx)
+
+Die Integrationstests überprüfen die Einladungsverwaltung für Tenant-Owner und die Zusammenarbeit der Seite mit den Einladungs-API-Funktionen:
+- Erfolgreicher Abruf und Darstellung der Einladungsübersicht über getInvitations. Es wird geprüft, dass der Access Token übergeben wird und die Widerrufsaktion für verwendete, widerrufene und abgelaufene Einladungen deaktiviert ist.
+- Einladung erstellen: Aufruf von createInvitation mit dem Access Token und einem Ablaufzeitpunkt im ISO-Format. Der Ablaufzeitpunkt liegt sieben Tage nach der Erstellung. Der neue Einladungscode wird angezeigt und der Datensatz lokal zur Liste hinzugefügt, ohne die Einladungsübersicht erneut abzurufen.
+- Ersetzen eines nicht kopierten Codes: Vor dem Erstellen einer weiteren Einladung wird eine Bestätigung angefordert, wenn der vorherige Einladungscode noch nicht kopiert wurde. ere Einladung erstellt und der bisherige Code bleibt erhalten.
+- Einladungscode kopieren: Aufruf der Clipboard-API zum Kopieren des Einladungscodes und Anzeige einer entsprechenden Erfolgsmeldung.
+- Einladung widerrufen: Aufruf von revokeInvitation für eine aktive Einladung. Anschließend wird revokedAt im lokalen Datensatz aktualisiert und die Widerrufsaktion deaktiviert, ohne die Einladungsübersicht erneut zu laden.
+- Einladung dauerhaft löschen und das Löschen abbrechen: Nach Bestätigung wird deleteInvitation aufgerufen und der betreffende Datensatz aus der lokalen Einladungsübersicht entfernt. Eine erneute Abfrage der gesamten Liste ist nicht erforderlich. Wird die Bestätigungsabfrage abgelehnt, wird kein Löschrequest ausgeführt.
+- Fehler beim Laden: Schlägt der Abruf der Einladungen fehl, wird eine entsprechende Fehlermeldung angezeigt.
+
+Die Einladungs-API (getInvitations, createInvitation, revokeInvitation, deleteInvitation) und der Authentifizierungshook (useAuth) werden gemockt. 
+Die eigentliche InvitationPage-Komponente und die Navigation über einen MemoryRouter bleiben Bestandteil des Tests. Die Clipboard-API und die Bestätigungsdialoge werden ebenfalls durch Testimplementierungen abgebildet.
+Dadurch werden die wesentlichen Einladungsabläufe einschließlich der lokalen Zustandsaktualisierung, der Fehlerbehandlung und der Bestätigungsdialoge ohne laufendes Backend überprüft.
+
+**7. Profile (`src/pages/profile/Profile.integration.test.tsx`)**
+
+Die Integrationstests überprüfen die Profilseite, das Laden der eigenen Veranstaltungen und die Interaktionen mit den beiden Eventlisten:
+- **Eventlisten laden:** Paralleler Abruf der organisierten Events über `getOrganizedEvents` und der Teilnahme-Events über `getEventsByAttendee`. Es wird geprüft, dass beide API-Aufrufe mit der korrekten Benutzer-ID und dem Access Token ausgeführt werden.
+- **Standardansicht:** Nach dem Laden ist standardmäßig der Tab „Ersteller“ ausgewählt. Die organisierten Events werden angezeigt, die Teilnahme-Events zunächst bleiben ausgeblendet.
+- **Tab-Navigation:** Wechsel zwischen den Tabs „Ersteller“ und „Teilnehmer“ sowie Überprüfung der jeweils aktiven Ansicht. Beim Wechsel zwischen den Tabs werden die bereits geladenen Eventlisten wiederverwendet; es erfolgen keine zusätzlichen API-Aufrufe.
+- **Organisiertes Event löschen:** Nach Bestätigung des Löschdialogs wird `deleteEvent` mit der korrekten Event-ID und dem Access Token aufgerufen. Anschließend wird das gelöschte Event unmittelbar aus der lokalen Liste entfernt. Die übrigen Profildaten und die zweite Eventliste bleiben erhalten.
+- **Teilnahme beenden:** Nach Bestätigung des Dialogs zum Verlassen eines Events wird `leaveEvent` mit der korrekten Event-ID, Benutzer-ID und dem Access Token aufgerufen. Anschließend wird das Event aus der lokalen Teilnahme-Liste entfernt.
+
+Die Event-API (`getOrganizedEvents`, `deleteEvent`), die Teilnahme-API (`getEventsByAttendee`, `leaveEvent`) und der Authentifizierungshook (`useAuth`) werden gemockt. Die eigentliche `Profile`-Komponente sowie die beteiligten Komponenten `Collection`, `Card`, `DeleteConfirmation` und `LeaveConfirmation` bleiben Bestandteil des Tests. Die Navigation wird über einen `MemoryRouter` bereitgestellt.
+
+Die zentralen Abläufe der Profilseite werden einschließlich der parallelen Datenabfrage, der Tab-Navigation, der Bestätigungsdialoge und der lokalen Aktualisierung der Eventlisten ohne laufendes Backend überprüft.
+
+
+**8. Home (`src/pages/Home.integration.test.tsx`)**
+
+Die Integrationstests überprüfen die Startseite für angemeldete Benutzer sowie das Zusammenspiel der Event-API, der Suchfunktion, des Kategorie-Filters und der URL-Suchparameter:
+- **Event-Daten laden:** Paralleler Abruf der vollständigen Event-Liste über `getAllEvents` und der Teilnahme-Events über `getEventsByAttendee`. Zusätzlich werden die verfügbaren Kategorien über `getCategories` geladen. Es wird geprüft, dass alle API-Aufrufe die korrekten Benutzer- und Token-Parameter erhalten und die geladenen Events angezeigt werden.
+- **Suche über URL-Parameter:** Übernahme des Parameters `query` in das Suchfeld und Filterung der Events anhand des Titels ohne Beachtung der Groß-/Kleinschreibung.
+- **Suche über die Benutzeroberfläche:** Aktualisierung des URL-Parameters `query` nach der 300-ms-Debounce-Verzögerung. Dabei wird ein eventuell vorhandener Kategorieparameter `category` entfernt und die Event-Liste entsprechend dem Suchbegriff aktualisiert. Zusätzlich wird das Empty State bei einer Suche ohne Treffer überprüft.
+- **Kategorie auswählen:** Auswahl einer Kategorie über das Radix Select. Die Kategorie-ID wird in den URL-Parameter `category` übernommen, während `query` entfernt wird. Anschließend werden nur Events der ausgewählten Kategorie angezeigt.
+- **Kategorie-Filter zurücksetzen:** Die Auswahl „Alle Kategorien“ entfernt den URL-Parameter `category`. Danach werden wieder alle verfügbaren Events angezeigt.
+- **Alte Kategorie-URLs:** Ein URL-Parameter mit einem Kategorienamen statt einer Kategorie-ID wird durch einen case-insensitiven Namensvergleich erkannt und automatisch durch die entsprechende Kategorie-ID ersetzt. Die Event-Liste wird anschließend anhand dieser ID gefiltert.
+
+Die API-Funktionen (`getAllEvents`, `getEventsByAttendee`, `getCategories`) und der Authentifizierungshook (`useAuth`) werden gemockt. Die eigentlichen Komponenten `Home`, `Search`, `CategoryFilter`, `Collection` und `Card` bleiben Bestandteil des Tests. Auch das Radix Select wird nicht ersetzt, sodass die Kategorieauswahl über die tatsächliche UI-Komponente getestet wird.
+
+Die Navigation und die URL-Suchparameter werden über einen `MemoryRouter` überprüft. Dadurch werden die Interaktionen zwischen API-Daten, Suchfeld, Kategorieauswahl, URL und Event-Darstellung ohne laufendes Backend getestet.
+
 
 ### Testausführung
 | Befehl | Beschreibung |

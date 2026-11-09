@@ -29,7 +29,6 @@ const CategoryFilter = () => {
         useState<CategoryLoadResult | null>(null);
 
     // Lädt alle verfügbaren Kategorien beim ersten Rendern vom Go-Backend
-    // Lädt alle verfügbaren Kategorien beim ersten Rendern vom Go-Backend
     useEffect(() => {
         if (isAuthLoading || !accessToken) return;
 

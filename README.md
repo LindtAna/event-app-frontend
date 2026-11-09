@@ -66,8 +66,16 @@
   - [Unit Tests](#unit-tests)
   - [Component and Hook Tests](#component-and-hook-tests)
   - [Testausführung](#testausführung)
----
----
+
+- - - - - - - - - - - - - - - - - - - -
+
+– – – – – – – – – – – – – – – – – – – –
+
+• • • • • • • • • • • • • • • • • • • •
+
+· · · · · · · · · · · · · · · · · · · ·
+
+* * *   ✦ ✦ ✦   * * *
 
 ## Über das Projekt
 [Zurück 🡡](#inhaltsverzeichnis)
@@ -78,7 +86,6 @@ Der Client kommuniziert über eine REST-API mit einem Backend auf Basis von Go (
 Event-Bilder und Profilavatare werden über Cloudinary hochgeladen.
 Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clientseitiger Datenvalidierung und responsiver Benutzeroberfläche (Responsive Design).
 
----
 ---
 
 ## Hauptfunktionen
@@ -554,7 +561,6 @@ Der Payload-Typ `UpdateProfilePayload` enthält `name` als Pflichtfeld sowie `bi
 
 `EventForm` erzeugt vor dem Request ein Payload-Objekt und wandelt `startDateTime` und `endDateTime` mit `toISOString()` um. Bei einer bestehenden Kategorie wird `categoryId` gesendet. Ein vom Dropdown erzeugter temporärer Wert mit dem Präfix `new:` wird in `categoryName` umgewandelt. Das Dropdown sendet keinen eigenständigen Request zur Kategorieerstellung; die Verarbeitung des Namens erfolgt im Rahmen des Event-Requests durch das Backend.
 
----
 ---
 
 ## Bilder und Dateien: Cloudinary

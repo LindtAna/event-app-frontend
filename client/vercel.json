@@ -1,0 +1,21 @@
+
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://event-app-postgresql.onrender.com/api/v1/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/v1/:path*",
+      "headers": [
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    }
+  ]
+}

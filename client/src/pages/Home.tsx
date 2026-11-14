@@ -42,7 +42,6 @@ const visibleLoading =
   userId !== undefined && (!hasCurrentUserData || isEventsLoading)
 
 // für den angemeldeten Benutzer alle Veranstaltungen und Teilnahmen laden 
-  // Für den angemeldeten Benutzer alle Veranstaltungen und Teilnahmen laden
 useEffect(() => {
   if (
     isAuthLoading ||
@@ -121,15 +120,6 @@ useEffect(() => {
 
     return matchQuery && matchCategory
   })
-
-  // Warten auf den Abschluss der Autorisierungsprüfung (Flackern der Landingpage vermeiden)
-  if (isAuthLoading) {
-    return (
-      <div className="wrapper my-8 flex items-center justify-center min-h-[300px]">
-        <p className="p-regular-16 text-grey-500">Laden...</p>
-      </div>
-    )
-  }
 
 
  // Autorisierter Benutzer

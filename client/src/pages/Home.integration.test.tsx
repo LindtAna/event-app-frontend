@@ -190,6 +190,49 @@ describe("Home integration", () => {
         mockGetCategories.mockResolvedValue(testCategories);
     });
 
+    it("renders the public landing page while session restoration is pending", () => {
+    mockUseAuth.mockReturnValue({
+        user: null,
+        accessToken: null,
+        isSignedIn: false,
+        isLoading: true,
+    } as ReturnType<typeof useAuth>);
+
+    renderHome();
+
+    // Die öffentliche Landingpage wird sofort angezeigt
+    expect(
+        screen.getByRole("heading", {
+            level: 1,
+            name: "Ihre Veranstaltung, einfach geplant und organisiert",
+        }),
+    ).toBeInTheDocument();
+
+    expect(
+        screen.getByRole("heading", {
+            level: 2,
+            name: "Wie funktioniert PlanFuchs?",
+        }),
+    ).toBeInTheDocument();
+
+    // Der Registrierungslink ist verfügbar
+    expect(
+        screen.getByRole("link", {
+            name: "Jetzt loslegen",
+        }),
+    ).toHaveAttribute("href", "/register");
+
+    // Das Dashboard wird nicht angezeigt
+    expect(
+        screen.queryByPlaceholderText("Event suchen..."),
+    ).not.toBeInTheDocument();
+
+    // Keine Backend-Daten für nicht authentifizierte Besucher laden
+    expect(mockGetAllEvents).not.toHaveBeenCalled();
+    expect(mockGetEventsByAttendee).not.toHaveBeenCalled();
+    expect(mockGetCategories).not.toHaveBeenCalled();
+});
+
     it("loads events, attendee data and categories and displays all events", async () => {
         renderHome();
 

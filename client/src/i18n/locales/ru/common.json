@@ -1,0 +1,34 @@
+{
+  "navigation": {
+    "home": "Главная",
+    "createEvent": "Создать мероприятие",
+    "profile": "Мой профиль",
+    "invitations": "Приглашения",
+    "openMenu": "Открыть меню"
+  },
+  "footer": {
+    "privacyPolicy": "Политика конфиденциальности",
+    "privacySettings": "Настройки конфиденциальности",
+    "termsOfUse": "Условия использования",
+    "imprint": "Юридическая информация",
+    "copyright": "Copyright © 2025–2026 PlanFuchs. Все права защищены."
+  },
+  "language": {
+    "select": "Выбрать язык"
+  },
+  "userMenu": {
+    "account": "Учётная запись",
+    "accountOf": "Учётная запись пользователя {{name}}",
+    "signedInAs": "Вы вошли как",
+    "logout": "Выйти"
+  },
+  "actions": {
+    "login": "Войти"
+  },
+  "page": {
+    "loading": "Загрузка страницы...",
+    "notFoundTitle": "Страница не найдена",
+    "notFoundDescription": "Запрашиваемая страница не существует.",
+    "backHome": "На главную"
+  }
+}

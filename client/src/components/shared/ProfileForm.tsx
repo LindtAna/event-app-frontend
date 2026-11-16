@@ -1,5 +1,4 @@
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -19,6 +18,7 @@ import { FileUploader } from "./FileUploader"
 
 import userIcon from '@/assets/icons/username.svg'
 import mailIcon from '@/assets/icons/email.svg'
+import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
 
 type ProfileFormProps = {
   type: "Create" | "Update"
@@ -26,7 +26,7 @@ type ProfileFormProps = {
 }
 
 const ProfileForm = ({ type, user }: ProfileFormProps) => {
-  const navigate = useNavigate()
+  const navigate = useLocalizedNavigate()
   const [files, setFiles] = useState<File[]>([])
   const { accessToken, setAuth } = useAuth()
 

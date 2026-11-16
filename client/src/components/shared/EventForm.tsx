@@ -1,5 +1,4 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -31,6 +30,7 @@ import { FileUploader } from "./FileUploader";
 import calendar from "@/assets/icons/calendar.svg";
 import location from "@/assets/icons/location.svg";
 import link from "@/assets/icons/link.svg";
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate'
 
 registerLocale("de", de);
 
@@ -41,7 +41,7 @@ type EventFormProps = {
 };
 
 const EventForm = ({ type, event, eventId }: EventFormProps) => {
-    const navigate = useNavigate();
+    const navigate = useLocalizedNavigate()
     const [files, setFiles] = useState<File[]>([]); // FileUploader
     const { accessToken } = useAuth();
 

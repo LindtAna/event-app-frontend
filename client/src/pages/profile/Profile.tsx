@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { Link } from 'react-router-dom'
+import { LocalizedLink } from '@/components/shared/LocalizedLink'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Collection from '@/components/shared/Collection'
@@ -137,13 +137,13 @@ const Profile = () => {
 
           {/* Bearbeiten-Button - Mobile */}
           <div className="flex flex-col sm:flex-row gap-6 md:gap-10 items-center sm:items-start">
-            <Link
+            <LocalizedLink
               to="/profile/update"
               title="Profil bearbeiten"
               className="md:hidden self-end hover:scale-105 transition-opacity"
             >
               <img src={editIcon} alt="Bearbeiten" width={24} height={24} />
-            </Link>
+            </LocalizedLink>
 
             {/* Avatar und Infos */}
             <Avatar className="h-32 w-32 md:h-40 md:w-40 border-2 border-primary-500/70 shadow-sm ring-1 ring-slate-200">
@@ -180,10 +180,10 @@ const Profile = () => {
 
           {/* Bearbeiten-Button - Desktop */}
           <Button asChild variant="outline" className="hidden md:flex gap-2 bg-white hover:bg-primary/70 text-black border-primary-500/40">
-            <Link to="/profile/update">
+            <LocalizedLink to="/profile/update">
               <img src={editIcon} alt="Bearbeiten" width={16} height={16} />
               Profil bearbeiten
-            </Link>
+            </LocalizedLink>
           </Button>
         </div>
       </section>

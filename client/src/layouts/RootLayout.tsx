@@ -1,10 +1,15 @@
 
 import { Suspense } from "react"
 import { Outlet } from "react-router-dom"
+import { useTranslation } from 'react-i18next'
+
 import Header from "@/components/shared/Header"
 import Footer from "@/components/shared/Footer"
 
 export default function RootLayout() {
+
+  const { t } = useTranslation('common')
+
   return (
     <div className="flex h-screen flex-col">
       <Header />
@@ -16,7 +21,7 @@ export default function RootLayout() {
               role="status"
               aria-live="polite"
             >
-              Seite wird geladen...
+              {t('page.loading')}
             </div>
           }
         >

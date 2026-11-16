@@ -1,0 +1,34 @@
+{
+  "navigation": {
+    "home": "Home",
+    "createEvent": "Event erstellen",
+    "profile": "Mein Profil",
+    "invitations": "Einladungen",
+    "openMenu": "Menü öffnen"
+  },
+  "footer": {
+    "privacyPolicy": "Datenschutzerklärung",
+    "privacySettings": "Datenschutzeinstellungen",
+    "termsOfUse": "Nutzungsbedingungen",
+    "imprint": "Impressum",
+    "copyright": "Copyright © 2025–2026 PlanFuchs. Alle Rechte vorbehalten."
+  },
+  "language": {
+    "select": "Sprache auswählen"
+  },
+  "userMenu": {
+    "account": "Benutzerkonto",
+    "accountOf": "Benutzerkonto von {{name}}",
+    "signedInAs": "Angemeldet als",
+    "logout": "Abmelden"
+  },
+  "actions": {
+    "login": "Anmelden"
+  },
+  "page": {
+    "loading": "Seite wird geladen...",
+    "notFoundTitle": "Seite nicht gefunden",
+    "notFoundDescription": "Die angeforderte Seite existiert nicht.",
+    "backHome": "Zur Startseite"
+  }
+}

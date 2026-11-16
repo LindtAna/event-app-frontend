@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import type { Event } from '@/types'
 
 import arrowDown from '@/assets/icons/arrow-down-icon.svg'
-import { Link } from 'react-router-dom'
+import { LocalizedLink } from './LocalizedLink'
 
 type CollectionProps = {
   data: Event[]
@@ -88,7 +88,7 @@ const Collection = ({
           <p className="p-regular-14 text-secondary-dark">{emptyStateSubtext}</p>
            {emptyStateShowButton && (
             <Button asChild className="w-full sm:w-fit mt-2" size="lg">
-              <Link to="/events/create">Los geht’s!</Link>
+              <LocalizedLink to="/events/create">Los geht’s!</LocalizedLink>
             </Button>
           )}
         </div>

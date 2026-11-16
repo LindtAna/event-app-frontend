@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from 'react-i18next'
 
 import {
   Sheet,
@@ -13,13 +14,14 @@ import logo from "@/assets/images/logo.png"
 import menu from "@/assets/icons/menu.svg"
 
 const MobileNav = () => {
+  const { t } = useTranslation('common')
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <nav className="md:hidden">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger className="align-middle">
-          <img src={menu} alt="Menu" className="size-8 cursor-pointer" />
+        <SheetTrigger className="align-middle" aria-label={t('navigation.openMenu')}>
+          <img src={menu} alt="" className="size-8 cursor-pointer" />
         </SheetTrigger>
 
         <SheetContent className="flex flex-col gap-6 bg-white md:hidden">

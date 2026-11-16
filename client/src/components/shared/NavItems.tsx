@@ -1,6 +1,10 @@
+import { useTranslation } from 'react-i18next'
+
 import { useAuth } from "@/hooks/useAuth"
+
 import { headerLinks } from "@/constants"
-import { NavLink } from "react-router-dom"
+
+import { LocalizedNavLink } from './LocalizedLink'
 
 type NavItemsProps = {
   onNavigate?: () => void
@@ -8,18 +12,23 @@ type NavItemsProps = {
 
 const NavItems = ({ onNavigate }: NavItemsProps) => {
   const { user } = useAuth()
+  const { t } = useTranslation('common')
 
-   const visibleLinks = user?.role === "owner" ? headerLinks.flatMap((link) =>
-          link.route === "/profile"
-            ? [
-                {
-                  label: "Einladungen",
-                  route: "/invitations",
-                },
-                link,
-              ]
-            : [link],
-        )
+   const labels = {
+    home: t('navigation.home'),
+    createEvent: t('navigation.createEvent'),
+    profile: t('navigation.profile'),
+    invitations: t('navigation.invitations'),
+  }
+
+   const visibleLinks =
+    user?.role === 'owner'
+      ? [
+          headerLinks[0],
+          headerLinks[1],
+          { key: 'invitations' as const, route: '/invitations' },
+          headerLinks[2],
+        ]
       : headerLinks
 
   return (
@@ -29,15 +38,15 @@ const NavItems = ({ onNavigate }: NavItemsProps) => {
           key={link.route}
           className="flex-center p-medium-16 whitespace-nowrap"
         >
-          <NavLink
+          <LocalizedNavLink
             to={link.route}
             onClick={onNavigate}
             className={({ isActive }) =>
               isActive ? "text-primary-500 font-semibold" : "text-black"
             }
           >
-            {link.label}
-          </NavLink>
+            {labels[link.key]}
+          </LocalizedNavLink>
         </li>
       ))}
     </ul>

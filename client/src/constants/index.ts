@@ -1,24 +1,24 @@
 export const headerLinks = [
   {
-    label: 'Home',
+    key: 'home',
     route: '/',
   },
   {
-    label: 'Event erstellen', //Create Event
+    key: 'createEvent',
     route: '/events/create',
   },
   {
-    label: 'Mein Profil',  //My Profile
+    key: 'profile',
     route: '/profile',
   },
-]
+] as const
 
 export const footerLinks = [
-  { label: "Datenschutzerklärung", route: "#" },
-  { label: "Datenschutzeinstellungen", route: "#" },
-  { label: "Nutzungsbedingungen", route: "#" },
-  { label: "Impressum", route: "#" },
-]
+  { key: 'privacyPolicy', route: '#' },
+  { key: 'privacySettings', route: '#' },
+  { key: 'termsOfUse', route: '#' },
+  { key: 'imprint', route: '#' },
+] as const
 
 
 export const eventDefaultValues = {

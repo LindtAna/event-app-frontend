@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import type { Event } from '@/types'
 
 import owner from '@/assets/icons/ownership.svg'
@@ -8,6 +7,7 @@ import editIcon from '@/assets/icons/edit.svg'
 import { DeleteConfirmation } from './DeleteConfirmation'
 import { LeaveConfirmation } from './LeaveConfirmation'
 
+import { LocalizedLink } from './LocalizedLink'
 
 type CardProps = {
   event: Event
@@ -18,11 +18,11 @@ type CardProps = {
   onEventLeft?: (eventId: number | string) => void
 }
 
-const Card = ({ 
-  event, 
-  userRole, 
-  currentUserId, 
-  attendeeEventIds = [], 
+const Card = ({
+  event,
+  userRole,
+  currentUserId,
+  attendeeEventIds = [],
   onEventDeleted,
   onEventLeft }: CardProps) => {
 
@@ -53,13 +53,13 @@ const Card = ({
       {effectiveRole === 'owner' && (
         <div className="absolute right-2 top-2 z-10 flex gap-2">
           {/* edit */}
-          <Link
+          <LocalizedLink
             to={`/events/${event.id}/update`}
             title="Event bearbeiten"
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-primary-500/40 shadow-sm backdrop-blur-sm transition-all hover:border-primary-500/80 hover:shadow-md hover:scale-105"
           >
             <img src={editIcon} alt="Bearbeiten" width={20} height={20} />
-          </Link>
+          </LocalizedLink>
 
           {/* delete */}
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-primary-500/40 shadow-sm backdrop-blur-sm transition-all hover:border-primary-500/80 hover:shadow-md hover:scale-105 [&>button]:flex [&>button]:h-full [&>button]:w-full [&>button]:items-center [&>button]:justify-center">
@@ -72,14 +72,14 @@ const Card = ({
       {/* leave event */}
       {effectiveRole === 'attendee' && (
         <div className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center p-2 shadow-sm backdrop-blur-sm transition-all border border-primary-500/40 hover:border-primary-500/80 hover:shadow-md hover:scale-105">
-           <LeaveConfirmation
+          <LeaveConfirmation
             eventId={event.id}
             onEventLeft={onEventLeft}
           />
         </div>
       )}
 
-      <Link
+      <LocalizedLink
         to={`/events/${event.id}`}
         style={{ backgroundImage: `url(${event.imageUrl})` }}
         className="flex-center flex-grow bg-gray-50 bg-cover bg-center text-grey-500 min-h-[100px]"
@@ -114,11 +114,11 @@ const Card = ({
 
         <p className="p-medium-16 text-black">{formattedDate}</p>
 
-        <Link to={`/events/${event.id}`}>
+        <LocalizedLink to={`/events/${event.id}`}>
           <p className="p-medium-20 font-bold line-clamp-2 flex-1 text-black hover:text-primary-500 transition-colors">
             {event.title}
           </p>
-        </Link>
+        </LocalizedLink>
 
         <div className="flex-between w-full mt-auto">
           <p className="p-medium-14 md:p-medium-16 text-secondary-dark">

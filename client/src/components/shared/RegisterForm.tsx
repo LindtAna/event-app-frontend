@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 import { useState } from "react"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -20,13 +20,14 @@ import mailIcon from '@/assets/icons/email.svg'
 import lockIcon from '@/assets/icons/lock.svg'
 import teamIcon from '@/assets/icons/team.svg'
 import invitationIcon from '@/assets/icons/invitation.svg'
+import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
 
 type RegistrationType = "owner" | "member"
 
 type RegisterFormValues = z.infer<typeof registerFormSchema>
 
 const RegisterForm = () => {
-  const navigate = useNavigate()
+  const navigate = useLocalizedNavigate()
   const [searchParams] = useSearchParams()
 
   const registrationType: RegistrationType =

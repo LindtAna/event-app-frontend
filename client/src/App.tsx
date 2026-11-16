@@ -1,8 +1,13 @@
 
 import { lazy } from "react"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+
 import RootLayout from "./layouts/RootLayout"
+import LanguageLayout, { PreferredLanguageRedirect } from './layouts/LanguageLayout'
+
 import { AuthProvider } from "./hooks/AuthProvider"
+
+import NotFoundPage from './pages/NotFound'
 
 // Pages are loaded on demand when their routes are visited.
 const Home = lazy(() => import("./pages/Home"))
@@ -19,15 +24,23 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route element={<RootLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/events/:id" element={<EventDetails />} />
-            <Route path="/events/create" element={<CreateEvent />} />
-            <Route path="/events/:id/update" element={<UpdateEvent />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/update" element={<UpdateProfile />} />
-            <Route path="/invitations" element={<InvitationPage />} />
+
+          {/* Root URL: determine preferred language */}
+          <Route path="/" element={<PreferredLanguageRedirect />} />
+          {/* Language-prefixed application */}
+          <Route path="/:lang" element={<LanguageLayout />}>
+
+            <Route element={<RootLayout />}>
+              <Route index element={<Home />} />
+              <Route path="register" element={<Register />} />
+              <Route path="events/:id" element={<EventDetails />} />
+              <Route path="events/create" element={<CreateEvent />} />
+              <Route path="events/:id/update" element={<UpdateEvent />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="profile/update" element={<UpdateProfile />} />
+              <Route path="invitations" element={<InvitationPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

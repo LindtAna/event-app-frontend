@@ -272,6 +272,8 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   │   ├── RegisterForm.tsx       # Formular zur Registrierung neuer Benutzer
 │   │   │   ├── LoginModal.tsx         # Modales Fenster zur Benutzeranmeldung (Login)
 │   │   │   ├── Search.tsx             # Suchleiste zur Filterung von Events
+│   │   │   ├── LanguageSwitcher.tsx
+│   │   │   ├── LocalizedLink.tsx
 │   │   │   │
 │   │   │   ├──  EventForm.integration.test.tsx  # Integration Tests für das Erstellen und Bearbeiten von Events
 │   │   │   ├──  LoginModal.integration.test.tsx  # Integration Tests für Anmeldung und Registrierungsnavigation
@@ -288,14 +290,18 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │       └── ..usw
 │   ├── constants/
 │   │   └── index.ts   # Konstanten und Standardwerte (eventDefaultValues,registerDefaultValues)
+│   │
 │   ├── hooks/
 │   │   ├── auth-context.ts        # Erstellt und typisiert den Authentifizierungskontext
 │   │   ├── AuthProvider.tsx       # Verwaltet den globalen Authentifizierungszustand und die Sitzungswiederherstellung
 │   │   ├── useAuth.ts             # Stellt einen Hook für den Zugriff auf den Authentifizierungskontext bereit
+│   │   ├── useLocalizedNavigate.ts
 │   │   └── AuthProvider.test.tsx  # Unit-Tests für AuthProvider und useAuth
 │   │
 │   ├── layouts/
-│   │   └── RootLayout.tsx       # Hauptlayout der Anwendung (Header, Outlet und Footer)
+│   │   ├── RootLayout.tsx       # Hauptlayout der Anwendung (Header, Outlet und Footer)
+│   │   └── LanguageLayout.tsx
+│   │
 │   ├── lib/
 │   │   ├── api.ts               # Zentraler HTTP-Helper mit Token- und Cookie-Handling   
 │   │   ├── utils.ts             # Hilfsfunktionen / Utilities (cn, getInitials etc.)
@@ -332,7 +338,23 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │
 │   ├── App.tsx           # Hauptkomponente für das Routing
 │   ├── index.css         # Globale Tailwind-CSS-Styles und Custom Utilities
-│   └── main.tsx          # Einstiegspunkt der React-Anwendung
+│   ├── main.tsx          # Einstiegspunkt der React-Anwendung
+│   │ 
+│   └──i18n/
+│         ├── index.ts      #Initialisierungspunkt für i18next
+│         ├── languages.ts  # Zentralisierte Sprachunterstützung, Ermittlung der bevorzugten Sprache und Erstellung der URL
+│         ├── resources.ts  # Führt JSON-Ressourcen aller Sprachen zusammen
+│         ├── navigation.ts  # URL-Lokalisierung
+│         ├── i18next.d.ts
+│         └── locales/
+│             ├── de/
+│             │   └── common.json # Übersetzungsdatei-Deutsch
+│             ├── en/
+│             │   └── common.json # Übersetzungsdatei-English
+│             └── ru/
+│                 └── common.json # Übersetzungsdatei-Russisch
+│      
+│
 ├── index.html            # Haupt-HTML-Template (Vite)
 ├── tailwind.config.js    # Tailwind-Konfiguration für Styles und Farbpalette
 ├── tsconfig.json         # Einstellungen des TypeScript-Compilers

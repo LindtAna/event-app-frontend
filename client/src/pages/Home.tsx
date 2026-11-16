@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+import { useSearchParams} from 'react-router-dom'
+import { LocalizedLink } from '@/components/shared/LocalizedLink'
 
 import { useAuth } from '@/hooks/useAuth'
 import { getAllEvents } from '@/api/events'
@@ -184,7 +185,7 @@ useEffect(() => {
               Zeitpläne in Echtzeit aktualisieren – ganz ohne Papier.
             </p>
             <Button asChild className="w-full sm:w-fit" size="lg">
-              <Link to="/register">Jetzt loslegen</Link>
+              <LocalizedLink to="/register">Jetzt loslegen</LocalizedLink>
             </Button>
           </div>
           <img src={hero} alt="PlanFuchs Dashboard" className="max-h-[70vh] w-full object-contain object-center" />

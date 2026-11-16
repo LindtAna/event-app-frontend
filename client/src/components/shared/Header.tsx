@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
+
+import { useTranslation } from 'react-i18next'
+
+import { LocalizedLink } from './LocalizedLink'
+import LanguageSwitcher from './LanguageSwitcher'
 
 import { useAuth } from "@/hooks/useAuth"
 
@@ -11,6 +16,8 @@ import logo from '@/assets/images/logo.png'
 import userIcon from '@/assets/icons/username.svg'
 
 const Header = () => {
+  const { t } = useTranslation('common')
+
   const { isSignedIn, user, logout } = useAuth()
 
   const location = useLocation()
@@ -43,7 +50,7 @@ const Header = () => {
   return (
     <header className="w-full border-b border border-primary-500/40">
       <div className="wrapper flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 md:gap-2.5">
+        <LocalizedLink to="/" className="flex items-center gap-2 md:gap-2.5">
           <img
             src={logo}
             alt="PlanFuchs logo"
@@ -52,7 +59,7 @@ const Header = () => {
           <span className="text-[14px] md:text-[24px] lg:text-[30px] font-semibold tracking-tight font-poppins">
             PlanFuchs
           </span>
-        </Link>
+        </LocalizedLink>
 
         {isSignedIn && (
           <nav className="hidden md:flex flex-1 min-w-0 justify-center px-2">
@@ -61,6 +68,7 @@ const Header = () => {
         )}
 
         <div className="flex shrink-0 justify-end gap-3 items-center">
+          <LanguageSwitcher />
           {isSignedIn ? (
             <>
               {/* Benutzer-Pop-up-Menü */}
@@ -68,11 +76,11 @@ const Header = () => {
                 <button
                   onClick={() => setIsUserMenuOpen((prev) => !prev)}
                   className="flex items-center justify-center p-1 rounded-full hover:bg-primary-500/50 transition-colors focus:outline-none"
-                  title={user?.name || "Benutzerkonto"}
+                  title={user?.name || t('userMenu.account')}
                   aria-label={
                     user?.name
-                      ? `Benutzerkonto von ${user.name}`
-                      : "Benutzerkonto"
+                      ? t('userMenu.accountOf', { name: user.name })
+                      : t('userMenu.account')
                   }
                   aria-expanded={isUserMenuOpen}
                 >
@@ -92,7 +100,9 @@ const Header = () => {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white py-2 shadow-xl ring-1 ring-black/5 z-50 border border-primary-500/50 animate-in fade-in zoom-in-95 duration-100">
                     <div className="px-4 py-2 border-b border-primary-500/50">
-                      <p className="text-xs text-gray-500">Angemeldet als</p>
+                      <p className="text-xs text-gray-500">
+  {t('userMenu.signedInAs')}
+</p>
                       <p className="text-sm font-semibold text-gray-800 truncate">
                         {user?.name || user?.email}
                       </p>
@@ -102,7 +112,7 @@ const Header = () => {
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-secondary/50 flex items-center gap-2 transition-colors font-medium mt-1"
                     >
-                      Abmelden
+                      {t('userMenu.logout')}
                     </button>
                   </div>
                 )}
@@ -125,7 +135,7 @@ const Header = () => {
                 )
               }
               className="hover:scale-105 transition-transform"
-              title="Anmelden"
+              title={t('actions.login')}
             >
               <img
                 src={userIcon}

@@ -1,7 +1,7 @@
-import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
-
+import "@testing-library/jest-dom/vitest"
+import { cleanup } from "@testing-library/react"
+import { afterEach } from "vitest"
+import { i18nReady } from '../i18n'
 /**
  * jsdom implementiert PointerEvent und Pointer Capture APIs
  * nicht vollständig. Radix Select benötigt diese APIs,
@@ -31,6 +31,8 @@ window.HTMLElement.prototype.hasPointerCapture = () => false;
 window.HTMLElement.prototype.setPointerCapture = () => {};
 window.HTMLElement.prototype.releasePointerCapture = () => {};
 window.HTMLElement.prototype.scrollIntoView = () => {};
+
+await i18nReady
 
 afterEach(() => {
     cleanup();

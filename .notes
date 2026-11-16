@@ -164,3 +164,8 @@ Use the filename of the uploaded file as the asset's display name - (True)
 
 Тестирование:
 npm install -D vitest jsdom @testing-library/react @testing-library/dom @testing-library/jest-dom
+
+
+----
+Мультиязычность:
+npm install i18next react-i18next

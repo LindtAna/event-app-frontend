@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
 
 import { useAuth } from "@/hooks/useAuth"
 import { loginUser } from "@/api/auth"
@@ -17,6 +16,7 @@ import mailIcon from '@/assets/icons/email.svg'
 import lockIcon from '@/assets/icons/lock.svg'
 import seeIcon from "@/assets/icons/see.svg"
 import dontSeeIcon from "@/assets/icons/dont-see.svg"
+import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
 
 const loginFormSchema = z.object({
   email: z.string().email("Ungültige E-Mail-Adresse."),
@@ -32,7 +32,7 @@ type ModalView = "login" | "registration-choice"
 type RegistrationType = "owner" | "member"
 
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
-  const navigate = useNavigate()
+  const navigate = useLocalizedNavigate()
   const { setAuth } = useAuth()
 
   const [view, setView] = useState<ModalView>("login")

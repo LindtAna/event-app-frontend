@@ -4,6 +4,8 @@ import {
   useParams,
 } from 'react-router-dom'
 
+import type { ChangeEvent } from 'react'
+
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -24,7 +26,7 @@ const LanguageSwitcher = () => {
     : getPreferredLanguage()
 
   const handleLanguageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>,
+    event: ChangeEvent<HTMLSelectElement>,
   ) => {
     const nextLanguage = event.target.value
 

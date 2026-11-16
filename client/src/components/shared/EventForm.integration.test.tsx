@@ -225,9 +225,11 @@ describe("EventForm integration", () => {
             );
         });
 
-        expect(
-            await screen.findByTestId("current-location"),
-        ).toHaveTextContent("/events/42");
+        await waitFor(() => {
+            expect(screen.getByTestId("current-location")).toHaveTextContent(
+                "/events/42",
+            );
+        });
 
         expect(mockUpdateEvent).not.toHaveBeenCalled();
     });
@@ -258,9 +260,11 @@ describe("EventForm integration", () => {
             );
         });
 
-        expect(
-            await screen.findByTestId("current-location"),
-        ).toHaveTextContent("/events/42");
+        await waitFor(() => {
+            expect(screen.getByTestId("current-location")).toHaveTextContent(
+                "/events/42",
+            );
+        });
 
         expect(mockCreateEvent).not.toHaveBeenCalled();
     });
@@ -268,7 +272,7 @@ describe("EventForm integration", () => {
     it("validates form fields without sending an API request", async () => {
         renderEventForm();
 
-       // Fehlerhafte Überschrift und Fehlen der übrigen erforderlichen Daten
+        // Fehlerhafte Überschrift und Fehlen der übrigen erforderlichen Daten
         fireEvent.change(screen.getByPlaceholderText("Event-Titel"), {
             target: { value: "AB" },
         });
@@ -336,9 +340,11 @@ describe("EventForm integration", () => {
             );
         });
 
-        expect(
-            await screen.findByTestId("current-location"),
-        ).toHaveTextContent("/events/42");
+        await waitFor(() => {
+            expect(screen.getByTestId("current-location")).toHaveTextContent(
+                "/events/42",
+            );
+        });
     });
 
     it("displays a warning and does not call the API when accessToken is missing", async () => {

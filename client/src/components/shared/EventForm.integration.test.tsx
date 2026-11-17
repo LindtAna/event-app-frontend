@@ -2,6 +2,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import i18n from "@/i18n";
 
 import { useAuth } from "@/hooks/useAuth";
 import { createEvent, updateEvent } from "@/api/events";
@@ -138,7 +139,7 @@ const LocationDisplay = () => {
     );
 };
 
-// Wir rendern ein echtes EventForm innerhalb von React Router
+// echtes EventForm innerhalb von React Routerwird gerendert
 const renderEventForm = (
     type: "Create" | "Update" = "Create",
     event?: Event,
@@ -166,11 +167,13 @@ const fillValidForm = () => {
     });
 
     fireEvent.change(
-        screen.getByPlaceholderText("Veranstaltungsort oder Online"),
-        {
-            target: { value: testPayload.location },
-        },
-    );
+    screen.getByPlaceholderText(
+        i18n.t("eventForm.locationPlaceholder"),
+    ),
+    {
+        target: { value: testPayload.location },
+    },
+);
 
     fireEvent.change(screen.getAllByLabelText("Datum")[0], {
         target: { value: "2027-01-10T10:00" },
@@ -199,7 +202,9 @@ const submitForm = () => {
 };
 
 describe("EventForm integration", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        await i18n.changeLanguage("de");
+
         vi.clearAllMocks();
 
         mockUseAuth.mockReturnValue({
@@ -281,7 +286,7 @@ describe("EventForm integration", () => {
 
         expect(
             await screen.findByText(
-                "Titel muss mindestens 3 Zeichen lang sein",
+                i18n.t("validation.event.titleMin"),
             ),
         ).toBeInTheDocument();
 
@@ -363,7 +368,7 @@ describe("EventForm integration", () => {
 
         await waitFor(() => {
             expect(alertMock).toHaveBeenCalledWith(
-                "Deine Sitzung ist nicht aktiv. Bitte melde dich erneut an.",
+                i18n.t("eventForm.sessionExpired"),
             );
         });
 

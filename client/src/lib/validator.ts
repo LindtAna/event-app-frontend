@@ -1,90 +1,124 @@
+
 import * as z from "zod"
+import type { TFunction } from "i18next"
 
-export const eventFormSchema = z.object({
-  title: z
-    .string()
-    .min(3, 'Titel muss mindestens 3 Zeichen lang sein')
-    .max(100, 'Titel darf maximal 100 Zeichen lang sein'),
+// Schema zur Erstellung und Bearbeitung von Events
+export const createEventFormSchema = (t: TFunction) =>
+  z.object({
+    title: z
+      .string()
+      .min(3, t("validation.event.titleMin"))
+      .max(100, t("validation.event.titleMax")),
 
-  description: z
-    .string()
-    .min(3, 'Beschreibung muss mindestens 3 Zeichen lang sein')
-    .max(400, 'Beschreibung darf maximal 400 Zeichen lang sein'),
+    description: z
+      .string()
+      .min(3, t("validation.event.descriptionMin"))
+      .max(400, t("validation.event.descriptionMax")),
 
-  location: z
-    .string()
-    .min(3, 'Ort muss mindestens 3 Zeichen lang sein')
-    .max(200, 'Ort darf maximal 200 Zeichen lang sein'),
+    location: z
+      .string()
+      .min(3, t("validation.event.locationMin"))
+      .max(200, t("validation.event.locationMax")),
 
-  imageUrl: z.string(),
+    imageUrl: z.string(),
 
-  startDateTime: z.date({
-    message: 'Bitte wähle ein Startdatum aus',
-  }),
+    startDateTime: z.date({
+      message: t("validation.event.startDateRequired"),
+    }),
 
-  endDateTime: z.date({
-    message: 'Bitte wähle ein Enddatum aus',
-  }),
+    endDateTime: z.date({
+      message: t("validation.event.endDateRequired"),
+    }),
 
-  categoryId: z.string().min(1, 'Bitte wähle eine Kategorie aus'),
+    categoryId: z
+      .string()
+      .min(1, t("validation.event.categoryRequired")),
 
-  url: z.string().url('Ungültige URL').or(z.literal('')),
-}).refine((data) => data.endDateTime > data.startDateTime, {
-  message: "Das Enddatum muss nach dem Startdatum liegen",
-  path: ["endDateTime"],
-});
+    url: z
+      .string()
+      .url(t("validation.event.invalidUrl"))
+      .or(z.literal("")),
+  }).refine((data) => data.endDateTime > data.startDateTime, {
+    message: t("validation.event.endDateAfterStart"),
+    path: ["endDateTime"],
+  })
 
 // Registrierungsschema für Owner und Member
-export const registerFormSchema = z
-  .object({
-    registrationType: z.enum(["owner", "member"]),
+export const createRegisterFormSchema = (t: TFunction) =>
+  z
+    .object({
+      registrationType: z.enum(["owner", "member"]),
 
-    name: z.string().trim().min(2, "Name muss mindestens 2 Zeichen lang sein."),
-    email: z.string().trim().email("Ungültige E-Mail-Adresse."),
-    password: z.string().min(8, "Passwort muss mindestens 8 Zeichen lang sein.")
-      .refine(
-        (password) => new TextEncoder().encode(password).length <= 72,
-        "Passwort darf maximal 72 Byte umfassen.",
-      ),
-    confirmPassword: z.string(),
-    companyName: z.string().optional(),
-    invitationCode: z.string().optional(),
-    avatarUrl: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.password !== data.confirmPassword) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Passwörter stimmen nicht überein.",
-        path: ["confirmPassword"],
-      })
-    }
+      name: z
+        .string()
+        .trim()
+        .min(2, t("validation.register.nameMin")),
 
-    if (
-      data.registrationType === "owner" && !data.companyName?.trim()
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Bitte gib einen Teamnamen ein.",
-        path: ["companyName"],
-      })
-    }
+      email: z
+        .string()
+        .trim()
+        .email(t("validation.register.invalidEmail")),
 
-    if (
-      data.registrationType === "member" && !data.invitationCode?.trim()
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Bitte gib deinen Einladungscode ein.",
-        path: ["invitationCode"],
-      })
-    }
-  })
+      password: z
+        .string()
+        .min(8, t("validation.register.passwordMin"))
+        .refine(
+          (password) => new TextEncoder().encode(password).length <= 72,
+          t("validation.register.passwordMaxBytes"),
+        ),
+
+      confirmPassword: z.string(),
+      companyName: z.string().optional(),
+      invitationCode: z.string().optional(),
+      avatarUrl: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.password !== data.confirmPassword) {
+        ctx.addIssue({
+          code: "custom",
+          message: t("validation.register.passwordMismatch"),
+          path: ["confirmPassword"],
+        })
+      }
+
+      if (
+        data.registrationType === "owner" && !data.companyName?.trim()
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          message: t("validation.register.companyNameRequired"),
+          path: ["companyName"],
+        })
+      }
+
+      if (
+        data.registrationType === "member" && !data.invitationCode?.trim()
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          message: t("validation.register.invitationCodeRequired"),
+          path: ["invitationCode"],
+        })
+      }
+    })
 
 // Schema zur Profilbearbeitung
-export const profileFormSchema = z.object({
-  name: z.string().trim().min(2, "Name muss mindestens 2 Zeichen lang sein."),
-  email: z.string().trim().email("Ungültige E-Mail-Adresse."),
-  bio: z.string().max(200, "Bio darf maximal 200 Zeichen lang sein.").optional(),
-  avatarUrl: z.string().optional(),
-})
+export const createProfileFormSchema = (t: TFunction) =>
+  z.object({
+    name: z
+      .string()
+      .trim()
+      .min(2, t("validation.profile.nameMin")),
+
+    email: z
+      .string()
+      .trim()
+      .email(t("validation.profile.invalidEmail")),
+
+    bio: z
+      .string()
+      .max(200, t("validation.profile.bioMax"))
+      .optional(),
+
+    avatarUrl: z.string().optional(),
+  })

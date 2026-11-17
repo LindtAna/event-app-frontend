@@ -30,5 +30,111 @@
     "notFoundTitle": "Page not found",
     "notFoundDescription": "The requested page does not exist.",
     "backHome": "Back to home"
-  }
+  },
+  "home": {
+    "authenticated": {
+      "welcome": "Welcome back, {{name}}!",
+      "description": "Here is an overview of your current events and plans.",
+      "searchPlaceholder": "Search events...",
+      "loading": "Loading events...",
+      "loadError": "Could not load events.",
+      "emptyTitle": "No events found",
+      "emptySearch": "Try a different search term.",
+      "emptyDefault": "Create your first event"
+    },
+    "guest": {
+      "heroTitle": "Your events, planned and organized with ease",
+      "heroDescriptionLine1": "Keep track of tasks and appointments.",
+      "heroDescriptionLine2": "Update schedules in real time – completely paper-free.",
+      "getStarted": "Get started",
+      "heroImageAlt": "PlanFuchs dashboard",
+      "howItWorks": "How does PlanFuchs work?",
+      "step1Title": "1. Create a team",
+      "step1Description": "Create an account and set up a shared workspace for your team.",
+      "step2Title": "2. Invite your team",
+      "step2Description": "Add colleagues to your team workspace using an invitation code.",
+      "step3Title": "3. Stay organized",
+      "step3Description": "Keep all tasks and appointments in one central place."
+    }
+  },
+  "categories": {
+    "selectPlaceholder": "Select category...",
+    "all": "All categories",
+    "loading": "Loading categories...",
+    "loginRequired": "Please sign in to load categories.",
+    "loadError": "Could not load categories.",
+    "newCategory": {
+      "create": "Create new category",
+      "description": "Enter a name for the new category:",
+      "name": "Category name",
+      "cancel": "Cancel",
+      "add": "Add"
+    }
+  },
+  "eventForm": {
+    "sessionExpired": "Your session is no longer active. Please sign in again.",
+    "genericError": "An error occurred.",
+    "titlePlaceholder": "Event title",
+    "descriptionPlaceholder": "Description",
+    "locationPlaceholder": "Event location or online",
+    "start": "Start:",
+    "end": "End:",
+    "time": "Time",
+    "saving": "Saving...",
+    "createSubmit": "Let's get started!",
+    "save": "Save"
+  },
+  "fileUploader": {
+    "previewAlt": "Event image preview",
+    "dropHere": "Drag and drop a photo here",
+    "uploadButton": "...or upload an image"
+  },
+  "validation": {
+    "event": {
+      "titleMin": "The title must contain at least 3 characters.",
+      "titleMax": "The title must not exceed 100 characters.",
+      "descriptionMin": "The description must contain at least 3 characters.",
+      "descriptionMax": "The description must not exceed 400 characters.",
+      "locationMin": "The location must contain at least 3 characters.",
+      "locationMax": "The location must not exceed 200 characters.",
+      "startDateRequired": "Please select a start date.",
+      "endDateRequired": "Please select an end date.",
+      "categoryRequired": "Please select a category.",
+      "invalidUrl": "Please enter a valid URL.",
+      "endDateAfterStart": "The end date must be after the start date."
+    },
+    "register": {
+      "nameMin": "The name must contain at least 2 characters.",
+      "invalidEmail": "Please enter a valid email address.",
+      "passwordMin": "The password must contain at least 8 characters.",
+      "passwordMaxBytes": "The password must not exceed 72 bytes.",
+      "passwordMismatch": "The passwords do not match.",
+      "companyNameRequired": "Please enter a team name.",
+      "invitationCodeRequired": "Please enter your invitation code."
+    },
+    "profile": {
+      "nameMin": "The name must contain at least 2 characters.",
+      "invalidEmail": "Please enter a valid email address.",
+      "bioMax": "The bio must not exceed 200 characters."
+    }
+  },
+"profileForm": {
+  "unauthorized": "Not authorized. Please sign in again.",
+  "genericError": "An error occurred.",
+  "namePlaceholder": "Name",
+  "emailPlaceholder": "Email",
+  "bioPlaceholder": "Short bio / role",
+  "saving": "Saving...",
+  "save": "Save",
+  "cancel": "Cancel"
+},
+"eventPages": {
+  "createTitle": "Create event",
+  "updateTitle": "Edit event",
+  "loading": "Loading event...",
+  "missingId": "No event ID provided.",
+  "loginRequired": "Please sign in to edit this event.",
+  "loadError": "Could not load the event.",
+  "notFound": "Event not found."
+}
 }

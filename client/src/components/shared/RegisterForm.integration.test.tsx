@@ -9,6 +9,8 @@ import type { Dispatch, SetStateAction } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import i18n from "@/i18n";
+
 import { registerUser } from "@/api/auth";
 import { uploadToCloudinary } from "@/api/upload";
 import type { User } from "@/types";
@@ -152,7 +154,9 @@ const submitForm = () => {
 };
 
 describe("RegisterForm integration", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+    await i18n.changeLanguage("de");
+    
         mockRegisterUser.mockReset();
         mockUploadToCloudinary.mockReset();
     });
@@ -278,14 +282,16 @@ describe("RegisterForm integration", () => {
         submitForm();
 
         expect(
-            await screen.findByText(
-                "Bitte gib einen Teamnamen ein.",
-            ),
-        ).toBeInTheDocument();
+    await screen.findByText(
+        i18n.t("validation.register.companyNameRequired"),
+    ),
+).toBeInTheDocument();
 
         expect(
-            screen.getByText("Passwörter stimmen nicht überein."),
-        ).toBeInTheDocument();
+    screen.getByText(
+        i18n.t("validation.register.passwordMismatch"),
+    ),
+).toBeInTheDocument();
 
         expect(mockRegisterUser).not.toHaveBeenCalled();
         expect(mockUploadToCloudinary).not.toHaveBeenCalled();

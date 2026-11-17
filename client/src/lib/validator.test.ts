@@ -1,11 +1,21 @@
 
 import { describe, expect, it } from "vitest";
+import type { TFunction } from "i18next";
 
 import {
-  eventFormSchema,
-  registerFormSchema,
-  profileFormSchema,
+  createEventFormSchema,
+  createRegisterFormSchema,
+  createProfileFormSchema,
 } from "./validator";
+
+// Die Test-Übersetzungsfunktion gibt den Schlüssel selbst zurück
+// Dies ermöglicht das Überprüfen von Schemata ohne Initialisierung von i18next
+const testT = ((key: string) => key) as unknown as TFunction;
+
+// Schemata einmal für alle Tests wird erstellt
+const eventFormSchema = createEventFormSchema(testT);
+const registerFormSchema = createRegisterFormSchema(testT);
+const profileFormSchema = createProfileFormSchema(testT);
 
 const validEvent = {
   title: "Test Event",
@@ -41,9 +51,8 @@ const validProfile = {
   email: "test@example.com",
 };
 
-// --------------------------------------------------
+
 // Event Form Schema
-// --------------------------------------------------
 
 describe("eventFormSchema", () => {
   it("accepts valid event data", () => {
@@ -201,9 +210,8 @@ describe("eventFormSchema", () => {
   });
 });
 
-// --------------------------------------------------
+
 // Registration Form Schema
-// --------------------------------------------------
 
 describe("registerFormSchema", () => {
   it("accepts valid owner registration data", () => {
@@ -331,10 +339,8 @@ describe("registerFormSchema", () => {
   });
 });
 
-// --------------------------------------------------
-// Profile Form Schema
-// --------------------------------------------------
 
+// Profile Form Schema
 describe("profileFormSchema", () => {
   it("accepts valid profile data without optional fields", () => {
     expect(profileFormSchema.safeParse(validProfile).success).toBe(true);

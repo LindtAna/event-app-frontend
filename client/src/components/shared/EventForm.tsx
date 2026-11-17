@@ -2,37 +2,44 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
 import { de } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
+import { ru } from "date-fns/locale";
+
+import { useTranslation } from "react-i18next";
+
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { Button } from "@/components/ui/button";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-
-import type { Event } from "@/types";
-import { eventFormSchema } from "@/lib/validator";
-import { eventDefaultValues } from "@/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { createEvent, updateEvent } from "@/api/events";
 import { uploadToCloudinary } from "@/api/upload";
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate'
+
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormMessage} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import Dropdown from "./Dropdown";
 import { FileUploader } from "./FileUploader";
 
+import type { Event } from "@/types";
+import { createEventFormSchema } from "@/lib/validator";
+import { eventDefaultValues } from "@/constants";
+
+
 import calendar from "@/assets/icons/calendar.svg";
 import location from "@/assets/icons/location.svg";
 import link from "@/assets/icons/link.svg";
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate'
 
+
+// Registrierung der verfügbaren Kalender-Lokalisierungen
 registerLocale("de", de);
+registerLocale("en", enUS);
+registerLocale("ru", ru);
 
 type EventFormProps = {
     type: "Create" | "Update";
@@ -42,8 +49,28 @@ type EventFormProps = {
 
 const EventForm = ({ type, event, eventId }: EventFormProps) => {
     const navigate = useLocalizedNavigate()
-    const [files, setFiles] = useState<File[]>([]); // FileUploader
+    const { t, i18n } = useTranslation()
+    const eventFormSchema = createEventFormSchema(t)
+
+    const [files, setFiles] = useState<File[]>([]) // FileUploader
     const { accessToken } = useAuth();
+
+     // Aktuelle Sprache für DatePicker bestimmen
+    const currentLanguage = (
+        i18n.resolvedLanguage ?? i18n.language
+    ).split("-")[0];
+
+    const datePickerLocale =
+        currentLanguage === "en"
+            ? "en"
+            : currentLanguage === "ru"
+                ? "ru"
+                : "de";
+
+    const dateFormat =
+        datePickerLocale === "en"
+            ? "MMM d, yyyy h:mm aa"
+            : "dd.MM.yyyy HH:mm";
 
     const initialValues =
     event && type === "Update"
@@ -69,13 +96,15 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
         defaultValues: initialValues,
     });
 
+
     // onSubmit erhält automatisch strikt typisierte und validierte Daten
     async function onSubmit(values: z.infer<typeof eventFormSchema>) {
         try {
             if (!accessToken) {
-                alert("Deine Sitzung ist nicht aktiv. Bitte melde dich erneut an.");
+                alert(t("eventForm.sessionExpired"));
                 return;
             }
+
             let uploadedImageUrl = values.imageUrl;
             // Hochladen des Eventfotos zu Cloudinary (sofern eine Datei hochgeladen wurde)
             if (files.length > 0) {
@@ -83,6 +112,7 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
             }
             // Erstellen des Request-Bodys für das Go-Backend
             const isNewCategory = values.categoryId.startsWith("new:");
+
 
             const payload = {
                 title: values.title,
@@ -110,10 +140,14 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
         } catch (error) {
             console.error(error);
             alert(
-                error instanceof Error ? error.message : "Ein Fehler ist aufgetreten",
+                error instanceof Error
+                    ? error.message
+                    : t("eventForm.genericError")
             );
         }
     }
+
+
     return (
         <Form {...form}>
             <form
@@ -128,7 +162,7 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
                             <FormItem className="w-full">
                                 <FormControl>
                                     <Input
-                                        placeholder="Event-Titel"
+                                        placeholder={t("eventForm.titlePlaceholder")}
                                         {...field}
                                         className="input-field"
                                     />
@@ -165,7 +199,7 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
                             <FormItem className="w-full">
                                 <FormControl className="h-72">
                                     <Textarea
-                                        placeholder="Beschreibung"
+                                       placeholder={t("eventForm.descriptionPlaceholder")}
                                         {...field}
                                         className="textarea rounded-2xl"
                                     />
@@ -204,7 +238,7 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
                                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center px-4 py-2">
                                         <img src={location} alt="location" width={24} height={24} />
                                         <Input
-                                            placeholder="Veranstaltungsort oder Online"
+                                            placeholder={t("eventForm.locationPlaceholder")}
                                             {...field}
                                             className="input-field"
                                         />
@@ -226,15 +260,15 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
                                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center px-4 py-2">
                                         <img src={calendar} alt="calendar" width={24} height={24} />
                                         <p className="ml-3 whitespace-nowrap text-grey-500 text-sm">
-                                            Beginn:
+                                            {t("eventForm.start")}
                                         </p>
                                         <DatePicker
                                             selected={field.value}
                                             onChange={(date: Date | null) => field.onChange(date)}
                                             showTimeSelect
-                                            locale="de"
-                                            timeCaption="Zeit"
-                                            dateFormat="dd.MM.yyyy HH:mm"
+                                            locale={datePickerLocale}
+                                            timeCaption={t("eventForm.time")}
+                                            dateFormat={dateFormat}
                                             popperPlacement="bottom-start"
                                             wrapperClassName="datePicker"
                                         />
@@ -254,15 +288,15 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
                                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center px-4 py-2">
                                         <img src={calendar} alt="calendar" width={24} height={24} />
                                         <p className="ml-3 whitespace-nowrap text-grey-500 text-sm">
-                                            Ende:
+                                            {t("eventForm.end")}
                                         </p>
                                         <DatePicker
                                             selected={field.value}
                                             onChange={(date: Date | null) => field.onChange(date)}
                                             showTimeSelect
-                                            locale="de"
-                                            timeCaption="Zeit"
-                                            dateFormat="dd.MM.yyyy HH:mm"
+                                            locale={datePickerLocale}
+                                            timeCaption={t("eventForm.time")}
+                                            dateFormat={dateFormat}
                                             popperPlacement="bottom-start"
                                             wrapperClassName="datePicker"
                                         />
@@ -303,10 +337,10 @@ const EventForm = ({ type, event, eventId }: EventFormProps) => {
                         disabled={form.formState.isSubmitting}
                     >
                         {form.formState.isSubmitting
-                            ? "Wird gespeichert..."
+                            ? t("eventForm.saving")
                             : type === "Create"
-                                ? "Los geht’s!"
-                                : "Speichern"}
+                                ? t("eventForm.createSubmit")
+                                : t("eventForm.save")}
                     </Button>
                 </div>
             </form>

@@ -1,12 +1,17 @@
 import { useForm } from "react-hook-form"
 import { useState } from "react"
+
+import { useAuth } from "@/hooks/useAuth"
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { useTranslation } from "react-i18next"
+import { createProfileFormSchema } from "@/lib/validator"
+import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
 
 import type { User } from "@/types"
-import { profileFormSchema } from "@/lib/validator"
 import { profileDefaultValues } from "@/constants"
-import { useAuth } from "@/hooks/useAuth"
+
 import { uploadToCloudinary } from "@/api/upload"
 import { updateUserProfile } from "@/api/users"
 
@@ -18,15 +23,20 @@ import { FileUploader } from "./FileUploader"
 
 import userIcon from '@/assets/icons/username.svg'
 import mailIcon from '@/assets/icons/email.svg'
-import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
+
 
 type ProfileFormProps = {
   type: "Create" | "Update"
   user?: User | null
 }
 
+type ProfileFormValues = z.infer<ReturnType<typeof createProfileFormSchema>>
+
 const ProfileForm = ({ type, user }: ProfileFormProps) => {
+  const { t } = useTranslation();
+  const profileFormSchema = createProfileFormSchema(t);
   const navigate = useLocalizedNavigate()
+
   const [files, setFiles] = useState<File[]>([])
   const { accessToken, setAuth } = useAuth()
 
@@ -39,15 +49,15 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
     }
     : profileDefaultValues
 
-  const form = useForm<z.infer<typeof profileFormSchema>>({
+  const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: initialValues,
   })
 
-  async function onSubmit(values: z.infer<typeof profileFormSchema>) {
+  async function onSubmit(values: ProfileFormValues) {
     try { //Autorisierung prüfen
       if (!accessToken) {
-      throw new Error("Nicht autorisiert. Bitte melden Sie sich erneut an.");
+      throw new Error(t("profileForm.unauthorized"))
     }
 
     let uploadedImageUrl = values.avatarUrl;
@@ -67,12 +77,16 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
       accessToken
     );
       // Benutzer global aktualisieren (der aktuelle accessToken bleibt erhalten)
-    setAuth(data.user, accessToken);
-    navigate('/profile');
+    setAuth(data.user, accessToken)
+    navigate('/profile')
 
   } catch (error) {
-    console.error(error);
-    alert(error instanceof Error ? error.message : "Ein Fehler ist aufgetreten");
+    console.error(error)
+      alert(
+        error instanceof Error
+          ? error.message
+          : t("profileForm.genericError")
+      )
   }
 }
 
@@ -81,7 +95,7 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6 max-w-3xl mx-auto">
             <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center md:items-stretch">
 
-              {/* linkeseite - Avatar upload*/}
+              {/* Linke Seite - Avatar upload*/}
               <div className="w-full md:w-1/2 aspect-square max-w-[320px]">
                 <FormField
                   control={form.control}
@@ -101,7 +115,7 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
                 />
               </div>
 
-              {/* rechte seite - Name + email*/}
+              {/* rechte Seite - Name + email*/}
               <div className="flex flex-col justify-center gap-5 w-full md:w-1/2">
                 <FormField
                   control={form.control}
@@ -110,8 +124,9 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
                     <FormItem className="w-full">
                       <FormControl>
                         <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
-                          <img src={userIcon} alt="name" width={24} height={24} />
-                          <Input placeholder="Name" {...field} className="input-field" />
+                          <img src={userIcon} alt="" width={24} height={24} />
+                          <Input placeholder={t("profileForm.namePlaceholder")}
+                          {...field} className="input-field" />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -126,9 +141,9 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
                     <FormItem className="w-full">
                       <FormControl>
                         <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
-                          <img src={mailIcon} alt="email" width={24} height={24} />
+                          <img src={mailIcon} alt="" width={24} height={24} />
                           <Input
-                          placeholder="E-Mail"
+                          placeholder={t("profileForm.emailPlaceholder")}
                           {...field}
                           className="input-field"/>
                         </div>
@@ -148,7 +163,7 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Textarea
-                      placeholder="Kurzbiografie / Rolle"
+                      placeholder={t("profileForm.bioPlaceholder")}
                       {...field}
                       className="textarea h-36 rounded-2xl bg-primary-50 border-none p-4 resize-none focus-visible:ring-1 focus-visible:ring-primary-500"
                     />
@@ -166,8 +181,12 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
                 size="lg"
                 disabled={form.formState.isSubmitting}
               >
-                {form.formState.isSubmitting ? 'Wird gespeichert...' : 'Speichern'}
+                 {form.formState.isSubmitting
+              ? t("profileForm.saving")
+              : t("profileForm.save")}
+
               </Button>
+
               <Button
                 type="button"
                 variant="outline"
@@ -175,7 +194,7 @@ const ProfileForm = ({ type, user }: ProfileFormProps) => {
                 size="lg"
                 onClick={() => navigate('/profile')}
               >
-                Abbrechen
+               {t("profileForm.cancel")}
               </Button>
             </div>
           </form>

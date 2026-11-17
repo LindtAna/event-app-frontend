@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom'
 
+import { useTranslation } from 'react-i18next'
+
 import {
     Select,
     SelectContent,
@@ -22,6 +24,7 @@ type CategoryLoadResult = {
 };
 
 const CategoryFilter = () => {
+    const { t } = useTranslation()
     const { accessToken, isLoading: isAuthLoading } = useAuth()
     const [searchParams, setSearchParams] = useSearchParams()
 
@@ -53,7 +56,7 @@ const CategoryFilter = () => {
                         error:
                             error instanceof Error
                                 ? error.message
-                                : "Kategorien konnten nicht geladen werden.",
+                                : t('categories.loadError'),
                     });
                 }
             }
@@ -64,7 +67,7 @@ const CategoryFilter = () => {
         return () => {
             cancelled = true;
         };
-    }, [accessToken, isAuthLoading]);
+    }, [accessToken, isAuthLoading, t]);
 
     const currentResult =
         accessToken && categoryResult?.token === accessToken
@@ -82,7 +85,7 @@ const CategoryFilter = () => {
     const loadError = isAuthLoading
         ? ""
         : !accessToken
-            ? "Bitte melden Sie sich an, um Kategorien zu laden."
+            ? t('categories.loginRequired')
             : currentResult?.error ?? "";
 
     // Aktuelle Kategorie aus den URL-Suchparametern abrufen
@@ -130,7 +133,7 @@ const CategoryFilter = () => {
 
                 <div className="flex-center w-full overflow-hidden rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-primary-500/40">
                     <SelectTrigger className="select-field">
-                        <SelectValue placeholder="Kategorie wählen..." />
+                        <SelectValue placeholder={t('categories.selectPlaceholder')} />
                     </SelectTrigger>
                 </div>
 
@@ -139,12 +142,12 @@ const CategoryFilter = () => {
                         value={ALL_CATEGORIES_VALUE}
                         className="select-item p-regular-14"
                     >
-                        Alle Kategorien
+                        {t('categories.all')}
                     </SelectItem>
 
                     {isLoading && (
                         <SelectItem value="__loading__" disabled>
-                            Kategorien werden geladen...
+                              {t('categories.loading')}
                         </SelectItem>
                     )}
 

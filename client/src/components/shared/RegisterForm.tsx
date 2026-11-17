@@ -4,29 +4,34 @@ import { useState } from "react"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { useTranslation } from "react-i18next"
+import { createRegisterFormSchema} from "@/lib/validator"
+import { registerDefaultValues } from "@/constants"
+import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
+
+import { registerUser } from "@/api/auth"
+import { uploadToCloudinary } from "@/api/upload"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { FileUploader } from "./FileUploader"
 
-import { registerFormSchema } from "@/lib/validator"
-import { registerDefaultValues } from "@/constants"
-import { registerUser } from "@/api/auth"
-import { uploadToCloudinary } from "@/api/upload"
-
 import userIcon from '@/assets/icons/username.svg'
 import mailIcon from '@/assets/icons/email.svg'
 import lockIcon from '@/assets/icons/lock.svg'
 import teamIcon from '@/assets/icons/team.svg'
 import invitationIcon from '@/assets/icons/invitation.svg'
-import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
+
 
 type RegistrationType = "owner" | "member"
 
-type RegisterFormValues = z.infer<typeof registerFormSchema>
+type RegisterFormValues = z.infer<ReturnType<typeof createRegisterFormSchema>>
 
 const RegisterForm = () => {
+const { t } = useTranslation();
+const registerFormSchema = createRegisterFormSchema(t);
+
   const navigate = useLocalizedNavigate()
   const [searchParams] = useSearchParams()
 

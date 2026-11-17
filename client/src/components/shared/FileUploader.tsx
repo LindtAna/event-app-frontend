@@ -1,6 +1,9 @@
 import { useCallback, type Dispatch, type SetStateAction } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { useTranslation } from 'react-i18next'
+
 import { Button } from '@/components/ui/button'
+
 import uploadIcon from '@/assets/icons/upload.svg'
 
 
@@ -11,6 +14,8 @@ type FileUploaderProps = {
 }
 
 export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploaderProps) {
+    const { t } = useTranslation()
+
     // Callback-Funktion -> aufgerufen beim Drag & Drop oder Auswählen von Dateien
     const onDrop = useCallback((acceptedFiles: File[]) => {
         setFiles(acceptedFiles)
@@ -38,17 +43,18 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
                 <div className="flex h-full w-full flex-1 justify-center">
                     <img
                         src={imageUrl}
-                        alt="Event Vorschau"
+                        alt={t("fileUploader.previewAlt")}
                         className="w-full h-full object-cover object-center"
                     />
                 </div>
             ) : (
                 <div className="flex-center flex-col py-5 text-grey-500">
                     <img src={uploadIcon} width={77} height={77} alt="File Upload" />
-                    <h3 className="mb-2 mt-2 font-medium text-secondary-dark">Foto hierher ziehen</h3>
+                    <h3 className="mb-2 mt-2 font-medium text-secondary-dark">
+                        {t("fileUploader.dropHere")}</h3>
                     <p className="p-medium-12 mb-4 text-secondary">SVG, PNG, JPG, WEBP</p>
                     <Button type="button" className="rounded-lg bg-secondary-dark">
-                        ...oder lade ein Bild hoch
+                        {t("fileUploader.uploadButton")}
                     </Button>
                 </div>
             )}

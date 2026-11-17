@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   Select,
@@ -8,7 +9,6 @@ import {
   SelectValue,
   SelectSeparator,
 } from "@/components/ui/select"
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +40,7 @@ type CategoryState = {
 };
 
 const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
+  const { t } = useTranslation()
 
   const [newCategory, setNewCategory] = useState("")
 
@@ -62,8 +63,6 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
   const [isSelectOpen, setIsSelectOpen] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  // Lädt beim Start alle Kategorien vom Go-Backend
-  // Bewahrt temporäre Kategorien bei zeitgleichen Aktionen
   // Lädt beim Start alle Kategorien vom Go-Backend
   // Bewahrt temporäre Kategorien bei zeitgleichen Aktionen
   useEffect(() => {
@@ -121,7 +120,7 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
             loadError:
               error instanceof Error
                 ? error.message
-                : "Kategorien konnten nicht geladen werden.",
+                 : t("categories.loadError"),
           }));
         }
       }
@@ -132,11 +131,10 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, t]);
 
   // Fängt die Auswahl im Dropdown ab
-  // Öffnet den Dialog oder
-  // übergibt den Wert an React Hook Form
+  // Öffnet den Dialog oder übergibt den Wert an React Hook Form
   const handleSelectValueChange = (nextValue: string) => {
     if (nextValue === CREATE_CATEGORY_VALUE) {
       // Zuerst das Select-Dropdown schließen
@@ -200,7 +198,7 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
         onValueChange={handleSelectValueChange}
       >
         <SelectTrigger className="select-field w-full">
-          <SelectValue placeholder="Kategorie auswählen" />
+           <SelectValue placeholder={t("categories.selectPlaceholder")} />
         </SelectTrigger>
 
         <SelectContent>
@@ -220,7 +218,7 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
             value={CREATE_CATEGORY_VALUE}
             className="cursor-pointer text-primary-500 focus:text-primary-500"
           >
-            + Neue Kategorie erstellen
+             + {t("categories.newCategory.create")}
           </SelectItem>
         </SelectContent>
       </Select>
@@ -235,18 +233,18 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Neue Kategorie erstellen
+              <AlertDialogTitle>
+              {t("categories.newCategory.create")}
             </AlertDialogTitle>
 
             <AlertDialogDescription>
-              Gib den Namen für die neue Kategorie ein:
+              {t("categories.newCategory.description")}
             </AlertDialogDescription>
 
             <Input
               type="text"
-              placeholder="Kategoriename"
-              aria-label="Kategoriename"
+              placeholder={t("categories.newCategory.name")}
+              aria-label={t("categories.newCategory.name")}
               className="input-field mt-3 text-grey-500"
               value={newCategory}
               onChange={(event) => setNewCategory(event.target.value)}
@@ -263,7 +261,7 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
 
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setNewCategory("")}>
-              Abbrechen
+               {t("categories.newCategory.cancel")}
             </AlertDialogCancel>
 
             <AlertDialogAction
@@ -276,7 +274,7 @@ const Dropdown = ({ value, onChangeHandler, token }: DropdownProps) => {
                 handleAddCategory()
               }}
             >
-              Hinzufügen
+             {t("categories.newCategory.add")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

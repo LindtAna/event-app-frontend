@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams} from 'react-router-dom'
+
+import { useTranslation } from 'react-i18next'
 import { LocalizedLink } from '@/components/shared/LocalizedLink'
 
 import { useAuth } from '@/hooks/useAuth'
@@ -17,6 +19,7 @@ import hero from '@/assets/images/hero.png'
 
 
 export default function Home() {
+  const { t } = useTranslation()
   const { user, isSignedIn, accessToken, isLoading: isAuthLoading } = useAuth()
   const [searchParams] = useSearchParams()
 
@@ -78,7 +81,7 @@ useEffect(() => {
         setEvents([])
         setAttendeeEventIds([])
         setLoadedUserId(userId)
-        setError('Veranstaltungen konnten nicht geladen werden.')
+        setError(t('home.authenticated.loadError'))
       }
     } finally {
       if (!cancelled) {
@@ -92,7 +95,7 @@ useEffect(() => {
   return () => {
     cancelled = true
   }
-}, [isAuthLoading, userId, accessToken])
+}, [isAuthLoading, userId, accessToken, t])
 
  // Entfernen des Events aus local State ( nach erfolgreichem DELETE aus der Card)
   const handleEventDeleted = (eventId: number | string) => {
@@ -129,21 +132,21 @@ useEffect(() => {
       <div className="wrapper my-8 flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-[18px] font-bold md:text-[24px] lg:text-[30px]">
-            Willkommen zurück, {user.name}!
+            {t('home.authenticated.welcome', { name: user.name })}
           </h1>
           <p className="text-[14px] md:text-[18px] lg:text-[20px]">
-            Hier sind Ihre aktuellen Veranstaltungen und Pläne im Überblick.
+             {t('home.authenticated.description')}
           </p>
         </div>
 
         <div className="flex w-full flex-col gap-5 md:flex-row">
-          <Search placeholder="Event suchen..." />
+          <Search placeholder={t('home.authenticated.searchPlaceholder')} />
           <CategoryFilter />
         </div>
 
         {visibleLoading ? (
           <div className="flex items-center justify-center min-h-[200px] text-grey-500">
-            Veranstaltungen werden geladen...
+            {t('home.authenticated.loading')}
           </div>
         ) : visibleError ? (
           <div className="flex items-center justify-center min-h-[200px] text-red-500">
@@ -152,11 +155,11 @@ useEffect(() => {
         ) : (
           <Collection
             data={filteredEvents}
-            emptyTitle="Keine Veranstaltungen gefunden"
+             emptyTitle={t('home.authenticated.emptyTitle')}
             emptyStateSubtext={
               searchQuery || categoryQuery
-                ? 'Versuchen Sie einen anderen Suchbegriff.'
-                : 'Erstellen Sie Ihre erste Veranstaltung'
+                 ? t('home.authenticated.emptySearch')
+      : t('home.authenticated.emptyDefault')
             }
             emptyStateShowButton={!searchQuery && !categoryQuery}
             collectionType="All_Events"
@@ -178,34 +181,41 @@ useEffect(() => {
         <div className="wrapper grid grid-cols-1 gap-5 md:grid-cols-2 2xl:gap-0">
           <div className="flex flex-col justify-center gap-4">
             <h1 className="text-[24px] font-bold leading-tight md:text-[30px] lg:text-[36px]">
-              Ihre Veranstaltung, einfach geplant und organisiert
+               {t('home.guest.heroTitle')}
             </h1>
             <p className="p-regular-14 md:p-regular-18 max-w-[50ch]">
-              Aufgaben und Termine immer im Blick behalten.<br />
-              Zeitpläne in Echtzeit aktualisieren – ganz ohne Papier.
+             {t('home.guest.heroDescriptionLine1')}
+  <br />
+  {t('home.guest.heroDescriptionLine2')}
             </p>
             <Button asChild className="w-full sm:w-fit" size="lg">
-              <LocalizedLink to="/register">Jetzt loslegen</LocalizedLink>
+              <LocalizedLink to="/register">
+               {t('home.guest.getStarted')}
+               </LocalizedLink>
             </Button>
           </div>
-          <img src={hero} alt="PlanFuchs Dashboard" className="max-h-[70vh] w-full object-contain object-center" />
+          <img src={hero}
+          alt={t('home.guest.heroImageAlt')}
+          className="max-h-[70vh] w-full object-contain object-center" />
         </div>
       </section>
 
       <section className="wrapper my-8 md:my-10 flex flex-col gap-12">
-        <h2 className="h2-bold text-center">Wie funktioniert PlanFuchs?</h2>
+        <h2 className="h2-bold text-center">{t('home.guest.howItWorks')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="border border-primary-500/40 rounded-xl p-6">
-            <h3 className="font-semibold text-lg mb-2">1. Team erstellen</h3>
-            <p className="text-sm">Account erstellen und einen gemeinsamen Bereich für dein Team einrichten.</p>
+            <h3 className="font-semibold text-lg mb-2">{t('home.guest.step1Title')}</h3>
+            <p className="text-sm">
+              {t('home.guest.step1Description')}</p>
           </div>
           <div className="border border-primary-500/40 rounded-xl p-6">
-            <h3 className="font-semibold text-lg mb-2">2. Team einladen</h3>
-            <p className="text-sm">Kolleg:innen per Einladungscode in deinen Team-Bereich aufnehmen.</p>
+            <h3 className="font-semibold text-lg mb-2">{t('home.guest.step2Title')}</h3>
+            <p className="text-sm">
+              {t('home.guest.step2Description')}</p>
           </div>
           <div className="border border-primary-500/40 rounded-xl p-6">
-            <h3 className="font-semibold text-lg mb-2">3. Überblick behalten</h3>
-            <p className="text-sm">Alle Aufgaben und Termine zentral an einem Ort.</p>
+            <h3 className="font-semibold text-lg mb-2"> {t('home.guest.step3Title')}</h3>
+            <p className="text-sm">{t('home.guest.step3Description')}</p>
           </div>
         </div>
       </section>

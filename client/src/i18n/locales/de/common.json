@@ -30,5 +30,111 @@
     "notFoundTitle": "Seite nicht gefunden",
     "notFoundDescription": "Die angeforderte Seite existiert nicht.",
     "backHome": "Zur Startseite"
-  }
+  },
+  "home": {
+    "authenticated": {
+      "welcome": "Willkommen zurück, {{name}}!",
+      "description": "Hier sind Ihre aktuellen Veranstaltungen und Pläne im Überblick.",
+      "searchPlaceholder": "Event suchen...",
+      "loading": "Veranstaltungen werden geladen...",
+      "loadError": "Veranstaltungen konnten nicht geladen werden.",
+      "emptyTitle": "Keine Veranstaltungen gefunden",
+      "emptySearch": "Versuchen Sie einen anderen Suchbegriff.",
+      "emptyDefault": "Erstellen Sie Ihre erste Veranstaltung"
+    },
+    "guest": {
+      "heroTitle": "Ihre Veranstaltung, einfach geplant und organisiert",
+      "heroDescriptionLine1": "Aufgaben und Termine immer im Blick behalten.",
+      "heroDescriptionLine2": "Zeitpläne in Echtzeit aktualisieren – ganz ohne Papier.",
+      "getStarted": "Jetzt loslegen",
+      "heroImageAlt": "PlanFuchs Dashboard",
+      "howItWorks": "Wie funktioniert PlanFuchs?",
+      "step1Title": "1. Team erstellen",
+      "step1Description": "Account erstellen und einen gemeinsamen Bereich für dein Team einrichten.",
+      "step2Title": "2. Team einladen",
+      "step2Description": "Kolleg:innen per Einladungscode in deinen Team-Bereich aufnehmen.",
+      "step3Title": "3. Überblick behalten",
+      "step3Description": "Alle Aufgaben und Termine zentral an einem Ort."
+    }
+  },
+  "categories": {
+    "selectPlaceholder": "Kategorie wählen...",
+    "all": "Alle Kategorien",
+    "loading": "Kategorien werden geladen...",
+    "loginRequired": "Bitte melden Sie sich an, um Kategorien zu laden.",
+    "loadError": "Kategorien konnten nicht geladen werden.",
+    "newCategory": {
+      "create": "Neue Kategorie erstellen",
+      "description": "Gib den Namen für die neue Kategorie ein:",
+      "name": "Kategoriename",
+      "cancel": "Abbrechen",
+      "add": "Hinzufügen"
+    }
+  },
+  "eventForm": {
+    "sessionExpired": "Deine Sitzung ist nicht aktiv. Bitte melde dich erneut an.",
+    "genericError": "Ein Fehler ist aufgetreten.",
+    "titlePlaceholder": "Event-Titel",
+    "descriptionPlaceholder": "Beschreibung",
+    "locationPlaceholder": "Veranstaltungsort oder online",
+    "start": "Beginn:",
+    "end": "Ende:",
+    "time": "Zeit",
+    "saving": "Wird gespeichert...",
+    "createSubmit": "Los geht’s!",
+    "save": "Speichern"
+  },
+  "fileUploader": {
+    "previewAlt": "Vorschau des Veranstaltungsbildes",
+    "dropHere": "Foto hierher ziehen",
+    "uploadButton": "...oder ein Bild hochladen"
+  },
+  "validation": {
+    "event": {
+      "titleMin": "Der Titel muss mindestens 3 Zeichen lang sein.",
+      "titleMax": "Der Titel darf maximal 100 Zeichen lang sein.",
+      "descriptionMin": "Die Beschreibung muss mindestens 3 Zeichen lang sein.",
+      "descriptionMax": "Die Beschreibung darf maximal 400 Zeichen lang sein.",
+      "locationMin": "Der Veranstaltungsort muss mindestens 3 Zeichen lang sein.",
+      "locationMax": "Der Veranstaltungsort darf maximal 200 Zeichen lang sein.",
+      "startDateRequired": "Bitte wähle ein Startdatum aus.",
+      "endDateRequired": "Bitte wähle ein Enddatum aus.",
+      "categoryRequired": "Bitte wähle eine Kategorie aus.",
+      "invalidUrl": "Bitte gib eine gültige URL ein.",
+      "endDateAfterStart": "Das Enddatum muss nach dem Startdatum liegen."
+    },
+    "register": {
+      "nameMin": "Der Name muss mindestens 2 Zeichen lang sein.",
+      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+      "passwordMin": "Das Passwort muss mindestens 8 Zeichen lang sein.",
+      "passwordMaxBytes": "Das Passwort darf maximal 72 Byte umfassen.",
+      "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+      "companyNameRequired": "Bitte gib einen Teamnamen ein.",
+      "invitationCodeRequired": "Bitte gib deinen Einladungscode ein."
+    },
+    "profile": {
+      "nameMin": "Der Name muss mindestens 2 Zeichen lang sein.",
+      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+      "bioMax": "Die Bio darf maximal 200 Zeichen lang sein."
+    }
+  },
+  "profileForm": {
+    "unauthorized": "Nicht autorisiert. Bitte melden Sie sich erneut an.",
+    "genericError": "Ein Fehler ist aufgetreten.",
+    "namePlaceholder": "Name",
+    "emailPlaceholder": "E-Mail",
+    "bioPlaceholder": "Kurzbiografie / Rolle",
+    "saving": "Wird gespeichert...",
+    "save": "Speichern",
+    "cancel": "Abbrechen"
+  },
+"eventPages": {
+  "createTitle": "Event erstellen",
+  "updateTitle": "Event bearbeiten",
+  "loading": "Veranstaltung wird geladen...",
+  "missingId": "Keine Veranstaltungs-ID angegeben.",
+  "loginRequired": "Bitte melde dich an, um die Veranstaltung zu bearbeiten.",
+  "loadError": "Veranstaltung konnte nicht geladen werden.",
+  "notFound": "Veranstaltung nicht gefunden."
+}
 }

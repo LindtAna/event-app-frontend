@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from "react-i18next"
 
 import { useAuth } from '@/hooks/useAuth'
+
 import type { Event } from '@/types'
 import { getEventById } from '@/api/events'
 
 import EventForm from '@/components/shared/EventForm'
 
 const UpdateEvent = () => {
+  const { t } = useTranslation()
+
   const { id } = useParams<{ id: string }>()
   const { accessToken, isLoading: isAuthLoading} = useAuth()
 
@@ -16,13 +20,13 @@ const UpdateEvent = () => {
   const [error, setError] = useState<string | null>(null)
 
   const isMissingId = !id
-const isMissingToken = !isAuthLoading && !accessToken
+  const isMissingToken = !isAuthLoading && !accessToken
 
-const displayError = isMissingId
-  ? 'Keine Veranstaltungs-ID angegeben.'
-  : isMissingToken
-    ? 'Bitte melde dich an, um die Veranstaltung zu bearbeiten.'
-    : error
+  const displayError = isMissingId
+    ? t("eventPages.missingId")
+    : isMissingToken
+      ? t("eventPages.loginRequired")
+      : error
 
   useEffect(() => {
   if (isAuthLoading || !id || !accessToken) return
@@ -43,7 +47,7 @@ const displayError = isMissingId
       console.error('Fehler beim Laden des Events:', err)
 
       if (!cancelled) {
-        setError('Veranstaltung konnte nicht geladen werden.')
+        setError(t("eventPages.loadError"));
         setEvent(null)
       }
     } finally {
@@ -58,12 +62,12 @@ const displayError = isMissingId
   return () => {
     cancelled = true
   }
-}, [id, accessToken, isAuthLoading])
+}, [id, accessToken, isAuthLoading, t])
 
   if (isAuthLoading || (!isMissingId && !isMissingToken && isLoading)) {
     return (
       <div className="wrapper my-8 text-center text-gray-500 font-medium">
-        Veranstaltung wird geladen...
+        {t("eventPages.loading")}
       </div>
     )
   }
@@ -72,7 +76,7 @@ const displayError = isMissingId
     return (
       <div className="wrapper my-8 text-center">
         <h2 className="text-2xl font-bold text-red-500">
-          {displayError || 'Veranstaltung nicht gefunden'}
+          {displayError || t("eventPages.notFound")}
         </h2>
       </div>
     )
@@ -82,7 +86,7 @@ const displayError = isMissingId
     <>
       <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-2 md:py-4">
         <h3 className="text-[24px] font-bold leading-tight md:text-[30px] lg:text-[36px] text-center">
-          Event bearbeiten
+          {t("eventPages.updateTitle")}
         </h3>
       </section>
 

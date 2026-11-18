@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import i18n from "@/i18n";
 import { ApiError, apiFetch } from "@/lib/api";
 import { AuthProvider } from "@/hooks/AuthProvider";
 import type { User } from "@/types";
@@ -56,7 +57,7 @@ const LocationDisplay = () => {
   );
 };
 
-//die aktuellen Header, LoginModal und AuthProvider werden innerhalb eines echten React Routers gerendert
+// Header, LoginModal und AuthProvider werden innerhalb eines echten React Routers gerendert
 const renderHeader = () =>
   render(
     <MemoryRouter initialEntries={["/"]}>
@@ -79,10 +80,16 @@ const waitForSessionCheck = async () => {
 };
 
 const openLoginModal = async () => {
-  fireEvent.click(screen.getByRole("button", { name: "Login" }));
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: "Login",
+    }),
+  );
 
   expect(
-    await screen.findByRole("heading", { name: "Anmelden" }),
+    await screen.findByRole("heading", {
+      name: i18n.t("loginModal.title"),
+    }),
   ).toBeInTheDocument();
 };
 
@@ -97,7 +104,9 @@ const fillLoginForm = () => {
 };
 
 describe("LoginModal integration", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("de");
+
     mockApiFetch.mockReset();
 
     // AuthProvider: keine bestehende Sitzung vorhanden
@@ -120,7 +129,9 @@ describe("LoginModal integration", () => {
     fillLoginForm();
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Einloggen" }),
+      screen.getByRole("button", {
+        name: i18n.t("loginModal.submit"),
+      }),
     );
 
     // Der eingegebene Login wird an die tatsächliche API-Funktion übergeben
@@ -138,14 +149,16 @@ describe("LoginModal integration", () => {
     // Der AuthProvider hat den Benutzer übernommen
     expect(
       await screen.findByRole("button", {
-        name: "Benutzerkonto von Test User",
+        name: i18n.t("userMenu.accountOf", { name: testUser.name }),
       }),
     ).toBeInTheDocument();
 
     // Header hat das Login-Modal geschlossen
     await waitFor(() => {
       expect(
-        screen.queryByRole("heading", { name: "Anmelden" }),
+        screen.queryByRole("heading", {
+          name: i18n.t("loginModal.title"),
+        }),
       ).not.toBeInTheDocument();
     });
   });
@@ -153,7 +166,7 @@ describe("LoginModal integration", () => {
   it("displays an error when login fails and keeps the modal open", async () => {
     const alertMock = vi
       .spyOn(window, "alert")
-      .mockImplementation(() => {});
+      .mockImplementation(() => { });
 
     mockApiFetch.mockRejectedValueOnce(
       new Error("Ungültige Zugangsdaten"),
@@ -167,7 +180,9 @@ describe("LoginModal integration", () => {
     fillLoginForm();
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Einloggen" }),
+      screen.getByRole("button", {
+        name: i18n.t("loginModal.submit"),
+      }),
     );
 
     await waitFor(() => {
@@ -178,17 +193,21 @@ describe("LoginModal integration", () => {
 
     // Das Login-Modal bleibt geöffnet
     expect(
-      screen.getByRole("heading", { name: "Anmelden" }),
+      screen.getByRole("heading", {
+        name: i18n.t("loginModal.title"),
+      }),
     ).toBeInTheDocument();
 
     // Der Benutzer wurde nicht authentifiziert
     expect(
-      screen.getByRole("button", { name: "Login" }),
+      screen.getByRole("button", {
+        name: "Login",
+      }),
     ).toBeInTheDocument();
 
     expect(
       screen.queryByRole("button", {
-        name: "Benutzerkonto von Test User",
+        name: i18n.t("userMenu.accountOf", { name: testUser.name }),
       }),
     ).not.toBeInTheDocument();
   });
@@ -206,7 +225,7 @@ describe("LoginModal integration", () => {
     // Passwort bleibt leer.
 
     const submitButton = screen.getByRole("button", {
-      name: "Einloggen",
+      name: i18n.t("loginModal.submit"),
     });
 
     const form = submitButton.closest("form");
@@ -218,42 +237,79 @@ describe("LoginModal integration", () => {
     fireEvent.submit(form!);
 
     expect(
-      await screen.findByText("Ungültige E-Mail-Adresse."),
+      await screen.findByText(
+        i18n.t("validation.login.invalidEmail"),
+      ),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByText("Passwort ist erforderlich."),
+      screen.getByText(
+        i18n.t("validation.login.passwordRequired"),
+      ),
     ).toBeInTheDocument();
 
     // Der einzige Request war die Session-Wiederherstellung
     expect(mockApiFetch).toHaveBeenCalledTimes(1);
   });
 
+  it("shows and hides the password", async () => {
+    renderHeader();
+
+    await waitForSessionCheck();
+    await openLoginModal();
+
+    const passwordInput = screen.getByPlaceholderText("********");
+
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.t("loginModal.showPassword"),
+      }),
+    );
+
+    expect(passwordInput).toHaveAttribute("type", "text");
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.t("loginModal.hidePassword"),
+      }),
+    );
+
+    expect(passwordInput).toHaveAttribute("type", "password");
+  });
+
   it.each([
     {
-      button: "Neues Team erstellen",
+      buttonKey: "loginModal.createTeam",
       expectedLocation: "/register?type=owner",
     },
     {
-      button: "Mit Einladung beitreten",
+      buttonKey: "loginModal.joinTeam",
       expectedLocation: "/register?type=member",
     },
-  ])(
+  ] as const)(
     "closes the modal and navigates to $expectedLocation",
-    async ({ button, expectedLocation }) => {
+    async ({ buttonKey, expectedLocation }) => {
       renderHeader();
 
       await waitForSessionCheck();
       await openLoginModal();
 
-      fireEvent.click(screen.getByText("Hier klicken"));
+      fireEvent.click(
+        screen.getByText(i18n.t("loginModal.registerHere")),
+      );
 
       expect(
-        screen.getByRole("heading", { name: "Account erstellen" }),
+        screen.getByRole("heading", {
+          name: i18n.t("loginModal.registrationTitle"),
+        }),
       ).toBeInTheDocument();
 
       fireEvent.click(
-        screen.getByRole("button", { name: button }),
+        screen.getByRole("button", {
+          name: i18n.t(buttonKey),
+        }),
       );
 
       await waitFor(() => {
@@ -263,9 +319,46 @@ describe("LoginModal integration", () => {
 
         // Das Modal wird durch den Wechsel des Navigation State geschlossen
         expect(
-          screen.queryByRole("heading", { name: "Account erstellen" }),
+          screen.queryByRole("heading", {
+            name: i18n.t("loginModal.registrationTitle"),
+          }),
         ).not.toBeInTheDocument();
       });
     },
   );
+
+  it("returns to the login view from the registration choice", async () => {
+    renderHeader();
+
+    await waitForSessionCheck();
+    await openLoginModal();
+
+    fireEvent.click(
+      screen.getByText(i18n.t("loginModal.registerHere")),
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        name: i18n.t("loginModal.registrationTitle"),
+      }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: i18n.t("loginModal.backToLogin"),
+      }),
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        name: i18n.t("loginModal.title"),
+      }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByRole("heading", {
+        name: i18n.t("loginModal.registrationTitle"),
+      }),
+    ).not.toBeInTheDocument();
+  });
 });

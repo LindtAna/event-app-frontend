@@ -116,7 +116,11 @@
       "nameMin": "The name must contain at least 2 characters.",
       "invalidEmail": "Please enter a valid email address.",
       "bioMax": "The bio must not exceed 200 characters."
-    }
+    },
+    "login": {
+  "invalidEmail": "Please enter a valid email address.",
+  "passwordRequired": "Please enter your password."
+}
   },
 "profileForm": {
   "unauthorized": "Not authorized. Please sign in again.",
@@ -136,5 +140,25 @@
   "loginRequired": "Please sign in to edit this event.",
   "loadError": "Could not load the event.",
   "notFound": "Event not found."
+},
+"loginModal": {
+  "close": "Close dialog",
+  "title": "Log in",
+  "subtitle": "Please sign in",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "noAccount": "Don't have an account?",
+  "registerHere": "Sign up here",
+  "loading": "Loading...",
+  "submit": "Log in",
+  "registrationTitle": "Create an account",
+  "registrationSubtitle": "How would you like to use PlanFuchs?",
+  "createTeam": "Create a new team",
+  "createTeamDescription": "Create a new workspace for your company and manage it as an admin.",
+  "joinTeam": "Join with an invitation",
+  "joinTeamDescription": "Use an invitation code to join an existing team.",
+  "alreadyHaveAccount": "Already have an account?",
+  "backToLogin": "Back to sign in",
+  "genericError": "An error occurred."
 }
 }

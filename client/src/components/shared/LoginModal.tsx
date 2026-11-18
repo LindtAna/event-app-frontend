@@ -1,8 +1,10 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { useAuth } from "@/hooks/useAuth"
 import { loginUser } from "@/api/auth"
+import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -16,12 +18,7 @@ import mailIcon from '@/assets/icons/email.svg'
 import lockIcon from '@/assets/icons/lock.svg'
 import seeIcon from "@/assets/icons/see.svg"
 import dontSeeIcon from "@/assets/icons/dont-see.svg"
-import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
 
-const loginFormSchema = z.object({
-  email: z.string().email("Ungültige E-Mail-Adresse."),
-  password: z.string().min(1, "Passwort ist erforderlich."),
-})
 
 type LoginModalProps = {
   isOpen: boolean
@@ -32,11 +29,18 @@ type ModalView = "login" | "registration-choice"
 type RegistrationType = "owner" | "member"
 
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
+  const { t } = useTranslation()
   const navigate = useLocalizedNavigate()
+
   const { setAuth } = useAuth()
 
   const [view, setView] = useState<ModalView>("login")
   const [showPassword, setShowPassword] = useState(false)
+
+  const loginFormSchema = z.object({
+    email: z.string().email(t("validation.login.invalidEmail")),
+    password: z.string().min(1, t("validation.login.passwordRequired")),
+  })
 
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -60,7 +64,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       alert(
         error instanceof Error
           ? error.message
-          : "Ein Fehler ist aufgetreten",
+          : t("loginModal.genericError"),
       )
     }
   }
@@ -91,6 +95,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           size="icon-lg"
           className="absolute right-3 top-3"
           onClick={handleClose}
+          aria-label={t("loginModal.close")}
         >
           <XIcon className="size-6" />
         </Button>
@@ -98,8 +103,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
         {view === "login" ? (
           <>
             <div className="mb-6 text-center">
-              <h2 className="text-[18px] font-bold leading-tight md:text-[20px] lg:text-[24px] text-center">Anmelden</h2>
-              <p className="p-medium-12 md:p-regular-16 text-secondary-dark mt-2">Bitte melde dich an</p>
+              <h2 className="text-[18px] font-bold leading-tight md:text-[20px] lg:text-[24px] text-center">
+                {t("loginModal.title")}</h2>
+              <p className="p-medium-12 md:p-regular-16 text-secondary-dark mt-2">
+              {t("loginModal.subtitle")}</p>
             </div>
 
             <Form {...form}>
@@ -111,10 +118,13 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     <FormItem className="w-full">
                       <FormControl>
                         <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center px-4 py-2">
-                          <img src={mailIcon} alt="email" width={24} height={24} />
-                          <Input placeholder="example@example.com" {...field}
+                          <img src={mailIcon} alt="" width={24} height={24} />
+                          <Input 
+                          placeholder="example@example.com" 
+                          {...field}
                             className="input-field placeholder:text-xs md:placeholder:text-sm"
                             type="email"
+                            autoComplete="email"
                           />
                         </div>
                       </FormControl>
@@ -130,7 +140,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     <FormItem className="w-full">
                       <FormControl>
                         <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center px-4 py-2">
-                          <img src={lockIcon} alt="password" width={24} height={24} />
+                          <img src={lockIcon} alt="" width={24} height={24} />
                           <Input placeholder="********"
                             {...field}
                             className="input-field flex-1 !pr-0"
@@ -157,12 +167,12 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 />
 
                 <div className="text-center text-sm p-medium-12 md:p-regular-16 text-secondary-dark mt-2">
-                  Noch kein Account?{' '}
+                  {t("loginModal.noAccount")}{" "}
                   <span
                     className="cursor-pointer font-semibold p-medium-12 md:p-regular-16 text-primary-500 hover:underline"
                     onClick={handleShowRegistrationOptions}
                   >
-                    Hier klicken
+                    {t("loginModal.registerHere")}
                   </span>
                 </div>
 
@@ -172,7 +182,9 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   size="lg"
                   disabled={form.formState.isSubmitting}
                 >
-                  {form.formState.isSubmitting ? 'Laden...' : 'Einloggen'}
+                  {form.formState.isSubmitting
+                    ? t("loginModal.loading")
+                    : t("loginModal.submit")}
                 </Button>
               </form>
             </Form>
@@ -181,11 +193,11 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           <>
             <div className="mb-6 text-center">
               <h2 className="text-[18px] font-bold leading-tight md:text-[20px] lg:text-[24px]">
-                Account erstellen
+                {t("loginModal.registrationTitle")}
               </h2>
 
               <p className="p-medium-12 md:p-regular-16 mt-2">
-                Wie möchtest du PlanFuchs nutzen?
+                 {t("loginModal.registrationSubtitle")}
               </p>
             </div>
 
@@ -197,12 +209,11 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   size="lg"
                   onClick={() => handleRegistrationRedirect("owner")}
                 >
-                  Neues Team erstellen
+                  {t("loginModal.createTeam")}
                 </Button>
 
                 <p className="text-center text-xs md:text-sm leading-relaxed text-secondary-dark">
-                  Erstelle einen neuen Bereich für dein Unternehmen und
-                  verwalte ihn als Admin.
+                  {t("loginModal.createTeamDescription")}
                 </p>
               </div>
 
@@ -213,24 +224,23 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   size="lg"
                   onClick={() => handleRegistrationRedirect("member")}
                 >
-                  Mit Einladung beitreten
+                  {t("loginModal.joinTeam")}
                 </Button>
 
                 <p className="text-center text-xs md:text-sm leading-relaxed text-secondary-dark">
-                  Mit einem Einladungscode kannst du einem bestehenden
-                  Team beitreten.
+                  {t("loginModal.joinTeamDescription")}
                 </p>
               </div>
             </div>
 
             <div className="mt-6 text-center text-sm">
-              Du hast bereits einen Account?{" "}
+              {t("loginModal.alreadyHaveAccount")}{" "}
               <button
                 type="button"
                 className="cursor-pointer font-semibold text-primary hover:underline"
                 onClick={handleBackToLogin}
               >
-                Zurück zur Anmeldung
+                 {t("loginModal.backToLogin")}
               </button>
             </div>
           </>

@@ -116,7 +116,11 @@
       "nameMin": "Der Name muss mindestens 2 Zeichen lang sein.",
       "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
       "bioMax": "Die Bio darf maximal 200 Zeichen lang sein."
-    }
+    },
+    "login": {
+  "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+  "passwordRequired": "Bitte gib dein Passwort ein."
+}
   },
   "profileForm": {
     "unauthorized": "Nicht autorisiert. Bitte melden Sie sich erneut an.",
@@ -136,5 +140,25 @@
   "loginRequired": "Bitte melde dich an, um die Veranstaltung zu bearbeiten.",
   "loadError": "Veranstaltung konnte nicht geladen werden.",
   "notFound": "Veranstaltung nicht gefunden."
+},
+"loginModal": {
+  "close": "Dialog schließen",
+  "title": "Anmelden",
+  "subtitle": "Bitte melde dich an",
+  "showPassword": "Passwort anzeigen",
+  "hidePassword": "Passwort verbergen",
+  "noAccount": "Noch kein Account?",
+  "registerHere": "Hier klicken",
+  "loading": "Laden...",
+  "submit": "Einloggen",
+  "registrationTitle": "Account erstellen",
+  "registrationSubtitle": "Wie möchtest du PlanFuchs nutzen?",
+  "createTeam": "Neues Team erstellen",
+  "createTeamDescription": "Erstelle einen neuen Bereich für dein Unternehmen und verwalte ihn als Admin.",
+  "joinTeam": "Mit Einladung beitreten",
+  "joinTeamDescription": "Mit einem Einladungscode kannst du einem bestehenden Team beitreten.",
+  "alreadyHaveAccount": "Du hast bereits einen Account?",
+  "backToLogin": "Zurück zur Anmeldung",
+  "genericError": "Ein Fehler ist aufgetreten."
 }
 }

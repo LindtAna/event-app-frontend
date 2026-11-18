@@ -1,45 +1,50 @@
-import { useForm } from "react-hook-form"
-import { useSearchParams } from "react-router-dom"
-import { useState } from "react"
+import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { useTranslation } from "react-i18next"
-import { createRegisterFormSchema} from "@/lib/validator"
-import { registerDefaultValues } from "@/constants"
-import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate"
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useTranslation } from "react-i18next";
+import { createRegisterFormSchema } from "@/lib/validator";
+import { registerDefaultValues } from "@/constants";
+import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
 
-import { registerUser } from "@/api/auth"
-import { uploadToCloudinary } from "@/api/upload"
+import { registerUser } from "@/api/auth";
+import { uploadToCloudinary } from "@/api/upload";
 
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { FileUploader } from "./FileUploader"
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { FileUploader } from "./FileUploader";
 
-import userIcon from '@/assets/icons/username.svg'
-import mailIcon from '@/assets/icons/email.svg'
-import lockIcon from '@/assets/icons/lock.svg'
-import teamIcon from '@/assets/icons/team.svg'
-import invitationIcon from '@/assets/icons/invitation.svg'
+import userIcon from "@/assets/icons/username.svg";
+import mailIcon from "@/assets/icons/email.svg";
+import lockIcon from "@/assets/icons/lock.svg";
+import teamIcon from "@/assets/icons/team.svg";
+import invitationIcon from "@/assets/icons/invitation.svg";
 
+type RegistrationType = "owner" | "member";
 
-type RegistrationType = "owner" | "member"
-
-type RegisterFormValues = z.infer<ReturnType<typeof createRegisterFormSchema>>
+type RegisterFormValues = z.infer<ReturnType<typeof createRegisterFormSchema>>;
 
 const RegisterForm = () => {
-const { t } = useTranslation();
-const registerFormSchema = createRegisterFormSchema(t);
+  const { t } = useTranslation();
+  const registerFormSchema = createRegisterFormSchema(t);
 
-  const navigate = useLocalizedNavigate()
-  const [searchParams] = useSearchParams()
+  const navigate = useLocalizedNavigate();
+  const [searchParams] = useSearchParams();
 
   const registrationType: RegistrationType =
-    searchParams.get("type") === "member" ? "member" : "owner"
+    searchParams.get("type") === "member" ? "member" : "owner";
 
-  const [files, setFiles] = useState<File[]>([])
-  const [isRegistered, setIsRegistered] = useState(false)
+  const [files, setFiles] = useState<File[]>([]);
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -49,46 +54,45 @@ const registerFormSchema = createRegisterFormSchema(t);
       companyName: "",
       invitationCode: "",
     },
-  })
+  });
 
   async function onSubmit(values: RegisterFormValues) {
     try {
       // Zuerst den Avatar zu Cloudinary hochladen, falls eine Datei ausgewählt wurde
-      const avatarUrl = files.length > 0
-        ? await uploadToCloudinary(files[0], "avatars")
-        : values.avatarUrl?.trim() ?? ""
+      const avatarUrl =
+        files.length > 0
+          ? await uploadToCloudinary(files[0], "avatars")
+          : (values.avatarUrl?.trim() ?? "");
 
       const commonPayload = {
         name: values.name.trim(),
         email: values.email.trim(),
         password: values.password,
         avatarUrl,
-      }
+      };
 
       if (values.registrationType === "owner") {
         await registerUser({
           ...commonPayload,
           registrationType: "owner",
           companyName: values.companyName?.trim() ?? "",
-        })
+        });
       } else {
         await registerUser({
           ...commonPayload,
           registrationType: "member",
           invitationCode: values.invitationCode?.trim() ?? "",
-        })
+        });
       }
 
       // Die API registriert den Benutzer, meldet ihn aber nicht automatisch an
-      setIsRegistered(true)
+      setIsRegistered(true);
     } catch (error) {
-      console.error("Registrierung fehlgeschlagen:", error)
+      console.error("Registrierung fehlgeschlagen:", error);
 
       alert(
-        error instanceof Error
-          ? error.message
-          : "Bei der Registrierung ist ein Fehler aufgetreten.",
-      )
+        error instanceof Error ? error.message : t("registerForm.genericError"),
+      );
     }
   }
   if (isRegistered) {
@@ -99,11 +103,11 @@ const registerFormSchema = createRegisterFormSchema(t);
         aria-live="polite"
       >
         <h2 className="text-xl font-bold leading-tight md:text-2xl">
-          Registrierung erfolgreich!
+          {t("registerForm.successTitle")}
         </h2>
 
         <p className="mt-4 text-sm leading-relaxed text-secondary-dark md:text-base">
-          Du hast dich erfolgreich registriert und kannst dich jetzt einloggen.
+          {t("registerForm.successDescription")}
         </p>
 
         <Button
@@ -116,19 +120,19 @@ const registerFormSchema = createRegisterFormSchema(t);
             })
           }
         >
-          Einloggen
+          {t("registerForm.login")}
         </Button>
       </div>
-    )
+    );
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-6 max-w-4xl mx-auto">
-
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-6 max-w-4xl mx-auto"
+      >
         <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-start">
-
           {/* avatar upload */}
           <div className="w-full md:w-1/2 aspect-square max-w-[320px] mx-auto md:mx-0">
             <FormField
@@ -139,7 +143,7 @@ const registerFormSchema = createRegisterFormSchema(t);
                   <FormControl className="h-full w-full">
                     <FileUploader
                       onFieldChange={field.onChange}
-                      imageUrl={field.value || ''}
+                      imageUrl={field.value || ""}
                       setFiles={setFiles}
                     />
                   </FormControl>
@@ -151,7 +155,6 @@ const registerFormSchema = createRegisterFormSchema(t);
 
           {/* Gemeinsame Felder und das modusabhängige Feld */}
           <div className="flex flex-col gap-5 w-full md:w-1/2">
-
             {/* Modusabhängige Feld */}
             {registrationType === "owner" ? (
               <FormField
@@ -163,7 +166,7 @@ const registerFormSchema = createRegisterFormSchema(t);
                       <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
                         <img src={teamIcon} alt="name" width={24} height={24} />
                         <Input
-                          placeholder="Teamsname"
+                          placeholder={t("registerForm.companyNamePlaceholder")}
                           autoComplete="off"
                           {...field}
                           value={field.value ?? ""}
@@ -183,9 +186,14 @@ const registerFormSchema = createRegisterFormSchema(t);
                   <FormItem className="w-full">
                     <FormControl>
                       <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
-                        <img src={invitationIcon} alt="name" width={24} height={24} />
+                        <img
+                          src={invitationIcon}
+                          alt="name"
+                          width={24}
+                          height={24}
+                        />
                         <Input
-                          placeholder="Einladungscode"
+                          placeholder={t("registerForm.invitationCodePlaceholder")}
                           autoComplete="off"
                           {...field}
                           value={field.value ?? ""}
@@ -208,10 +216,12 @@ const registerFormSchema = createRegisterFormSchema(t);
                   <FormControl>
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
                       <img src={userIcon} alt="name" width={24} height={24} />
-                      <Input placeholder="Benutzername"
+                      <Input
+                        placeholder={t("registerForm.namePlaceholder")}
                         autoComplete="name"
                         {...field}
-                        className="input-field" />
+                        className="input-field"
+                      />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -227,11 +237,13 @@ const registerFormSchema = createRegisterFormSchema(t);
                   <FormControl>
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
                       <img src={mailIcon} alt="email" width={24} height={24} />
-                      <Input placeholder="E-Mail"
-                      autoComplete="email"
+                      <Input
+                        placeholder={t("registerForm.emailPlaceholder")}
+                        autoComplete="email"
                         {...field}
                         className="input-field"
-                        type="email" />
+                        type="email"
+                      />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -246,12 +258,19 @@ const registerFormSchema = createRegisterFormSchema(t);
                 <FormItem className="w-full">
                   <FormControl>
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
-                      <img src={lockIcon} alt="Password" width={24} height={24} />
-                      <Input placeholder="Passwort (min. 8 Zeichen)"
+                      <img
+                        src={lockIcon}
+                        alt="Password"
+                        width={24}
+                        height={24}
+                      />
+                      <Input
+                        placeholder={t("registerForm.passwordPlaceholder")}
                         autoComplete="new-password"
                         {...field}
                         className="input-field"
-                        type="password" />
+                        type="password"
+                      />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -266,12 +285,19 @@ const registerFormSchema = createRegisterFormSchema(t);
                 <FormItem className="w-full">
                   <FormControl>
                     <div className="flex-center h-[54px] w-full overflow-hidden rounded-lg bg-primary-50 px-4 py-2">
-                      <img src={lockIcon} alt="confirm password" width={24} height={24} />
-                      <Input placeholder="Passwort bestätigen"
-                      autoComplete="new-password"
+                      <img
+                        src={lockIcon}
+                        alt="confirm password"
+                        width={24}
+                        height={24}
+                      />
+                      <Input
+                        placeholder={t("registerForm.confirmPasswordPlaceholder")}
+                        autoComplete="new-password"
                         {...field}
                         className="input-field"
-                        type="password" />
+                        type="password"
+                      />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -283,30 +309,30 @@ const registerFormSchema = createRegisterFormSchema(t);
 
         {/* Steuerungstasten */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full">
-         
           <Button
             type="submit"
             className="w-full md:w-auto min-w-[140px] rounded-lg bg-primary hover:bg-primary-500 hover:text-black text-white"
             size="lg"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? 'Wird verarbeitet...' : 'Registrieren'}
+            {form.formState.isSubmitting
+              ? t("registerForm.submitting")
+              : t("registerForm.submit")}
           </Button>
 
-           <Button
+          <Button
             type="button"
             variant="outline"
             className="w-full md:w-auto min-w-[140px] rounded-lg border-secondary-dark bg-secondary hover:bg-secondary-dark hover:text-black text-white"
             size="lg"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
           >
-            Abbrechen
+            {t("registerForm.cancel")}
           </Button>
         </div>
-
       </form>
     </Form>
-  )
-}
+  );
+};
 
-export default RegisterForm
+export default RegisterForm;

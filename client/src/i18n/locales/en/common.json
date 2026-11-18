@@ -160,5 +160,25 @@
   "alreadyHaveAccount": "Already have an account?",
   "backToLogin": "Back to sign in",
   "genericError": "An error occurred."
+},
+"registerForm": {
+  "genericError": "An error occurred during registration.",
+  "successTitle": "Registration successful!",
+  "successDescription": "You have successfully registered and can now log in.",
+  "login": "Log in",
+  "companyNamePlaceholder": "Team name",
+  "invitationCodePlaceholder": "Invitation code",
+  "namePlaceholder": "Username",
+  "emailPlaceholder": "Email",
+  "passwordPlaceholder": "Password (min. 8 characters)",
+  "confirmPasswordPlaceholder": "Confirm password",
+  "submitting": "Processing...",
+  "submit": "Register",
+  "cancel": "Cancel"
+},
+"registerPage": {
+  "title": "Create an account",
+  "descriptionFirstLine": "Registration is simple and free.",
+  "descriptionSecondLine": "Fill out the form to get started."
 }
 }

@@ -160,5 +160,25 @@
   "alreadyHaveAccount": "Уже есть аккаунт?",
   "backToLogin": "Вернуться к логину",
   "genericError": "Произошла ошибка."
+},
+"registerForm": {
+  "genericError": "При регистрации произошла ошибка.",
+  "successTitle": "Регистрация прошла успешно!",
+  "successDescription": "Вы успешно зарегистрировались и теперь можете войти в систему.",
+  "login": "Войти",
+  "companyNamePlaceholder": "Название команды",
+  "invitationCodePlaceholder": "Код приглашения",
+  "namePlaceholder": "Имя пользователя",
+  "emailPlaceholder": "Электронная почта",
+  "passwordPlaceholder": "Пароль (минимум 8 символов)",
+  "confirmPasswordPlaceholder": "Подтвердите пароль",
+  "submitting": "Обработка...",
+  "submit": "Зарегистрироваться",
+  "cancel": "Отмена"
+},
+"registerPage": {
+  "title": "Создать аккаунт",
+  "descriptionFirstLine": "Регистрация простая и бесплатная.",
+  "descriptionSecondLine": "Заполните форму, чтобы начать."
 }
 }

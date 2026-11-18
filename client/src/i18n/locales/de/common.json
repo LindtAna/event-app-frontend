@@ -160,5 +160,25 @@
   "alreadyHaveAccount": "Du hast bereits einen Account?",
   "backToLogin": "Zurück zur Anmeldung",
   "genericError": "Ein Fehler ist aufgetreten."
+},
+"registerForm": {
+  "genericError": "Bei der Registrierung ist ein Fehler aufgetreten.",
+  "successTitle": "Registrierung erfolgreich!",
+  "successDescription": "Du hast dich erfolgreich registriert und kannst dich jetzt einloggen.",
+  "login": "Einloggen",
+  "companyNamePlaceholder": "Teamname",
+  "invitationCodePlaceholder": "Einladungscode",
+  "namePlaceholder": "Benutzername",
+  "emailPlaceholder": "E-Mail",
+  "passwordPlaceholder": "Passwort (mind. 8 Zeichen)",
+  "confirmPasswordPlaceholder": "Passwort bestätigen",
+  "submitting": "Wird verarbeitet...",
+  "submit": "Registrieren",
+  "cancel": "Abbrechen"
+},
+"registerPage": {
+  "title": "Account erstellen",
+  "descriptionFirstLine": "Die Registrierung ist einfach und kostenlos.",
+  "descriptionSecondLine": "Fülle dazu das Formular aus, um zu beginnen."
 }
 }

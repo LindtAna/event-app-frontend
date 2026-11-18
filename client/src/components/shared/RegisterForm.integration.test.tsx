@@ -1,10 +1,4 @@
-
-import {
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Dispatch, SetStateAction } from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -17,425 +11,416 @@ import type { User } from "@/types";
 
 import RegisterForm from "./RegisterForm";
 
-
 vi.mock("@/api/auth", () => ({
-    registerUser: vi.fn(),
+  registerUser: vi.fn(),
 }));
 
 vi.mock("@/api/upload", () => ({
-    uploadToCloudinary: vi.fn(),
+  uploadToCloudinary: vi.fn(),
 }));
 
 // simulieren die Dateiauswahl ohne echtes Drag & Drop
 vi.mock("./FileUploader", () => ({
-    FileUploader: ({
-        onFieldChange,
-        setFiles,
-    }: {
-        onFieldChange: (url: string) => void;
-        setFiles: Dispatch<SetStateAction<File[]>>;
-    }) => (
-        <input
-            type="file"
-            aria-label="Profilbild"
-            onChange={(event) => {
-                const file = event.target.files?.[0];
+  FileUploader: ({
+    onFieldChange,
+    setFiles,
+  }: {
+    onFieldChange: (url: string) => void;
+    setFiles: Dispatch<SetStateAction<File[]>>;
+  }) => (
+    <input
+      type="file"
+      aria-label="Profilbild"
+      onChange={(event) => {
+        const file = event.target.files?.[0];
 
-                if (file) {
-                    setFiles([file]);
-                    onFieldChange("blob:preview");
-                }
-            }}
-        />
-    ),
+        if (file) {
+          setFiles([file]);
+          onFieldChange("blob:preview");
+        }
+      }}
+    />
+  ),
 }));
 
 const mockRegisterUser = vi.mocked(registerUser);
 const mockUploadToCloudinary = vi.mocked(uploadToCloudinary);
 
 const testUser = {
-    id: 1,
-    tenantId: 10,
-    role: "owner",
-    name: "Test User",
-    email: "test@example.com",
+  id: 1,
+  tenantId: 10,
+  role: "owner",
+  name: "Test User",
+  email: "test@example.com",
 } as User;
 
 const testCredentials = {
-    name: "Test User",
-    email: "test@example.com",
-    password: "valid-password",
+  name: "Test User",
+  email: "test@example.com",
+  password: "valid-password",
 };
 
 const testOwnerPayload = {
-    ...testCredentials,
-    avatarUrl: "",
-    registrationType: "owner" as const,
-    companyName: "Test Team",
+  ...testCredentials,
+  avatarUrl: "",
+  registrationType: "owner" as const,
+  companyName: "Test Team",
 };
 
 const testMemberPayload = {
-    ...testCredentials,
-    avatarUrl: "",
-    registrationType: "member" as const,
-    invitationCode: "INVITE-123",
+  ...testCredentials,
+  avatarUrl: "",
+  registrationType: "member" as const,
+  invitationCode: "INVITE-123",
 };
 
 // Zeigt den aktuellen URL und Navigation State
 const LocationDisplay = () => {
-    const location = useLocation();
+  const location = useLocation();
 
-    const state = location.state as
-        | { openLoginModal?: boolean }
-        | null;
+  const state = location.state as { openLoginModal?: boolean } | null;
 
-    return (
-        <>
-            <div data-testid="current-location">
-                {location.pathname}
-            </div>
+  return (
+    <>
+      <div data-testid="current-location">{location.pathname}</div>
 
-            <div data-testid="login-modal-state">
-                {String(state?.openLoginModal === true)}
-            </div>
-        </>
-    );
+      <div data-testid="login-modal-state">
+        {String(state?.openLoginModal === true)}
+      </div>
+    </>
+  );
 };
 
 // Rendert RegisterForm innerhalb eines echten React Routers
-const renderRegisterForm = (
-    initialEntry = "/register",
-) =>
-    render(
-        <MemoryRouter initialEntries={[initialEntry]}>
-            <RegisterForm />
-            <LocationDisplay />
-        </MemoryRouter>,
-    );
+const renderRegisterForm = (initialEntry = "/register") =>
+  render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <RegisterForm />
+      <LocationDisplay />
+    </MemoryRouter>,
+  );
 
 // Füllt die gemeinsamen Registrierungsfelder aus
-const fillCommonFields = (
-    confirmPassword = testCredentials.password,
-) => {
-    fireEvent.change(screen.getByPlaceholderText("Benutzername"), {
-        target: { value: `  ${testCredentials.name}  ` },
-    });
+const fillCommonFields = (confirmPassword = testCredentials.password) => {
+  fireEvent.change(
+    screen.getByPlaceholderText(i18n.t("registerForm.namePlaceholder")),
+    {
+      target: { value: `  ${testCredentials.name}  ` },
+    },
+  );
 
-    fireEvent.change(screen.getByPlaceholderText("E-Mail"), {
-        target: { value: `  ${testCredentials.email}  ` },
-    });
+  fireEvent.change(
+    screen.getByPlaceholderText(i18n.t("registerForm.emailPlaceholder")),
+    {
+      target: { value: `  ${testCredentials.email}  ` },
+    },
+  );
 
-    fireEvent.change(
-        screen.getByPlaceholderText("Passwort (min. 8 Zeichen)"),
-        {
-            target: { value: testCredentials.password },
-        },
-    );
+  fireEvent.change(
+    screen.getByPlaceholderText(i18n.t("registerForm.passwordPlaceholder")),
+    {
+      target: { value: testCredentials.password },
+    },
+  );
 
-    fireEvent.change(
-        screen.getByPlaceholderText("Passwort bestätigen"),
-        {
-            target: { value: confirmPassword },
-        },
-    );
+  fireEvent.change(
+    screen.getByPlaceholderText(
+      i18n.t("registerForm.confirmPasswordPlaceholder"),
+    ),
+    {
+      target: { value: confirmPassword },
+    },
+  );
 };
 
 // Sendet das Formular direkt ab
 const submitForm = () => {
-    const button = screen.getByRole("button", {
-        name: "Registrieren",
-    });
+  const button = screen.getByRole("button", {
+    name: i18n.t("registerForm.submit"),
+  });
 
-    const form = button.closest("form");
+  const form = button.closest("form");
 
-    expect(form).not.toBeNull();
+  expect(form).not.toBeNull();
 
-    fireEvent.submit(form!);
+  fireEvent.submit(form!);
 };
 
 describe("RegisterForm integration", () => {
-    beforeEach(async () => {
+  beforeEach(async () => {
     await i18n.changeLanguage("de");
-    
-        mockRegisterUser.mockReset();
-        mockUploadToCloudinary.mockReset();
+
+    mockRegisterUser.mockReset();
+    mockUploadToCloudinary.mockReset();
+  });
+
+  it("registers an owner successfully with the correct payload", async () => {
+    mockRegisterUser.mockResolvedValue(testUser);
+
+    renderRegisterForm();
+
+    fillCommonFields();
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        i18n.t("registerForm.companyNamePlaceholder"),
+      ),
+      {
+        target: { value: "  Test Team  " },
+      },
+    );
+
+    submitForm();
+
+    await waitFor(() => {
+      expect(mockRegisterUser).toHaveBeenCalledWith(testOwnerPayload);
     });
 
-    it("registers an owner successfully with the correct payload", async () => {
-        mockRegisterUser.mockResolvedValue(testUser);
+    expect(mockUploadToCloudinary).not.toHaveBeenCalled();
 
-        renderRegisterForm();
+    expect(screen.getByRole("status")).toHaveTextContent(
+    i18n.t("registerForm.successTitle"),
+);
 
-        fillCommonFields();
+    expect(
+      screen.getByRole("button", {
+    name: i18n.t("registerForm.login"),
+}),
+    ).toBeInTheDocument();
+  });
 
-        fireEvent.change(screen.getByPlaceholderText("Teamsname"), {
-            target: { value: "  Test Team  " },
-        });
+  it("registers a member successfully with the correct payload", async () => {
+    mockRegisterUser.mockResolvedValue(testUser);
 
-        submitForm();
+    renderRegisterForm("/register?type=member");
 
-        await waitFor(() => {
-            expect(mockRegisterUser).toHaveBeenCalledWith(
-                testOwnerPayload,
-            );
-        });
+    fillCommonFields();
 
-        expect(mockUploadToCloudinary).not.toHaveBeenCalled();
-
-        expect(
-            screen.getByRole("status"),
-        ).toHaveTextContent("Registrierung erfolgreich!");
-
-        expect(
-            screen.getByRole("button", { name: "Einloggen" }),
-        ).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText(
+    i18n.t("registerForm.invitationCodePlaceholder"),
+), {
+      target: { value: "  INVITE-123  " },
     });
 
-    it("registers a member successfully with the correct payload", async () => {
-        mockRegisterUser.mockResolvedValue(testUser);
+    submitForm();
 
-        renderRegisterForm("/register?type=member");
-
-        fillCommonFields();
-
-        fireEvent.change(
-            screen.getByPlaceholderText("Einladungscode"),
-            {
-                target: { value: "  INVITE-123  " },
-            },
-        );
-
-        submitForm();
-
-        await waitFor(() => {
-            expect(mockRegisterUser).toHaveBeenCalledWith(
-                testMemberPayload,
-            );
-        });
-
-        expect(mockUploadToCloudinary).not.toHaveBeenCalled();
-
-        expect(
-            screen.getByRole("status"),
-        ).toHaveTextContent("Registrierung erfolgreich!");
+    await waitFor(() => {
+      expect(mockRegisterUser).toHaveBeenCalledWith(testMemberPayload);
     });
 
-    it("uploads an avatar and includes the uploaded URL in the registration payload", async () => {
-        const uploadedAvatarUrl =
-            "https://res.cloudinary.com/test/image/upload/avatar.jpg";
+    expect(mockUploadToCloudinary).not.toHaveBeenCalled();
 
-        const testFile = new File(
-            ["test image content"],
-            "avatar.jpg",
-            { type: "image/jpeg" },
-        );
+    expect(screen.getByRole("status")).toHaveTextContent(
+    i18n.t("registerForm.successTitle"),
+);
+  });
 
-        mockUploadToCloudinary.mockResolvedValue(uploadedAvatarUrl);
-        mockRegisterUser.mockResolvedValue(testUser);
+  it("uploads an avatar and includes the uploaded URL in the registration payload", async () => {
+    const uploadedAvatarUrl =
+      "https://res.cloudinary.com/test/image/upload/avatar.jpg";
 
-        renderRegisterForm();
-
-        fillCommonFields();
-
-        fireEvent.change(screen.getByPlaceholderText("Teamsname"), {
-            target: { value: "Test Team" },
-        });
-
-        fireEvent.change(screen.getByLabelText("Profilbild"), {
-            target: {
-                files: [testFile],
-            },
-        });
-
-        submitForm();
-
-        await waitFor(() => {
-            expect(mockUploadToCloudinary).toHaveBeenCalledWith(
-                testFile,
-                "avatars",
-            );
-        });
-
-        const expectedPayload = {
-            ...testOwnerPayload,
-            avatarUrl: uploadedAvatarUrl,
-        };
-
-        await waitFor(() => {
-            expect(mockRegisterUser).toHaveBeenCalledWith(
-                expectedPayload,
-            );
-        });
-
-        expect(
-            screen.getByRole("status"),
-        ).toHaveTextContent("Registrierung erfolgreich!");
+    const testFile = new File(["test image content"], "avatar.jpg", {
+      type: "image/jpeg",
     });
 
-    it("validates required fields and password confirmation without sending an API request", async () => {
-        renderRegisterForm();
+    mockUploadToCloudinary.mockResolvedValue(uploadedAvatarUrl);
+    mockRegisterUser.mockResolvedValue(testUser);
 
-        fillCommonFields("different-password");
+    renderRegisterForm();
 
-        // Teamname bleibt leer.
+    fillCommonFields();
 
-        submitForm();
+    fireEvent.change(
+  screen.getByPlaceholderText(
+    i18n.t("registerForm.companyNamePlaceholder"),
+  ),
+  {
+    target: { value: "Test Team" },
+  },
+);
 
-        expect(
-    await screen.findByText(
+    fireEvent.change(screen.getByLabelText("Profilbild"), {
+      target: {
+        files: [testFile],
+      },
+    });
+
+    submitForm();
+
+    await waitFor(() => {
+      expect(mockUploadToCloudinary).toHaveBeenCalledWith(testFile, "avatars");
+    });
+
+    const expectedPayload = {
+      ...testOwnerPayload,
+      avatarUrl: uploadedAvatarUrl,
+    };
+
+    await waitFor(() => {
+      expect(mockRegisterUser).toHaveBeenCalledWith(expectedPayload);
+    });
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+    i18n.t("registerForm.successTitle"),
+);
+  });
+
+  it("validates required fields and password confirmation without sending an API request", async () => {
+    renderRegisterForm();
+
+    fillCommonFields("different-password");
+
+    // Teamname bleibt leer.
+
+    submitForm();
+
+    expect(
+      await screen.findByText(
         i18n.t("validation.register.companyNameRequired"),
-    ),
-).toBeInTheDocument();
+      ),
+    ).toBeInTheDocument();
 
-        expect(
-    screen.getByText(
-        i18n.t("validation.register.passwordMismatch"),
-    ),
-).toBeInTheDocument();
+    expect(
+      screen.getByText(i18n.t("validation.register.passwordMismatch")),
+    ).toBeInTheDocument();
 
-        expect(mockRegisterUser).not.toHaveBeenCalled();
-        expect(mockUploadToCloudinary).not.toHaveBeenCalled();
+    expect(mockRegisterUser).not.toHaveBeenCalled();
+    expect(mockUploadToCloudinary).not.toHaveBeenCalled();
 
-        expect(
-            screen.getByTestId("current-location"),
-        ).toHaveTextContent("/register");
+    expect(screen.getByTestId("current-location")).toHaveTextContent(
+      "/register",
+    );
+  });
+
+  it("displays an error when registration fails and keeps the form open", async () => {
+    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
+
+    mockRegisterUser.mockRejectedValue(
+      new Error("E-Mail-Adresse bereits registriert"),
+    );
+
+    renderRegisterForm();
+
+    fillCommonFields();
+
+    fireEvent.change(
+  screen.getByPlaceholderText(
+    i18n.t("registerForm.companyNamePlaceholder"),
+  ),
+  {
+    target: { value: "Test Team" },
+  },
+);
+
+    submitForm();
+
+    await waitFor(() => {
+      expect(alertMock).toHaveBeenCalledWith(
+        "E-Mail-Adresse bereits registriert",
+      );
     });
 
-    it("displays an error when registration fails and keeps the form open", async () => {
-        const alertMock = vi
-            .spyOn(window, "alert")
-            .mockImplementation(() => {});
+    expect(mockRegisterUser).toHaveBeenCalledTimes(1);
 
-        mockRegisterUser.mockRejectedValue(
-            new Error("E-Mail-Adresse bereits registriert"),
-        );
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
 
-        renderRegisterForm();
+    expect(
+     screen.getByRole("button", {
+    name: i18n.t("registerForm.submit"),
+}),
+    ).toBeInTheDocument();
+  });
 
-        fillCommonFields();
+  it("displays an error when avatar upload fails and does not register the user", async () => {
+    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
 
-        fireEvent.change(screen.getByPlaceholderText("Teamsname"), {
-            target: { value: "Test Team" },
-        });
-
-        submitForm();
-
-        await waitFor(() => {
-            expect(alertMock).toHaveBeenCalledWith(
-                "E-Mail-Adresse bereits registriert",
-            );
-        });
-
-        expect(mockRegisterUser).toHaveBeenCalledTimes(1);
-
-        expect(
-            screen.queryByRole("status"),
-        ).not.toBeInTheDocument();
-
-        expect(
-            screen.getByRole("button", { name: "Registrieren" }),
-        ).toBeInTheDocument();
+    const testFile = new File(["test image content"], "avatar.jpg", {
+      type: "image/jpeg",
     });
 
-    it("displays an error when avatar upload fails and does not register the user", async () => {
-        const alertMock = vi
-            .spyOn(window, "alert")
-            .mockImplementation(() => {});
+    mockUploadToCloudinary.mockRejectedValue(
+      new Error("Cloudinary upload failed"),
+    );
 
-        const testFile = new File(
-            ["test image content"],
-            "avatar.jpg",
-            { type: "image/jpeg" },
-        );
+    renderRegisterForm();
 
-        mockUploadToCloudinary.mockRejectedValue(
-            new Error("Cloudinary upload failed"),
-        );
+    fillCommonFields();
 
-        renderRegisterForm();
+    fireEvent.change(
+  screen.getByPlaceholderText(
+    i18n.t("registerForm.companyNamePlaceholder"),
+  ),
+  {
+    target: { value: "Test Team" },
+  },
+);
 
-        fillCommonFields();
-
-        fireEvent.change(screen.getByPlaceholderText("Teamsname"), {
-            target: { value: "Test Team" },
-        });
-
-        fireEvent.change(screen.getByLabelText("Profilbild"), {
-            target: {
-                files: [testFile],
-            },
-        });
-
-        submitForm();
-
-        await waitFor(() => {
-            expect(alertMock).toHaveBeenCalledWith(
-                "Cloudinary upload failed",
-            );
-        });
-
-        expect(mockUploadToCloudinary).toHaveBeenCalledWith(
-            testFile,
-            "avatars",
-        );
-
-        expect(mockRegisterUser).not.toHaveBeenCalled();
-
-        expect(
-            screen.queryByRole("status"),
-        ).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Profilbild"), {
+      target: {
+        files: [testFile],
+      },
     });
 
-    it("navigates to the home page with openLoginModal state after successful registration", async () => {
-        mockRegisterUser.mockResolvedValue(testUser);
+    submitForm();
 
-        renderRegisterForm();
-
-        fillCommonFields();
-
-        fireEvent.change(screen.getByPlaceholderText("Teamsname"), {
-            target: { value: "Test Team" },
-        });
-
-        submitForm();
-
-        expect(
-            await screen.findByRole("status"),
-        ).toHaveTextContent("Registrierung erfolgreich!");
-
-        fireEvent.click(
-            screen.getByRole("button", { name: "Einloggen" }),
-        );
-
-        await waitFor(() => {
-            expect(
-                screen.getByTestId("current-location"),
-            ).toHaveTextContent("/");
-
-            expect(
-                screen.getByTestId("login-modal-state"),
-            ).toHaveTextContent("true");
-        });
+    await waitFor(() => {
+      expect(alertMock).toHaveBeenCalledWith("Cloudinary upload failed");
     });
 
-    it("navigates to the home page when registration is cancelled", async () => {
-        renderRegisterForm();
+    expect(mockUploadToCloudinary).toHaveBeenCalledWith(testFile, "avatars");
 
-        fireEvent.click(
-            screen.getByRole("button", { name: "Abbrechen" }),
-        );
+    expect(mockRegisterUser).not.toHaveBeenCalled();
 
-        await waitFor(() => {
-            expect(
-                screen.getByTestId("current-location"),
-            ).toHaveTextContent("/");
-        });
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
 
-        expect(
-            screen.getByTestId("login-modal-state"),
-        ).toHaveTextContent("false");
+  it("navigates to the home page with openLoginModal state after successful registration", async () => {
+    mockRegisterUser.mockResolvedValue(testUser);
 
-        expect(mockRegisterUser).not.toHaveBeenCalled();
-        expect(mockUploadToCloudinary).not.toHaveBeenCalled();
+    renderRegisterForm();
+
+    fillCommonFields();
+
+    fireEvent.change(
+  screen.getByPlaceholderText(
+    i18n.t("registerForm.companyNamePlaceholder"),
+  ),
+  {
+    target: { value: "Test Team" },
+  },
+);
+
+    submitForm();
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      i18n.t("registerForm.successTitle")
+    );
+
+    fireEvent.click(screen.getByRole("button", {
+    name: i18n.t("registerForm.login"),
+}));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("current-location")).toHaveTextContent("/");
+
+      expect(screen.getByTestId("login-modal-state")).toHaveTextContent("true");
     });
+  });
+
+  it("navigates to the home page when registration is cancelled", async () => {
+    renderRegisterForm();
+
+    fireEvent.click(screen.getByRole("button", {
+    name: i18n.t("registerForm.cancel"),
+}));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("current-location")).toHaveTextContent("/");
+    });
+
+    expect(screen.getByTestId("login-modal-state")).toHaveTextContent("false");
+
+    expect(mockRegisterUser).not.toHaveBeenCalled();
+    expect(mockUploadToCloudinary).not.toHaveBeenCalled();
+  });
 });

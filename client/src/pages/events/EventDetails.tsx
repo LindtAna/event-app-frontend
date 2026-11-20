@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '@/hooks/useAuth'
 import { getEventById } from '@/api/events'
@@ -16,6 +17,15 @@ import location from '@/assets/icons/location.svg'
 
 const EventDetails = () => {
     const { id } = useParams<{ id: string }>()
+
+    const { t, i18n } = useTranslation()
+
+    const dateLocale =
+        i18n.resolvedLanguage?.startsWith('en')
+            ? 'en-GB'
+            : i18n.resolvedLanguage?.startsWith('ru')
+                ? 'ru-RU'
+                : 'de-DE'
 
     const {
         user,
@@ -46,7 +56,7 @@ const EventDetails = () => {
 
             if (!accessToken) {
                 setEvent(null)
-                setError('Bitte melde dich an, um dieses Event anzusehen.')
+                setError(t('eventDetails.errors.loginRequiredEvent'))
                 setIsLoading(false)
                 return
             }
@@ -60,7 +70,7 @@ const EventDetails = () => {
                 console.error('Fehler beim Laden des Events:', err)
                 if (!cancelled) {
                     setEvent(null)
-                    setError('Event konnte nicht geladen werden.')
+                    setError(t('eventDetails.errors.loadEvent'))
                 }
             } finally {
                 if (!cancelled) {
@@ -73,7 +83,7 @@ const EventDetails = () => {
         return () => {
             cancelled = true
         }
-    }, [id, accessToken, isAuthLoading])
+    }, [id, accessToken, isAuthLoading, t])
 
     // Teilnehmer des Events laden
     useEffect(() => {
@@ -87,7 +97,7 @@ const EventDetails = () => {
             setAttendees([])
 
             if (!accessToken) {
-                setAttendeesError('Bitte melde dich an, um die Teilnehmer zu sehen.')
+                setAttendeesError(t('eventDetails.errors.loginRequiredAttendees'))
                 setIsAttendeesLoading(false)
                 return
             }
@@ -104,9 +114,7 @@ const EventDetails = () => {
                 console.error(
                     'Fehler beim Laden der Teilnehmer:', err)
                 if (!cancelled) {
-                    setAttendeesError(
-                        'Teilnehmer konnten nicht geladen werden.'
-                    )
+                    setAttendeesError(t('eventDetails.errors.loadAttendees'))
                 }
             } finally {
                 if (!cancelled) {
@@ -120,7 +128,7 @@ const EventDetails = () => {
         return () => {
             cancelled = true
         }
-    }, [id, accessToken, isAuthLoading])
+    }, [id, accessToken, isAuthLoading, t])
 
     // Prüfen, ob der aktuelle Benutzer bereits teilnimmt
     const isAttending = Boolean(
@@ -130,7 +138,7 @@ const EventDetails = () => {
     // Aktuellen Benutzer als Teilnehmer registrieren
     const handleJoinEvent = async () => {
         if (!event || !user || !accessToken) {
-            setJoinError('Bitte melde dich an, um teilzunehmen.')
+            setJoinError(t('eventDetails.errors.loginRequiredJoin'))
             return
         }
 
@@ -171,7 +179,7 @@ const EventDetails = () => {
             setJoinError(
                 err instanceof Error
                     ? err.message
-                    : 'Die Anmeldung ist fehlgeschlagen.'
+                    : t('eventDetails.errors.joinFailed')
             )
         } finally {
             setIsJoining(false)
@@ -181,7 +189,7 @@ const EventDetails = () => {
     if (isLoading) {
         return (
             <div className="flex-center min-h-[300px] text-gray-500 font-medium">
-                Event wird geladen...
+                 {t('eventDetails.loading')}
             </div>
         )
     }
@@ -189,22 +197,22 @@ const EventDetails = () => {
     if (error || !event) {
         return (
             <div className="wrapper my-20 text-center text-red-500 font-medium">
-                {error || 'Event nicht gefunden'}
+                {error || t('eventDetails.errors.eventNotFound')}
             </div>
         )
     }
 
     const joinButtonText = isAuthLoading
-        ? 'Anmeldestatus wird geprüft...'
+        ?  t('eventDetails.joinButton.checkingAuth')
         : !isSignedIn
-            ? 'Bitte anmelden, um teilzunehmen'
+            ? t('eventDetails.joinButton.login')
             : isAttendeesLoading
-                ? 'Teilnehmer werden geladen...'
+                ? t('eventDetails.joinButton.loadingAttendees')
                 : isAttending
-                    ? 'Du nimmst teil'
+                    ?  t('eventDetails.joinButton.attending')
                     : isJoining
-                        ? 'Anmeldung läuft...'
-                        : 'Teilnehmen'
+                        ? t('eventDetails.joinButton.joining')
+                        : t('eventDetails.joinButton.join')
 
     return (
         <>
@@ -230,7 +238,7 @@ const EventDetails = () => {
                             {/* Badge + Name nebeneinander */}
                             <div className="flex items-center gap-3">
                                 <p className="p-medium-16 w-fit font-bold text-black underline underline-offset-8 decoration-black decoration-2 px-2">
-                                    Veranstalter:
+                                    {t('eventDetails.owner')}
                                 </p>
                                 <span className="p-medium-16 text-black">
                                     {event.owner?.name}
@@ -240,7 +248,7 @@ const EventDetails = () => {
                         </div>
 
                         {/* Teilnahme */}
-                        <div className="flexitems-center justify-center gap-3 py-4">
+                        <div className="flex items-center justify-center gap-3 py-4">
                             <Button
                                 className="w-full sm:w-fit"
                                 size="lg"
@@ -270,24 +278,38 @@ const EventDetails = () => {
                         {/* Datum und Uhrzeit */}
                         <div className="flex flex-col gap-5">
                             <div className='flex gap-2 md:gap-3'>
-                                <img src={calendar} alt="calendar" width={32} height={32} />
-                                <p className="p-medium-16 lg:p-regular-20">Beginn:</p>
+                                <img src={calendar} alt="" width={32} height={32} />
+                                <p className="p-medium-16 lg:p-regular-20">
+                                    {t('eventDetails.start')}
+                                    </p>
                                 <div className="p-medium-16 lg:p-regular-20">
-                                    <p>{formatDateTime(event.startDateTime).dateTime}</p>
+                                    <p>  {formatDateTime(
+                                            event.startDateTime,
+                                            dateLocale,
+                                            t('eventDetails.invalidDate')
+                                        ).dateTime}
+                                        </p>
                                 </div>
                             </div>
 
                             <div className='flex gap-2 md:gap-3'>
-                                <img src={calendar} alt="calendar" width={32} height={32} />
-                                <p className="p-medium-16 lg:p-regular-20">Ende:</p>
+                                <img src={calendar} alt="" width={32} height={32} />
+                                <p className="p-medium-16 lg:p-regular-20">
+                                    {t('eventDetails.end')}
+                                    </p>
                                 <div className="p-medium-16 lg:p-regular-20">
-                                    <p>{formatDateTime(event.endDateTime).dateTime}</p>
+                                    <p>{formatDateTime(
+                                            event.endDateTime,
+                                            dateLocale,
+                                            t('eventDetails.invalidDate')
+                                        ).dateTime}
+                                        </p>
                                 </div>
                             </div>
 
 
                             <div className="p-regular-20 flex items-center gap-3">
-                                <img src={location} alt="location" width={32} height={32} />
+                                <img src={location} alt="" width={32} height={32} />
                                 <p className="p-medium-16 lg:p-regular-20">{event.location}</p>
                             </div>
                         </div>
@@ -295,7 +317,7 @@ const EventDetails = () => {
                         {/* Beschreibung */}
                         <div className="flex min-w-0 flex-col gap-2">
                             <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
-                                Beschreibung:
+                                {t('eventDetails.description')}
                             </p>
 
                             <p className="min-w-0 max-w-full whitespace-pre-wrap break-words p-medium-16 lg:p-regular-18">

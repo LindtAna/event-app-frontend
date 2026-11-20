@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next'
 
 import type { User } from "@/types";
 
@@ -34,6 +35,7 @@ const AttendeeCarousel = ({
     isLoading,
     error,
 }: AttendeeCarouselProps) => {
+    const { t } = useTranslation()
     const [visibleCount, setVisibleCount] = useState(getVisibleCount);
     const [startIndex, setStartIndex] = useState(0);
 
@@ -78,20 +80,21 @@ const showNext = () => {
 };
 
     const getDisplayName = (attendee: User) =>
-        attendee.name?.trim() || `Teilnehmer #${attendee.id}`;
+    attendee.name?.trim() ||
+    t('attendeesCarousel.userFallback', { id: attendee.id });
 
     return (
         <div className="flex flex-col gap-2">
             <p className="p-medium-16 w-fit self-start rounded-3xl border border-secondary-dark/50 px-5 py-1.5 text-black">
-                Teilnehmer ({attendees.length})
+                {t('attendeesCarousel.list')} ({attendees.length})
             </p>
 
             {isLoading ? (
-                <p className="text-sm text-gray-500">Teilnehmer werden geladen...</p>
+                <p className="text-sm text-gray-500">{t('attendeesCarousel.loading')}</p>
             ) : error ? (
                 <p className="text-sm text-red-500">{error}</p>
             ) : attendees.length === 0 ? (
-                <p className="text-sm text-gray-500">Noch keine Teilnehmer.</p>
+                <p className="text-sm text-gray-500">{t('attendeesCarousel.noAttendees')}</p>
             ) : (
                 <TooltipProvider>
                     <div className="flex w-full items-center gap-1 pt-1">
@@ -99,7 +102,7 @@ const showNext = () => {
                             type="button"
                             onClick={showPrevious}
                             disabled={effectiveStartIndex === 0}
-                            aria-label="Vorherige Teilnehmer anzeigen"
+                            aria-label={t('attendeesCarousel.previous')}
                             className="flex size-7 shrink-0 items-center justify-center disabled:cursor-not-allowed disabled:opacity-30"
                         >
                             <img
@@ -178,7 +181,7 @@ const showNext = () => {
                             type="button"
                             onClick={showNext}
                             disabled={effectiveStartIndex >= maxStartIndex}
-                            aria-label="Weitere Teilnehmer anzeigen"
+                            aria-label={t('attendeesCarousel.next')}
                             className="flex size-7 shrink-0 items-center justify-center rounded-full disabled:cursor-not-allowed disabled:opacity-30"
                         >
                             <img

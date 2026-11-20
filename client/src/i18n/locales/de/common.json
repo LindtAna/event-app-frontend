@@ -118,9 +118,9 @@
       "bioMax": "Die Bio darf maximal 200 Zeichen lang sein."
     },
     "login": {
-  "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
-  "passwordRequired": "Bitte gib dein Passwort ein."
-}
+      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+      "passwordRequired": "Bitte gib dein Passwort ein."
+    }
   },
   "profileForm": {
     "unauthorized": "Nicht autorisiert. Bitte melden Sie sich erneut an.",
@@ -132,150 +132,183 @@
     "save": "Speichern",
     "cancel": "Abbrechen"
   },
-"eventPages": {
-  "createTitle": "Event erstellen",
-  "updateTitle": "Event bearbeiten",
-  "loading": "Veranstaltung wird geladen...",
-  "missingId": "Keine Veranstaltungs-ID angegeben.",
-  "loginRequired": "Bitte melde dich an, um die Veranstaltung zu bearbeiten.",
-  "loadError": "Veranstaltung konnte nicht geladen werden.",
-  "notFound": "Veranstaltung nicht gefunden."
-},
-"loginModal": {
-  "close": "Dialog schließen",
-  "title": "Anmelden",
-  "subtitle": "Bitte melde dich an",
-  "showPassword": "Passwort anzeigen",
-  "hidePassword": "Passwort verbergen",
-  "noAccount": "Noch kein Account?",
-  "registerHere": "Hier klicken",
-  "loading": "Laden...",
-  "submit": "Einloggen",
-  "registrationTitle": "Account erstellen",
-  "registrationSubtitle": "Wie möchtest du PlanFuchs nutzen?",
-  "createTeam": "Neues Team erstellen",
-  "createTeamDescription": "Erstelle einen neuen Bereich für dein Unternehmen und verwalte ihn als Admin.",
-  "joinTeam": "Mit Einladung beitreten",
-  "joinTeamDescription": "Mit einem Einladungscode kannst du einem bestehenden Team beitreten.",
-  "alreadyHaveAccount": "Du hast bereits einen Account?",
-  "backToLogin": "Zurück zur Anmeldung",
-  "genericError": "Ein Fehler ist aufgetreten."
-},
-"registerForm": {
-  "genericError": "Bei der Registrierung ist ein Fehler aufgetreten.",
-  "successTitle": "Registrierung erfolgreich!",
-  "successDescription": "Du hast dich erfolgreich registriert und kannst dich jetzt einloggen.",
-  "login": "Einloggen",
-  "companyNamePlaceholder": "Teamname",
-  "invitationCodePlaceholder": "Einladungscode",
-  "namePlaceholder": "Benutzername",
-  "emailPlaceholder": "E-Mail",
-  "passwordPlaceholder": "Passwort (mind. 8 Zeichen)",
-  "confirmPasswordPlaceholder": "Passwort bestätigen",
-  "submitting": "Wird verarbeitet...",
-  "submit": "Registrieren",
-  "cancel": "Abbrechen"
-},
-"registerPage": {
-  "title": "Account erstellen",
-  "descriptionFirstLine": "Die Registrierung ist einfach und kostenlos.",
-  "descriptionSecondLine": "Fülle dazu das Formular aus, um zu beginnen."
-},
-"profilePage": {
-  "sessionExpired": "Die Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
-  "loadError": "Fehler beim Laden der Events.",
-  "userFallback": "Benutzer Nr. {{id}}",
-  "editProfile": "Profil bearbeiten",
-  "edit": "Bearbeiten",
-  "title": "Mein Profil",
-  "name": "Name",
-  "email": "E-Mail",
-  "bio": "Biografie",
-  "myEvents": "Meine Events",
-  "attendee": "Teilnehmer",
-  "owner": "Ersteller",
-  "loading": "Events werden geladen...",
-  "noParticipatingEvents": "Noch keine Event-Zusagen",
-  "noParticipatingEventsDescription": "Sie nehmen derzeit an keinen Events teil.",
-  "noOrganizedEvents": "Noch keine Events erstellt",
-  "noOrganizedEventsDescription": "Erstellen Sie jetzt Ihr erstes Event."
-},
-"updateProfilePage": {
-  "loginRequired": "Bitte loggen Sie sich ein",
-  "title": "Profil bearbeiten"
-},
-"collection": {
-  "showMore": "Mehr anzeigen",
-  "createEvent": "Los geht’s!"
-},
-"card": {
-  "editEvent": "Event bearbeiten",
-  "edit": "Bearbeiten",
-  "owner": "Ersteller",
-  "attendee": "Teilnehmer"
-},
-"deleteConfirmation": {
-  "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
-  "genericError": "Das Event konnte nicht gelöscht werden.",
-  "triggerTitle": "Event löschen",
-  "triggerAlt": "Löschen",
-  "title": "Event wirklich löschen?",
-  "description": "Diese Aktion kann nicht rückgängig gemacht werden. Das Event wird dauerhaft gelöscht.",
-  "cancel": "Abbrechen",
-  "deleting": "Wird gelöscht...",
-  "confirm": "Löschen"
-},
-"leaveConfirmation": {
-  "loginRequired": "Bitte melde dich erneut an.",
-  "genericError": "Die Teilnahme konnte nicht storniert werden.",
-  "triggerTitle": "Event verlassen",
-  "title": "Event verlassen?",
-  "description": "Möchtest du deine Teilnahme an dieser Veranstaltung wirklich stornieren?",
-  "cancel": "Abbrechen",
-  "leaving": "Wird verlassen...",
-  "confirm": "Verlassen"
-},
-"invitationPage": {
-  "loading": "Wird geladen...",
-  "title": "Einladung erstellen",
-  "generate": "Code generieren",
-  "generating": "Wird generiert...",
-  "copyCode": "Einladungscode kopieren",
-  "generatedCode": "Generierter Einladungscode",
-  "codePlaceholder": "Einladungscode",
-  "validityDescription": "Einladungen sind {{days}} Tage gültig.",
-  "invitationCreated": "Die Einladung wurde erstellt. Sie ist {{days}} Tage gültig.",
-  "confirmReplaceCode": "Der aktuell angezeigte Einladungscode wurde noch nicht kopiert. Beim Fortfahren wird er ersetzt und kann nicht erneut abgerufen werden. Hast du den Code bereits gesichert?",
-  "codeCopied": "Der Einladungscode wurde in die Zwischenablage kopiert.",
-  "copyFailed": "Das automatische Kopieren ist fehlgeschlagen. Bitte versuche es erneut. Falls das Problem weiterhin besteht, kannst du den Einladungscode manuell kopieren.",
-  "sessionExpired": "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an.",
-  "listTitle": "Meine Einladungen",
-  "loadingInvitations": "Einladungen werden geladen...",
-  "createdAt": "Erstellt am",
-  "expiresAt": "Läuft ab am",
-  "usedAt": "Verwendet am",
-  "revokedAt": "Widerrufen am",
-  "action": "Aktion",
-  "noInvitations": "Es wurden noch keine Einladungen erstellt.",
-  "revoking": "Wird widerrufen...",
-  "revoke": "Widerrufen",
-  "deleting": "Wird gelöscht...",
-  "delete": "Löschen",
-  "confirmDelete": "Möchtest du diese Einladung dauerhaft löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.",
-  "revoked": "Die Einladung wurde widerrufen.",
-  "deleted": "Die Einladung wurde gelöscht.",
-  "errors": {
-    "create": "Die Einladung konnte nicht erstellt werden.",
-    "load": "Die Einladungen konnten nicht geladen werden.",
-    "revoke": "Die Einladung konnte nicht widerrufen werden.",
-    "notActive": "Die Einladung ist nicht mehr aktiv oder kann nicht mehr widerrufen werden.",
-    "invalidExpiration": "Der Ablaufzeitpunkt der Einladung ist ungültig.",
-    "expirationInPast": "Der Ablaufzeitpunkt muss in der Zukunft liegen.",
-    "delete": "Die Einladung konnte nicht gelöscht werden.",
-    "notFound": "Die Einladung wurde nicht gefunden oder bereits gelöscht.",
-    "createFallback": "Beim Erstellen der Einladung ist ein Fehler aufgetreten.",
-    "revokeFallback": "Beim Widerrufen der Einladung ist ein Fehler aufgetreten.",
-    "deleteFallback": "Beim Löschen der Einladung ist ein Fehler aufgetreten."
+  "eventPages": {
+    "createTitle": "Event erstellen",
+    "updateTitle": "Event bearbeiten",
+    "loading": "Veranstaltung wird geladen...",
+    "missingId": "Keine Veranstaltungs-ID angegeben.",
+    "loginRequired": "Bitte melde dich an, um die Veranstaltung zu bearbeiten.",
+    "loadError": "Veranstaltung konnte nicht geladen werden.",
+    "notFound": "Veranstaltung nicht gefunden."
+  },
+  "loginModal": {
+    "close": "Dialog schließen",
+    "title": "Anmelden",
+    "subtitle": "Bitte melde dich an",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
+    "noAccount": "Noch kein Account?",
+    "registerHere": "Hier klicken",
+    "loading": "Laden...",
+    "submit": "Einloggen",
+    "registrationTitle": "Account erstellen",
+    "registrationSubtitle": "Wie möchtest du PlanFuchs nutzen?",
+    "createTeam": "Neues Team erstellen",
+    "createTeamDescription": "Erstelle einen neuen Bereich für dein Unternehmen und verwalte ihn als Admin.",
+    "joinTeam": "Mit Einladung beitreten",
+    "joinTeamDescription": "Mit einem Einladungscode kannst du einem bestehenden Team beitreten.",
+    "alreadyHaveAccount": "Du hast bereits einen Account?",
+    "backToLogin": "Zurück zur Anmeldung",
+    "genericError": "Ein Fehler ist aufgetreten."
+  },
+  "registerForm": {
+    "genericError": "Bei der Registrierung ist ein Fehler aufgetreten.",
+    "successTitle": "Registrierung erfolgreich!",
+    "successDescription": "Du hast dich erfolgreich registriert und kannst dich jetzt einloggen.",
+    "login": "Einloggen",
+    "companyNamePlaceholder": "Teamname",
+    "invitationCodePlaceholder": "Einladungscode",
+    "namePlaceholder": "Benutzername",
+    "emailPlaceholder": "E-Mail",
+    "passwordPlaceholder": "Passwort (mind. 8 Zeichen)",
+    "confirmPasswordPlaceholder": "Passwort bestätigen",
+    "submitting": "Wird verarbeitet...",
+    "submit": "Registrieren",
+    "cancel": "Abbrechen"
+  },
+  "registerPage": {
+    "title": "Account erstellen",
+    "descriptionFirstLine": "Die Registrierung ist einfach und kostenlos.",
+    "descriptionSecondLine": "Fülle dazu das Formular aus, um zu beginnen."
+  },
+  "profilePage": {
+    "sessionExpired": "Die Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+    "loadError": "Fehler beim Laden der Events.",
+    "userFallback": "Benutzer Nr. {{id}}",
+    "editProfile": "Profil bearbeiten",
+    "edit": "Bearbeiten",
+    "title": "Mein Profil",
+    "name": "Name",
+    "email": "E-Mail",
+    "bio": "Biografie",
+    "myEvents": "Meine Events",
+    "attendee": "Teilnehmer",
+    "owner": "Ersteller",
+    "loading": "Events werden geladen...",
+    "noParticipatingEvents": "Noch keine Event-Zusagen",
+    "noParticipatingEventsDescription": "Sie nehmen derzeit an keinen Events teil.",
+    "noOrganizedEvents": "Noch keine Events erstellt",
+    "noOrganizedEventsDescription": "Erstellen Sie jetzt Ihr erstes Event."
+  },
+  "updateProfilePage": {
+    "loginRequired": "Bitte loggen Sie sich ein",
+    "title": "Profil bearbeiten"
+  },
+  "collection": {
+    "showMore": "Mehr anzeigen",
+    "createEvent": "Los geht’s!"
+  },
+  "card": {
+    "editEvent": "Event bearbeiten",
+    "edit": "Bearbeiten",
+    "owner": "Ersteller",
+    "attendee": "Teilnehmer"
+  },
+  "deleteConfirmation": {
+    "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    "genericError": "Das Event konnte nicht gelöscht werden.",
+    "triggerTitle": "Event löschen",
+    "triggerAlt": "Löschen",
+    "title": "Event wirklich löschen?",
+    "description": "Diese Aktion kann nicht rückgängig gemacht werden. Das Event wird dauerhaft gelöscht.",
+    "cancel": "Abbrechen",
+    "deleting": "Wird gelöscht...",
+    "confirm": "Löschen"
+  },
+  "leaveConfirmation": {
+    "loginRequired": "Bitte melde dich erneut an.",
+    "genericError": "Die Teilnahme konnte nicht storniert werden.",
+    "triggerTitle": "Event verlassen",
+    "title": "Event verlassen?",
+    "description": "Möchtest du deine Teilnahme an dieser Veranstaltung wirklich stornieren?",
+    "cancel": "Abbrechen",
+    "leaving": "Wird verlassen...",
+    "confirm": "Verlassen"
+  },
+  "invitationPage": {
+    "loading": "Wird geladen...",
+    "title": "Einladung erstellen",
+    "generate": "Code generieren",
+    "generating": "Wird generiert...",
+    "copyCode": "Einladungscode kopieren",
+    "generatedCode": "Generierter Einladungscode",
+    "codePlaceholder": "Einladungscode",
+    "validityDescription": "Einladungen sind {{days}} Tage gültig.",
+    "invitationCreated": "Die Einladung wurde erstellt. Sie ist {{days}} Tage gültig.",
+    "confirmReplaceCode": "Der aktuell angezeigte Einladungscode wurde noch nicht kopiert. Beim Fortfahren wird er ersetzt und kann nicht erneut abgerufen werden. Hast du den Code bereits gesichert?",
+    "codeCopied": "Der Einladungscode wurde in die Zwischenablage kopiert.",
+    "copyFailed": "Das automatische Kopieren ist fehlgeschlagen. Bitte versuche es erneut. Falls das Problem weiterhin besteht, kannst du den Einladungscode manuell kopieren.",
+    "sessionExpired": "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an.",
+    "listTitle": "Meine Einladungen",
+    "loadingInvitations": "Einladungen werden geladen...",
+    "createdAt": "Erstellt am",
+    "expiresAt": "Läuft ab am",
+    "usedAt": "Verwendet am",
+    "revokedAt": "Widerrufen am",
+    "action": "Aktion",
+    "noInvitations": "Es wurden noch keine Einladungen erstellt.",
+    "revoking": "Wird widerrufen...",
+    "revoke": "Widerrufen",
+    "deleting": "Wird gelöscht...",
+    "delete": "Löschen",
+    "confirmDelete": "Möchtest du diese Einladung dauerhaft löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "revoked": "Die Einladung wurde widerrufen.",
+    "deleted": "Die Einladung wurde gelöscht.",
+    "errors": {
+      "create": "Die Einladung konnte nicht erstellt werden.",
+      "load": "Die Einladungen konnten nicht geladen werden.",
+      "revoke": "Die Einladung konnte nicht widerrufen werden.",
+      "notActive": "Die Einladung ist nicht mehr aktiv oder kann nicht mehr widerrufen werden.",
+      "invalidExpiration": "Der Ablaufzeitpunkt der Einladung ist ungültig.",
+      "expirationInPast": "Der Ablaufzeitpunkt muss in der Zukunft liegen.",
+      "delete": "Die Einladung konnte nicht gelöscht werden.",
+      "notFound": "Die Einladung wurde nicht gefunden oder bereits gelöscht.",
+      "createFallback": "Beim Erstellen der Einladung ist ein Fehler aufgetreten.",
+      "revokeFallback": "Beim Widerrufen der Einladung ist ein Fehler aufgetreten.",
+      "deleteFallback": "Beim Löschen der Einladung ist ein Fehler aufgetreten."
+    }
+  },
+  "eventDetails": {
+    "loading": "Event wird geladen...",
+    "invalidDate": "Ungültiges Datum",
+    "owner": "Veranstalter:",
+    "start": "Beginn:",
+    "end": "Ende:",
+    "description": "Beschreibung:",
+    "errors": {
+      "loginRequiredEvent": "Bitte melde dich an, um dieses Event anzusehen.",
+      "loadEvent": "Event konnte nicht geladen werden.",
+      "loginRequiredAttendees": "Bitte melde dich an, um die Teilnehmer zu sehen.",
+      "loadAttendees": "Teilnehmer konnten nicht geladen werden.",
+      "eventNotFound": "Event nicht gefunden",
+      "loginRequiredJoin": "Bitte melde dich an, um teilzunehmen.",
+      "joinFailed": "Die Anmeldung ist fehlgeschlagen."
+    },
+    "joinButton": {
+      "checkingAuth": "Anmeldestatus wird geprüft...",
+      "login": "Bitte anmelden, um teilzunehmen",
+      "loadingAttendees": "Teilnehmer werden geladen...",
+      "attending": "Du nimmst teil",
+      "joining": "Anmeldung läuft...",
+      "join": "Teilnehmen"
+    }
+  },
+  "attendeesCarousel": {
+    "list": "Teilnehmer:",
+    "loading": "Teilnehmer werden geladen...",
+    "noAttendees": "Noch keine Teilnehmer vorhanden.",
+    "userFallback": "Teilnehmer #{{id}}",
+    "previous": "Vorherige Teilnehmer anzeigen",
+    "next": "Weitere Teilnehmer anzeigen"
   }
-}
 }

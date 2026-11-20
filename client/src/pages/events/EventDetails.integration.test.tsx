@@ -1,8 +1,8 @@
-
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import i18n from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { getEventById } from "@/api/events";
 import {
@@ -147,24 +147,30 @@ describe("EventDetails integration", () => {
         ).toBeInTheDocument();
 
         expect(
-            await screen.findByText("Noch keine Teilnehmer."),
+            await screen.findByText(
+                i18n.t("attendeesCarousel.noAttendees"),
+            ),
         ).toBeInTheDocument();
 
-        expect(screen.getByText("Teilnehmer (0)")).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                `${i18n.t("attendeesCarousel.list").trim()} (0)`,
+            ),
+        ).toBeInTheDocument();
     });
 
     it("displays an error when loading the event fails", async () => {
         vi.spyOn(console, "error").mockImplementation(() => { });
 
         mockGetEventById.mockRejectedValue(
-            new Error("Event konnte nicht geladen werden"),
+            new Error("Event could not be loaded"),
         );
 
         renderEventDetails();
 
         expect(
             await screen.findByText(
-                "Event konnte nicht geladen werden.",
+                i18n.t("eventDetails.errors.loadEvent"),
             ),
         ).toBeInTheDocument();
 
@@ -192,7 +198,7 @@ describe("EventDetails integration", () => {
 
         expect(
             await screen.findByText(
-                "Teilnehmer konnten nicht geladen werden.",
+                i18n.t("eventDetails.errors.loadAttendees"),
             ),
         ).toBeInTheDocument();
     });
@@ -209,7 +215,7 @@ describe("EventDetails integration", () => {
 
         expect(
             await screen.findByText(
-                "Bitte melde dich an, um dieses Event anzusehen.",
+                i18n.t("eventDetails.errors.loginRequiredEvent"),
             ),
         ).toBeInTheDocument();
 
@@ -225,7 +231,7 @@ describe("EventDetails integration", () => {
         renderEventDetails();
 
         const joinButton = await screen.findByRole("button", {
-            name: "Teilnehmen",
+            name: i18n.t("eventDetails.joinButton.join"),
         });
 
         fireEvent.click(joinButton);
@@ -240,7 +246,7 @@ describe("EventDetails integration", () => {
 
         expect(
             await screen.findByRole("button", {
-                name: "Du nimmst teil",
+                name: i18n.t("eventDetails.joinButton.attending"),
             }),
         ).toBeDisabled();
 
@@ -257,24 +263,24 @@ describe("EventDetails integration", () => {
         vi.spyOn(console, "error").mockImplementation(() => { });
 
         mockAddEventAttendee.mockRejectedValue(
-            new Error("Anmeldung fehlgeschlagen"),
+            new Error("Registration failed"),
         );
 
         renderEventDetails();
 
         const joinButton = await screen.findByRole("button", {
-            name: "Teilnehmen",
+            name: i18n.t("eventDetails.joinButton.join"),
         });
 
         fireEvent.click(joinButton);
 
         expect(
             await screen.findByRole("alert"),
-        ).toHaveTextContent("Anmeldung fehlgeschlagen");
+        ).toHaveTextContent("Registration failed");
 
         expect(
             screen.getByRole("button", {
-                name: "Teilnehmen",
+                name: i18n.t("eventDetails.joinButton.join"),
             }),
         ).toBeEnabled();
 
@@ -293,7 +299,7 @@ describe("EventDetails integration", () => {
         renderEventDetails();
 
         const joinButton = await screen.findByRole("button", {
-            name: "Teilnehmen",
+            name: i18n.t("eventDetails.joinButton.join"),
         });
 
         fireEvent.click(joinButton);
@@ -304,7 +310,7 @@ describe("EventDetails integration", () => {
 
         expect(
             await screen.findByRole("button", {
-                name: "Du nimmst teil",
+                name: i18n.t("eventDetails.joinButton.attending"),
             }),
         ).toBeDisabled();
 

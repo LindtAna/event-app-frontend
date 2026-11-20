@@ -4,6 +4,8 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-latest-3178c6.svg)
 ![Vite](https://img.shields.io/badge/Vite-latest-ffb020.svg)
 ![React Router DOM](https://img.shields.io/badge/React_Router_DOM-latest-blue.svg)
+![i18next](https://img.shields.io/badge/i18next-latest-26A69A.svg)
+![react-i18next](https://img.shields.io/badge/react--i18next-latest-26A69A.svg)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-latest-06B6D4.svg)
 ![shadcn/ui](https://img.shields.io/badge/shadcn_ui--Radix_UI-latest-purple.svg)
 ![React Hook Form](https://img.shields.io/badge/React_Hook_Form-latest-ff69b4.svg)
@@ -31,6 +33,12 @@
   - [Datei-Uploads](#datei-uploads)
   - [API-Integration](#api-integration)
 - [Konfiguration](#konfiguration)
+- [Internationalisierung und Lokalisierung](#internationalisierung-und-lokalisierung)
+  - [Sprachen und Sprachauswahl](#sprachen-und-sprachauswahl)
+  - [Lokalisierte URLs und Navigation](#lokalisierte-urls-und-navigation)
+  - [Übersetzungsressourcen und Typisierung](#ubersetzungsressourcen-und-typisierung)
+  - [Lokalisierte Formulare und Datumsangaben](#lokalisierte-formulare-und-datumsangaben)
+  - [Lokalisierte Komponenten](#lokalisierte-komponenten)
 - [Repository-Struktur](#repository-struktur)
 - [Formularvalidierung](#formularvalidierung)
   - [Event-Formular](#event-formular)
@@ -85,6 +93,7 @@ Der EventApp Client ist die clientseitige Anwendung einer Event-Management-Platt
 
 Der Client kommuniziert über eine REST-API mit einem Backend auf Basis von Go (Golang), Gin und PostgreSQL. Formulare verwenden React Hook Form und Zod zur Validierung.
 Event-Bilder und Profilavatare werden über Cloudinary hochgeladen.
+Die Benutzeroberfläche ist mit i18next und react-i18next vollständig für Deutsch, Englisch und Russisch lokalisiert.
 Der Fokus liegt auf einem komponentenbasierten Ansatz, starker Typisierung, clientseitiger Datenvalidierung und responsiver Benutzeroberfläche (Responsive Design).
 
 ════════════════════════════════════════════════════════════════════════
@@ -181,7 +190,8 @@ Beim App-Start wird versucht, die Sitzung über `POST /auth/refresh` wiederherzu
 ### Core
 - React  
 - TypeScript  
-- Vite  
+- Vite 
+- `i18next` und `react-i18next` für Übersetzungen und sprachabhängige UI-Texte
 
 ### Routing und Anwendungszustand
 - React Router DOM
@@ -223,6 +233,74 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 - `VITE_CLOUDINARY_CLOUD_NAME` bezeichnet die Cloudinary-Cloud.
 - `VITE_CLOUDINARY_AVATARS_UPLOAD_PRESET` wird für Avatar-Uploads verwendet.
 - `VITE_CLOUDINARY_EVENTS_UPLOAD_PRESET` wird für Event-Bilder verwendet.
+
+
+════════════════════════════════════════════════════════════════════════
+
+## Internationalisierung und Lokalisierung
+[Zurück 🡡](#inhaltsverzeichnis)
+
+Die Benutzeroberfläche unterstützt drei Sprachen: **Deutsch (`de`)**, **Englisch (`en`)** und **Russisch (`ru`)**. 
+Die Anwendung verwendet den Namespace `common`; die zugehörigen JSON-Dateien enthalten die UI-Texte, Statusmeldungen, Fehlermeldungen, Formularbeschriftungen und Validierungstexte.
+
+### Sprachen und Sprachauswahl
+
+Die zentrale Sprachkonfiguration befindet sich in `src/i18n/languages.ts`.
+
+Für die Ermittlung der bevorzugten Sprache gilt folgende Priorität:
+1. Ein gültiger Sprachcode in der URL hat Vorrang und bestimmt die aktuell angezeigte Sprache.
+2. Wenn keine gültige Sprache in der URL vorhanden ist, wird die gespeicherte Sprache aus `localStorage` verwendet.
+3. Ist dort keine gültige Einstellung vorhanden oder ist `localStorage` nicht verfügbar, werden die Browsersprachen (`navigator.languages`, ersatzweise `navigator.language`) der Reihe nach geprüft.
+4. Wenn keine unterstützte Sprache gefunden wird, verwendet die Anwendung Deutsch.
+
+`getPreferredLanguage()` behandelt die gespeicherte Sprache und die Browsersprache. Die URL-Priorität wird durch das Routing und `LanguageLayout` umgesetzt. `savePreferredLanguage()` speichert die ausgewählte Sprache, sofern `localStorage` verfügbar ist. Die Anwendung bleibt auch ohne `localStorage` über das Sprachpräfix der URL bedienbar.
+
+### Lokalisierte URLs und Navigation
+
+Alle Anwendungsrouten liegen unter einem Sprachpräfix. Beispiele sind `/de/`, `/en/events/42` oder `/ru/profile/update`. Die Routenstruktur wird in `src/App.tsx` definiert: `/:lang` rendert `LanguageLayout`; darunter liegen `RootLayout` und die eigentlichen Seitenrouten.
+
+Der Aufruf der Root-URL `/` wird von `PreferredLanguageRedirect` behandelt. Die Komponente leitet zur bevorzugten Sprache weiter und übernimmt dabei Query-Parameter, Hash und Navigation State. `LanguageLayout` prüft den URL-Parameter `lang`. Bei einem nicht unterstützten Sprachcode wird die Route mit der bevorzugten Sprache neu aufgebaut.
+
+`LanguageLayout` synchronisiert die URL-Sprache mit i18next.
+
+`useLocalizedNavigate` stellt eine entsprechende Variante für programmatische Navigation bereit. Numerische Navigationsziele wie `navigate(-1)` werden unverändert an React Router weitergegeben.
+
+`LanguageSwitcher` wechselt den Sprachpräfix der aktuellen Route. Query-Parameter, Hash und Navigation State bleiben dabei erhalten.
+
+
+### Übersetzungsressourcen und Typisierung
+
+Die Initialisierung erfolgt in `src/i18n/index.ts`. `i18next` wird mit `initReactI18next` verbunden und mit folgenden zentralen Einstellungen initialisiert:
+- Standard- und Fallback-Sprache: `de`
+- Unterstützte Sprachen: `de`, `en`, `ru`
+- Namespace: `common`
+- `returnNull: false`
+- `interpolation.escapeValue: false`; die Ausgabe und das Escaping der React-Inhalte werden durch React übernommen.
+
+`src/i18n/resources.ts` importiert die drei Sprachdateien und stellt sie unter derselben Ressourcenstruktur bereit:
+- `src/i18n/locales/de/common.json`
+- `src/i18n/locales/en/common.json`
+- `src/i18n/locales/ru/common.json`
+
+Die JSON-Dateien verwenden dieselben Schlüsselstrukturen. Ein UI-Text wird in Komponenten über `useTranslation()` und die Funktion `t()` abgerufen, beispielsweise `t("eventForm.titlePlaceholder")`. Interpolierbare Werte werden über Parameter übergeben; dadurch können Texte wie Gültigkeitszeiträume sprachabhängig formuliert werden.
+
+Bei neuen UI-Texten müssen die Übersetzungsschlüssel in allen drei Sprachdateien gepflegt werden. Die gemeinsame Schlüsselstruktur ist Voraussetzung für konsistente Übersetzungen und die typisierte Verwendung in den Komponenten.
+
+### Lokalisierte Formulare und Datumsangaben
+
+Die Zod-Schemata in `src/lib/validator.ts`  stellt die Datei drei Schemafabriken bereit, die die aktuelle Übersetzungsfunktion `t` als Parameter erhalten:
+- `createEventFormSchema(t)` für das Erstellen und Bearbeiten von Events
+- `createRegisterFormSchema(t)` für Owner- und Member-Registrierungen
+- `createProfileFormSchema(t)` für die Profilbearbeitung
+
+Die jeweilige Formular-Komponente erzeugt das Schema mit der aktuellen Übersetzungsfunktion und übergibt es an `zodResolver`. Dadurch werden auch Zod-Validierungsfehler in der aktiven Sprache angezeigt. Die fachlichen Validierungsregeln bleiben unabhängig von der Sprache; lokalisiert werden die zugehörigen Fehlermeldungen.
+
+
+Die Komponente leitet die DatePicker-Locale aus `i18n.resolvedLanguage` bzw. `i18n.language` ab. Für Englisch wird das Format `MMM d, yyyy h:mm aa` verwendet; für Deutsch und Russisch `dd.MM.yyyy HH:mm`. Auch die Beschriftung der Zeitauswahl wird über `t()` übersetzt. Vor dem API-Request werden die ausgewählten Datumswerte weiterhin mit `toISOString()` in sprachunabhängige ISO-Zeitstempel umgewandelt.
+
+### Lokalisierte Komponenten
+
+Die Lokalisierung umfasst unter anderem Navigation, Beschriftungen, Platzhalter, Lade- und Leerzustände, Bestätigungsdialoge, Statusmeldungen und nutzerseitige Fehlermeldungen. Die Übersetzung der UI-Texte ist von den fachlichen Daten der Anwendung getrennt: dynamische Inhalte aus Events, Benutzerprofilen und Kategorien werden nicht automatisch übersetzt.
 
 
 ════════════════════════════════════════════════════════════════════════
@@ -295,17 +373,17 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │   ├── auth-context.ts        # Erstellt und typisiert den Authentifizierungskontext
 │   │   ├── AuthProvider.tsx       # Verwaltet den globalen Authentifizierungszustand und die Sitzungswiederherstellung
 │   │   ├── useAuth.ts             # Stellt einen Hook für den Zugriff auf den Authentifizierungskontext bereit
-│   │   ├── useLocalizedNavigate.ts
+│   │   ├── useLocalizedNavigate.ts # Programmatische Navigation mit Sprachpräfix
 │   │   └── AuthProvider.test.tsx  # Unit-Tests für AuthProvider und useAuth
 │   │
 │   ├── layouts/
 │   │   ├── RootLayout.tsx       # Hauptlayout der Anwendung (Header, Outlet und Footer)
-│   │   └── LanguageLayout.tsx
+│   │   └── LanguageLayout.tsx   # Synchronisiert URL-Sprache, i18next und Spracheinstellung
 │   │
 │   ├── lib/
 │   │   ├── api.ts               # Zentraler HTTP-Helper mit Token- und Cookie-Handling   
 │   │   ├── utils.ts             # Hilfsfunktionen / Utilities (cn, getInitials etc.)
-│   │   ├── validator.ts         # Zod-Validierungsschemata (eventFormSchema, profileFormSchema)
+│   │   ├── validator.ts         # Lokalisierte  Zod-Validierungsschemata (eventFormSchema, profileFormSchema)
 │   │   │
 │   │   ├── api.test.ts          # Unit-Tests für den zentralen HTTP-Helper
 │   │   └── validator.test.ts    # Unit-Tests der Validierung(Formulare)
@@ -330,8 +408,22 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 │   │       ├── InvitationPage.tsx                    # Erstellen, Anzeigen, Widerrufen und Löschen von Einladungen
 │   │       └── InvitationPage.integration.test.tsx   # Integrationstests für Einladungsverwaltung, Code-Erstellung, Kopieren, Widerrufen und Löschen
 │   │
+│   ├── i18n/
+│   │   ├── index.ts       # Initialisierung von i18next und react-i18next
+│   │   ├── languages.ts   # Unterstützte Sprachen, Sprachpräferenz und lokalisierte Pfade
+│   │   ├── resources.ts   # Zusammenführung der JSON-Übersetzungsressourcen
+│   │   ├── navigation.ts  # Lokalisierung interner Navigationsziele
+│   │   ├── i18next.d.ts   # TypeScript-Typisierung der Übersetzungsschlüssel
+│   │   │   └── locales/
+│   │   │       ├── de/
+│   │   │       │   └── common.json # Übersetzungsdatei-Deutsch
+│   │   │       ├── en/
+│   │   │       │   └── common.json # Übersetzungsdatei-Englisch
+│   │   │       └── ru/
+│   │   │           └── common.json # Übersetzungsdatei-Russisch
+│   │
 │   ├── test/
-│   │   └── setup.ts  # Gemeinsame Initialisierung der Testumgebung
+│   │   └── setup.ts  # Gemeinsame Testinitialisierung einschließlich i18nReady
 │   │
 │   ├── types/
 │   │   └── index.ts  # Globale TypeScript-Interfaces (User, Event, Attendee)
@@ -367,6 +459,8 @@ Vite stellt Client-Variablen mit dem Präfix `VITE_` im Frontend-Code bereit. In
 (`src/lib/validator.ts`)
 
 [Zurück 🡡](#inhaltsverzeichnis)
+
+Die Datei exportiert `createEventFormSchema(t)`, `createRegisterFormSchema(t)` und `createProfileFormSchema(t)`. Die Schemafabriken erhalten die aktuelle i18next-Übersetzungsfunktion. Damit bleiben Validierungsregeln und Fehlermeldungen zentral definiert, während die Meldungen in der jeweils aktiven UI-Sprache ausgegeben werden.
 
 ### Event-Formular
 | Feld | Validierungsregel |
@@ -406,20 +500,23 @@ Bei den Feldern `companyName` und `invitationCode` bleibt die serverseitige Vali
 ## Routing
 [Zurück 🡡](#inhaltsverzeichnis)
 
-Im `src/App.tsx` registrierten Routen sind:
+Die eigentlichen Seitenrouten sind in `src/App.tsx` unter `/:lang` verschachtelt. `:lang` akzeptiert zur Laufzeit die unterstützten Sprachcodes `de`, `en` und `ru`; `LanguageLayout` prüft den Parameter.
+
 | Pfad | Komponente | Zweck |
 |---|---|---|
-| `/` | `Home` | Landingpage bzw. Event-Übersicht |
-| `/register` | `Register` | Registrierung; Auswahl des Modus über ?type=owner oder ?type=member |
-| `/invitations` | `InvitationPage` | Einladungen für Teammitglieder verwalten; im Frontend auf Owner beschränkt |
-| `/events/:id` | `EventDetails` | Event-Details und Teilnahme |
-| `/events/create` | `CreateEvent` | Neues Event erstellen |
-| `/events/:id/update` | `UpdateEvent` | Event bearbeiten |
-| `/profile` | `Profile` | Eigenes Profil und eigene Events |
-| `/profile/update` | `UpdateProfile` | Profil bearbeiten |
+| `/` | `PreferredLanguageRedirect` | Weiterleitung zur bevorzugten Sprache unter Erhalt von Query, Hash und Navigation State |
+| `/:lang` | `LanguageLayout` | Sprachlayout und Synchronisierung mit i18next |
+| `/:lang/` | `Home` | Landingpage bzw. Event-Übersicht |
+| `/:lang/register` | `Register` | Registrierung; Auswahl des Modus über `?type=owner` oder `?type=member` |
+| `/:lang/invitations` | `InvitationPage` | Einladungen für Teammitglieder verwalten; im Frontend auf Owner beschränkt |
+| `/:lang/events/:id` | `EventDetails` | Event-Details und Teilnahme |
+| `/:lang/events/create` | `CreateEvent` | Neues Event erstellen |
+| `/:lang/events/:id/update` | `UpdateEvent` | Event bearbeiten |
+| `/:lang/profile` | `Profile` | Eigenes Profil und eigene Events |
+| `/:lang/profile/update` | `UpdateProfile` | Profil bearbeiten |
+| `/:lang/*` | `NotFoundPage` | Nicht gefundene Route innerhalb der gewählten Sprache |
 
-Alle Routen werden innerhalb des `RootLayout` gerendert.
-`AuthProvider` umschließt den Router und stellt den Authentifizierungszustand bereit. Die rollenabhängige Navigation wird über `NavItems` gesteuert; die Berechtigungsprüfung muss zusätzlich im Backend erfolgen.
+`LanguageLayout` umschließt `RootLayout`; die Seiten werden erst gerendert, wenn i18next auf die URL-Sprache umgestellt wurde. `AuthProvider` umschließt den Router und stellt den Authentifizierungszustand bereit. Die rollenabhängige Navigation wird über `NavItems` gesteuert; die Berechtigungsprüfung muss zusätzlich im Backend erfolgen. Interne Links und programmatische Navigation verwenden `LocalizedLink`, `LocalizedNavLink` bzw. `useLocalizedNavigate`, damit das aktuelle Sprachpräfix erhalten bleibt.
 
 ════════════════════════════════════════════════════════════════════════
 
@@ -698,7 +795,7 @@ Die Tests laufen in einer simulierten Browserumgebung auf Basis von jsdom. Exter
 - **jest-dom:** Zusätzliche DOM-Assertions
 - **jsdom:** Simulierte Browserumgebung für React-Tests
 
-Die zentrale Testkonfiguration befindet sich in `vite.config.ts`. Die gemeinsame Testinitialisierung erfolgt über `src/test/setup.ts`. Neben dem automatischen Cleanup nach jedem Test stellt die Setup-Datei zusätzliche Browser-APIs für die Radix-UI-Komponenten bereit.
+Die zentrale Testkonfiguration befindet sich in `vite.config.ts`. Die gemeinsame Testinitialisierung erfolgt über `src/test/setup.ts`. Die Setup-Datei wartet mit `await i18nReady` auf die Initialisierung von i18next, bevor Tests ausgeführt werden. Dadurch stehen die Übersetzungsressourcen auch beim Rendern lokalisierter Komponenten zur Verfügung. Tests, die eine bestimmte Sprache voraussetzen, können diese explizit mit `i18n.changeLanguage("de")` setzen. Neben dem automatischen Cleanup nach jedem Test stellt die Setup-Datei zusätzliche Browser-APIs für die Radix-UI-Komponenten bereit.
 
 Da jsdom Pointer Events und Pointer-Capture-Methoden nicht vollständig implementiert, werden `PointerEvent`, `hasPointerCapture`, `setPointerCapture` und `releasePointerCapture` in der Testumgebung ergänzt. Zusätzlich wird `scrollIntoView` bereitgestellt. Dadurch kann insbesondere das Radix Select in den Integrationstests ohne Austausch der eigentlichen UI-Komponente getestet werden.
 

@@ -1,8 +1,14 @@
-
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
+import i18n from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import {
     createInvitation,
@@ -113,8 +119,11 @@ const getInvitationRow = (id: number) => {
 };
 
 describe("InvitationPage integration", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
+
+        // Für alle Tests die deutsche UI-Sprache verwenden
+        await i18n.changeLanguage("de");
 
         mockUseAuth.mockReturnValue({
             user: testOwner,
@@ -154,7 +163,7 @@ describe("InvitationPage integration", () => {
 
         expect(
             await screen.findByRole("cell", {
-                name: "101"
+                name: "101",
             }),
         ).toBeInTheDocument();
 
@@ -169,7 +178,7 @@ describe("InvitationPage integration", () => {
         // Aktive Einladung kann widerrufen werden
         expect(
             within(getInvitationRow(101)).getByRole("button", {
-                name: "Widerrufen",
+                name: i18n.t("invitationPage.revoke"),
             }),
         ).toBeEnabled();
 
@@ -178,7 +187,7 @@ describe("InvitationPage integration", () => {
         for (const id of [102, 103, 104]) {
             expect(
                 within(getInvitationRow(id)).getByRole("button", {
-                    name: "Widerrufen",
+                    name: i18n.t("invitationPage.revoke"),
                 }),
             ).toBeDisabled();
         }
@@ -208,13 +217,13 @@ describe("InvitationPage integration", () => {
 
         fireEvent.click(
             screen.getByRole("button", {
-                name: "Code generieren",
+                name: i18n.t("invitationPage.generate"),
             }),
         );
 
         expect(
             await screen.findByRole("textbox", {
-                name: "Generierter Einladungscode",
+                name: i18n.t("invitationPage.generatedCode"),
             }),
         ).toHaveValue("NEW-INVITATION-CODE");
 
@@ -253,7 +262,9 @@ describe("InvitationPage integration", () => {
         expect(mockGetInvitations).toHaveBeenCalledTimes(1);
 
         expect(screen.getByRole("status")).toHaveTextContent(
-            "Die Einladung wurde erstellt.",
+            i18n.t("invitationPage.invitationCreated", {
+                days: 7,
+            }),
         );
     });
 
@@ -272,13 +283,13 @@ describe("InvitationPage integration", () => {
         renderInvitationPage();
 
         const createButton = screen.getByRole("button", {
-            name: "Code generieren",
+            name: i18n.t("invitationPage.generate"),
         });
 
         fireEvent.click(createButton);
 
         const codeInput = await screen.findByRole("textbox", {
-            name: "Generierter Einladungscode",
+            name: i18n.t("invitationPage.generatedCode"),
         });
 
         expect(codeInput).toHaveValue("FIRST-CODE");
@@ -294,7 +305,7 @@ describe("InvitationPage integration", () => {
         fireEvent.click(createButton);
 
         expect(confirmSpy).toHaveBeenCalledWith(
-            expect.stringContaining("noch nicht kopiert"),
+            i18n.t("invitationPage.confirmReplaceCode"),
         );
 
         // Ohne Bestätigung wird kein weiteres Token erzeugt
@@ -314,7 +325,7 @@ describe("InvitationPage integration", () => {
 
         fireEvent.click(
             screen.getByRole("button", {
-                name: "Code generieren",
+                name: i18n.t("invitationPage.generate"),
             }),
         );
 
@@ -322,7 +333,7 @@ describe("InvitationPage integration", () => {
 
         fireEvent.click(
             screen.getByRole("button", {
-                name: "Einladungscode kopieren",
+                name: i18n.t("invitationPage.copyCode"),
             }),
         );
 
@@ -333,7 +344,7 @@ describe("InvitationPage integration", () => {
         });
 
         expect(screen.getByRole("status")).toHaveTextContent(
-            "Der Einladungscode wurde in die Zwischenablage kopiert.",
+            i18n.t("invitationPage.codeCopied"),
         );
     });
 
@@ -346,7 +357,7 @@ describe("InvitationPage integration", () => {
 
         fireEvent.click(
             within(row).getByRole("button", {
-                name: "Widerrufen",
+                name: i18n.t("invitationPage.revoke"),
             }),
         );
 
@@ -359,7 +370,7 @@ describe("InvitationPage integration", () => {
 
         expect(
             await screen.findByRole("status"),
-        ).toHaveTextContent("Die Einladung wurde widerrufen.");
+        ).toHaveTextContent(i18n.t("invitationPage.revoked"));
 
         // revokedAt wurde lokal gesetzt
         await waitFor(() => {
@@ -373,7 +384,7 @@ describe("InvitationPage integration", () => {
         // Die widerrufene Einladung kann nicht erneut widerrufen werden
         expect(
             within(getInvitationRow(101)).getByRole("button", {
-                name: "Widerrufen",
+                name: i18n.t("invitationPage.revoke"),
             }),
         ).toBeDisabled();
 
@@ -394,12 +405,12 @@ describe("InvitationPage integration", () => {
 
         fireEvent.click(
             within(row).getByRole("button", {
-                name: "Löschen",
+                name: i18n.t("invitationPage.delete"),
             }),
         );
 
         expect(confirmSpy).toHaveBeenCalledWith(
-            expect.stringContaining("dauerhaft löschen"),
+            i18n.t("invitationPage.confirmDelete"),
         );
 
         await waitFor(() => {
@@ -418,7 +429,7 @@ describe("InvitationPage integration", () => {
         });
 
         expect(screen.getByRole("status")).toHaveTextContent(
-            "Die Einladung wurde gelöscht.",
+            i18n.t("invitationPage.deleted"),
         );
 
         // Keine erneute Listenabfrage
@@ -438,7 +449,7 @@ describe("InvitationPage integration", () => {
 
         fireEvent.click(
             within(row).getByRole("button", {
-                name: "Löschen",
+                name: i18n.t("invitationPage.delete"),
             }),
         );
 
@@ -459,7 +470,7 @@ describe("InvitationPage integration", () => {
         expect(
             await screen.findByRole("alert"),
         ).toHaveTextContent(
-            "Die Einladungen konnten nicht geladen werden.",
+            i18n.t("invitationPage.errors.load"),
         );
 
         expect(mockGetInvitations).toHaveBeenCalledWith(

@@ -116,7 +116,7 @@ const Profile = () => {
     return () => {
       cancelled = true
     }
-  }, [currentUserId, accessToken, isAuthLoading])
+  }, [currentUserId, accessToken, isAuthLoading, t])
 
   if (!currentUser) return null
 

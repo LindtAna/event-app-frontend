@@ -15,6 +15,7 @@ export function LocalizedLink({
 }: LinkProps) {
   const { lang } = useParams()
 
+  //unterstützt String-Ziele und React-Router-`To`-Objekte
   const localizedTo = isAppLanguage(lang)
     ? localizeTo(to, lang)
     : to

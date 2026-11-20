@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Navigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 
 import { useAuth } from "@/hooks/useAuth"
 
@@ -37,12 +38,13 @@ const parseBackendDate = (
 
 const formatDateTime = (
     value?: string | null,
+    locale: string = "de-DE",
 ): string => {
-    const date = parseBackendDate(value)
+    const date = parseBackendDate(value);
 
-    if (!date) return "-"
+    if (!date) return "-";
 
-    return new Intl.DateTimeFormat("de-DE", {
+    return new Intl.DateTimeFormat(locale, {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -65,35 +67,8 @@ const canRevoke = (invitation: Invitation): boolean => {
     )
 }
 
-const getErrorMessage = (
-    error: unknown,
-    fallback: string,
-): string => {
-    if (!(error instanceof Error)) return fallback
-
-    const knownMessages: Record<string, string> = {
-        "Failed to create invitation":
-            "Die Einladung konnte nicht erstellt werden.",
-        "Failed to fetch invitations":
-            "Die Einladungen konnten nicht geladen werden.",
-        "Failed to revoke invitation":
-            "Die Einladung konnte nicht widerrufen werden.",
-        "Invitation not found or no longer active":
-            "Die Einladung ist nicht mehr aktiv oder kann nicht mehr widerrufen werden.",
-        "expiresAt must be a valid RFC3339 timestamp":
-            "Der Ablaufzeitpunkt der Einladung ist ungültig.",
-        "expiresAt must be in the future":
-            "Der Ablaufzeitpunkt muss in der Zukunft liegen.",
-        "Failed to delete invitation":
-            "Die Einladung konnte nicht gelöscht werden.",
-        "Invitation not found":
-            "Die Einladung wurde nicht gefunden oder bereits gelöscht.",
-    }
-
-    return knownMessages[error.message] ?? fallback
-}
-
 const InvitationPage = () => {
+    const { t, i18n } = useTranslation()
     const {
         user,
         accessToken,
@@ -123,17 +98,59 @@ const InvitationPage = () => {
     const isMissingAccessToken =
         !isAuthLoading && isOwner && !accessToken
 
+    const dateLocale = i18n.language.startsWith("en")
+        ? "en-US"
+        : i18n.language.startsWith("ru")
+            ? "ru-RU"
+            : "de-DE";
+
     const hasCurrentOwnerData =
         ownerId !== undefined &&
         !!accessToken &&
         loadedOwnerId === ownerId
+
+    const getErrorMessage = useCallback((
+        error: unknown,
+        fallback: string,
+    ): string => {
+        if (!(error instanceof Error)) return fallback
+
+        const knownMessages: Record<string, () => string> = {
+            "Failed to create invitation": () =>
+                t("invitationPage.errors.create"),
+
+            "Failed to fetch invitations": () =>
+                t("invitationPage.errors.load"),
+
+            "Failed to revoke invitation": () =>
+                t("invitationPage.errors.revoke"),
+
+            "Invitation not found or no longer active": () =>
+                t("invitationPage.errors.notActive"),
+
+            "expiresAt must be a valid RFC3339 timestamp": () =>
+                t("invitationPage.errors.invalidExpiration"),
+
+            "expiresAt must be in the future": () =>
+                t("invitationPage.errors.expirationInPast"),
+
+            "Failed to delete invitation": () =>
+                t("invitationPage.errors.delete"),
+
+            "Invitation not found": () =>
+                t("invitationPage.errors.notFound"),
+        };
+
+        return knownMessages[error.message]?.() ?? fallback;
+    }, [t]);
+
 
     const visibleInvitations = hasCurrentOwnerData
         ? invitations
         : []
 
     const displayListError = isMissingAccessToken
-        ? "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an."
+        ? t("invitationPage.sessionExpired")
         : hasCurrentOwnerData
             ? listError
             : null
@@ -177,7 +194,7 @@ const InvitationPage = () => {
                     setListError(
                         getErrorMessage(
                             error,
-                            "Die Einladungen konnten nicht geladen werden.",
+                            t("invitationPage.errors.load"),
                         ),
                     )
                 }
@@ -199,12 +216,14 @@ const InvitationPage = () => {
         user?.role,
         ownerId,
         accessToken,
+        getErrorMessage,
+        t,
     ])
 
     const handleCreateInvitation = async () => {
         if (!accessToken) {
             setActionError(
-                "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an.",
+                t("invitationPage.sessionExpired")
             )
             return
         }
@@ -213,9 +232,7 @@ const InvitationPage = () => {
         // Vor dem Ersetzen eines noch nicht kopierten Codes warnen
         if (invitationCode && !hasCopiedCode) {
             const confirmed = window.confirm(
-                "Der aktuell angezeigte Einladungscode wurde noch nicht kopiert. " +
-                "Beim Fortfahren wird er ersetzt und kann nicht erneut abgerufen werden. " +
-                "Hast du den Code bereits gesichert?",
+                t("invitationPage.confirmReplaceCode")
             )
 
             if (!confirmed) return
@@ -247,13 +264,15 @@ const InvitationPage = () => {
             ])
 
             setStatusMessage(
-                `Die Einladung wurde erstellt. Sie ist ${INVITATION_VALIDITY_DAYS} Tage gültig.`,
-            )
+                t("invitationPage.invitationCreated", {
+                    days: INVITATION_VALIDITY_DAYS,
+                }),
+            );
         } catch (error) {
             setActionError(
                 getErrorMessage(
                     error,
-                    "Beim Erstellen der Einladung ist ein Fehler aufgetreten.",
+                    t("invitationPage.errors.createFallback"),
                 ),
             )
         } finally {
@@ -270,13 +289,9 @@ const InvitationPage = () => {
         try {
             await navigator.clipboard.writeText(invitationCode)
             setHasCopiedCode(true)
-            setStatusMessage(
-                "Der Einladungscode wurde in die Zwischenablage kopiert.",
-            )
+            setStatusMessage(t("invitationPage.codeCopied"))
         } catch {
-            setActionError(
-                "Das automatische Kopieren ist fehlgeschlagen. Bitte versuche es erneut. Falls das Problem weiterhin besteht, kannst du den Einladungscode manuell kopieren.",
-            )
+            setActionError(t("invitationPage.copyFailed"))
         }
     }
 
@@ -284,9 +299,7 @@ const InvitationPage = () => {
         invitation: Invitation,
     ) => {
         if (!accessToken) {
-            setActionError(
-                "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an.",
-            )
+            setActionError(t("invitationPage.sessionExpired"))
             return
         }
 
@@ -312,12 +325,12 @@ const InvitationPage = () => {
                 ),
             )
 
-            setStatusMessage("Die Einladung wurde widerrufen.")
+            setStatusMessage(t("invitationPage.revoked"))
         } catch (error) {
             setActionError(
                 getErrorMessage(
                     error,
-                    "Beim Widerrufen der Einladung ist ein Fehler aufgetreten.",
+                    t("invitationPage.errors.revokeFallback"),
                 ),
             )
         } finally {
@@ -329,16 +342,11 @@ const InvitationPage = () => {
         invitation: Invitation,
     ) => {
         if (!accessToken) {
-            setActionError(
-                "Deine Sitzung ist nicht mehr gültig. Bitte melde dich erneut an.",
-            )
+            setActionError(t("invitationPage.sessionExpired"));
             return
         }
 
-        const confirmed = window.confirm(
-            "Möchtest du diese Einladung dauerhaft löschen? " +
-            "Dieser Vorgang kann nicht rückgängig gemacht werden.",
-        )
+        const confirmed = window.confirm(t("invitationPage.confirmDelete"))
 
         if (!confirmed) return
 
@@ -352,12 +360,12 @@ const InvitationPage = () => {
             setInvitations((current) =>
                 current.filter((item) => item.id !== invitation.id),
             )
-            setStatusMessage("Die Einladung wurde gelöscht.")
+            setStatusMessage(t("invitationPage.deleted"))
         } catch (error) {
             setActionError(
                 getErrorMessage(
                     error,
-                    "Beim Löschen der Einladung ist ein Fehler aufgetreten.",
+                    t("invitationPage.errors.deleteFallback"),
                 ),
             )
         } finally {
@@ -368,7 +376,9 @@ const InvitationPage = () => {
     if (isAuthLoading) {
         return (
             <section className="wrapper my-8">
-                <p className="text-grey-500">Wird geladen...</p>
+                <p className="text-grey-500">
+                    {t("invitationPage.loading")}
+                </p>
             </section>
         )
     }
@@ -383,7 +393,7 @@ const InvitationPage = () => {
         <>
             <section className="bg-primary-50 bg-dotted-pattern bg-cover bg-center py-3 md:py-4">
                 <h3 className="text-[24px] font-bold leading-tight md:text-[30px] lg:text-[36px] text-center">
-                    Einladung erstellen
+                    {t("invitationPage.title")}
                 </h3>
             </section>
 
@@ -399,8 +409,8 @@ const InvitationPage = () => {
                             disabled={isCreating}
                         >
                             {isCreating
-                                ? "Wird generiert..."
-                                : "Code generieren"}
+                                ? t("invitationPage.generating")
+                                : t("invitationPage.generate")}
                         </Button>
 
                         <div className="flex w-full min-w-0 items-center gap-1">
@@ -408,8 +418,8 @@ const InvitationPage = () => {
                                 type="button"
                                 onClick={handleCopyInvitation}
                                 disabled={!invitationCode}
-                                aria-label="Einladungscode kopieren"
-                                title="Einladungscode kopieren"
+                                aria-label={t("invitationPage.copyCode")}
+                                title={t("invitationPage.copyCode")}
                                 className="flex size-12 shrink-0 items-center justify-center rounded-lg  bg-white transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 {hasCopiedCode ? (
@@ -432,15 +442,17 @@ const InvitationPage = () => {
                             <Input
                                 value={invitationCode}
                                 readOnly
-                                placeholder="Einladungscode"
-                                aria-label="Generierter Einladungscode"
+                                placeholder={t("invitationPage.codePlaceholder")}
+                                aria-label={t("invitationPage.generatedCode")}
                                 className="input-field min-w-0"
                             />
                         </div>
                     </div>
 
                     <p className="mt-3 text-sm text-grey-500">
-                        Einladungen sind {INVITATION_VALIDITY_DAYS} Tage gültig.
+                        {t("invitationPage.validityDescription", {
+                            days: INVITATION_VALIDITY_DAYS,
+                        })}
                     </p>
 
                     {actionError && (
@@ -460,7 +472,7 @@ const InvitationPage = () => {
                 {/* Liste aller Einladungen */}
                 <section>
                     <h4 className="mb-5 text-xl font-semibold md:text-2xl">
-                        Meine Einladungen
+                        {t("invitationPage.listTitle")}
                     </h4>
 
                     {displayListError && (
@@ -471,7 +483,7 @@ const InvitationPage = () => {
 
                     {shouldShowInvitationLoading ? (
                         <p className="text-grey-500">
-                            Einladungen werden geladen...
+                            {t("invitationPage.loadingInvitations")}
                         </p>
                     ) : (
                         <div className="w-full overflow-x-auto rounded-lg border border-primary-500/20">
@@ -491,22 +503,22 @@ const InvitationPage = () => {
                                             ID
                                         </th>
                                         <th className="whitespace-nowrap py-3 font-semibold text-center">
-                                            Erstellt am
+                                            {t("invitationPage.createdAt")}
                                         </th>
                                         <th className="whitespace-nowrap py-3 font-semibold text-center">
-                                            Läuft ab am
+                                            {t("invitationPage.expiresAt")}
                                         </th>
                                         <th className="whitespace-nowrap py-3 font-semibold text-center">
-                                            Verwendet am
+                                            {t("invitationPage.usedAt")}
                                         </th>
                                         <th className="whitespace-nowrap py-3 font-semibold text-center">
-                                            Widerrufen am
+                                            {t("invitationPage.revokedAt")}
                                         </th>
                                         <th className="whitespace-nowrap py-3 font-semibold text-center">
-                                            Aktion
+                                            {t("invitationPage.action")}
                                         </th>
                                         <th className="whitespace-nowrap py-3 font-semibold text-center">
-                                            Aktion
+                                            {t("invitationPage.action")}
                                         </th>
                                     </tr>
                                 </thead>
@@ -518,7 +530,7 @@ const InvitationPage = () => {
                                                 colSpan={7}
                                                 className="px-4 py-8 text-center text-secondary-dark"
                                             >
-                                                Es wurden noch keine Einladungen erstellt.
+                                                {t("invitationPage.noInvitations")}
                                             </td>
                                         </tr>
                                     ) : (
@@ -536,19 +548,19 @@ const InvitationPage = () => {
                                                     </td>
 
                                                     <td className="whitespace-nowrap py-3 text-center">
-                                                        {formatDateTime(invitation.createdAt)}
+                                                        {formatDateTime(invitation.createdAt, dateLocale)}
                                                     </td>
 
                                                     <td className="whitespace-nowrap py-3 text-center">
-                                                        {formatDateTime(invitation.expiresAt)}
+                                                        {formatDateTime(invitation.expiresAt, dateLocale)}
                                                     </td>
 
                                                     <td className="whitespace-nowrap py-3 text-center">
-                                                        {formatDateTime(invitation.usedAt)}
+                                                        {formatDateTime(invitation.usedAt, dateLocale)}
                                                     </td>
 
                                                     <td className="whitespace-nowrap py-3 text-center">
-                                                        {formatDateTime(invitation.revokedAt)}
+                                                        {formatDateTime(invitation.revokedAt, dateLocale)}
                                                     </td>
 
                                                     <td className="whitespace-nowrap py-3 text-center">
@@ -561,10 +573,9 @@ const InvitationPage = () => {
                                                             onClick={() =>
                                                                 handleRevokeInvitation(invitation)
                                                             }
-                                                        >
-                                                            {isRevoking
-                                                                ? "Wird widerrufen..."
-                                                                : "Widerrufen"}
+                                                        >{isRevoking
+                                                            ? t("invitationPage.revoking")
+                                                            : t("invitationPage.revoke")}
                                                         </Button>
                                                     </td>
 
@@ -578,8 +589,8 @@ const InvitationPage = () => {
                                                             onClick={() => handleDeleteInvitation(invitation)}
                                                         >
                                                             {isDeleting
-                                                                ? "Wird gelöscht..."
-                                                                : "Löschen"}
+                                                                ? t("invitationPage.deleting")
+                                                                : t("invitationPage.delete")}
                                                         </Button>
                                                     </td>
                                                 </tr>

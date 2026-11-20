@@ -6,12 +6,15 @@
 
 export const supportedLanguages = ['de', 'en', 'ru'] as const
 
+//leitet daraus den TypeScript-Union-Typ der zulässigen Sprachen ab
 export type AppLanguage = (typeof supportedLanguages)[number]
 
 export const defaultLanguage: AppLanguage = 'de'
 
+//definiert den localStorage-Schlüssel
 export const LANGUAGE_STORAGE_KEY = 'planfuchs-language'
 
+//prüft, ob ein Wert zu den unterstützten Sprachen gehört
 export function isAppLanguage(
   value: unknown,
 ): value is AppLanguage {

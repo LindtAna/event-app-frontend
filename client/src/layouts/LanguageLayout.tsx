@@ -27,9 +27,11 @@ function LanguageContent({
   useEffect(() => {
     let active = true
 
+    //wird auf den aktiven Sprachcode gesetzt und in localStorage gespeichert
     document.documentElement.lang = language
     savePreferredLanguage(language)
 
+    //aktiviert die zugehörigen Übersetzungen
     void i18n.changeLanguage(language)
       .then(() => {
         if (active) {

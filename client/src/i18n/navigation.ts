@@ -31,7 +31,7 @@ export function localizeTo(
       searchIndex >= 0
         ? pathAndSearch.slice(searchIndex)
         : ''
-
+//entfernt ein gegebenenfalls vorhandenes Sprachpräfix und fügt das gewünschte Präfix hinzu
     return `${localizedPath(pathname, language)}${search}${hash}`
   }
 

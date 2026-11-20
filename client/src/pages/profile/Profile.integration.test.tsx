@@ -1,7 +1,14 @@
-
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+
+import i18n from "@/i18n";
 
 import { useAuth } from "@/hooks/useAuth";
 import { getOrganizedEvents, deleteEvent } from "@/api/events";
@@ -69,7 +76,7 @@ const participatingEvent: Event = {
         tenantId: 1,
         role: "owner",
         name: "Event Organizer",
-        email: "organizer@example.com",
+        email: "owner@example.com",
     },
 };
 
@@ -84,7 +91,9 @@ const renderProfile = () =>
     );
 
 describe("Profile integration", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        await i18n.changeLanguage("de");
+
         vi.clearAllMocks();
 
         mockUseAuth.mockReturnValue({
@@ -120,11 +129,15 @@ describe("Profile integration", () => {
 
         // Ersteller ist der Standard-Tab
         expect(
-            screen.getByRole("tab", { name: "Ersteller" }),
+            screen.getByRole("tab", {
+                name: i18n.t("profilePage.owner"),
+            }),
         ).toHaveAttribute("aria-selected", "true");
 
         expect(
-            screen.getByRole("tab", { name: "Teilnehmer" }),
+            screen.getByRole("tab", {
+                name: i18n.t("profilePage.attendee"),
+            }),
         ).toHaveAttribute("aria-selected", "false");
 
         // Der Teilnehmer-Tab ist zunächst nicht sichtbar
@@ -140,7 +153,9 @@ describe("Profile integration", () => {
 
         // Zum Teilnehmer-Tab wechseln
         fireEvent.click(
-            screen.getByRole("tab", { name: "Teilnehmer" }),
+            screen.getByRole("tab", {
+                name: i18n.t("profilePage.attendee"),
+            }),
         );
 
         expect(
@@ -148,16 +163,22 @@ describe("Profile integration", () => {
         ).toBeInTheDocument();
 
         expect(
-            screen.getByRole("tab", { name: "Teilnehmer" }),
+            screen.getByRole("tab", {
+                name: i18n.t("profilePage.attendee"),
+            }),
         ).toHaveAttribute("aria-selected", "true");
 
         expect(
-            screen.getByRole("tab", { name: "Ersteller" }),
+            screen.getByRole("tab", {
+                name: i18n.t("profilePage.owner"),
+            }),
         ).toHaveAttribute("aria-selected", "false");
 
         // Zurück zum Ersteller-Tab wechseln
         fireEvent.click(
-            screen.getByRole("tab", { name: "Ersteller" }),
+            screen.getByRole("tab", {
+                name: i18n.t("profilePage.owner"),
+            }),
         );
 
         expect(
@@ -165,7 +186,9 @@ describe("Profile integration", () => {
         ).toBeInTheDocument();
 
         expect(
-            screen.getByRole("tab", { name: "Ersteller" }),
+            screen.getByRole("tab", {
+                name: i18n.t("profilePage.owner"),
+            }),
         ).toHaveAttribute("aria-selected", "true");
 
         // Beide Listen werden nicht erneut vom Backend geladen
@@ -180,18 +203,24 @@ describe("Profile integration", () => {
 
         // Löschdialog öffnen
         fireEvent.click(
-            screen.getByRole("button", { name: "Löschen" }),
+            screen.getByRole("button", {
+                name: i18n.t("deleteConfirmation.triggerAlt"),
+            }),
         );
 
         const dialog = screen.getByRole("alertdialog");
 
         expect(
-            within(dialog).getByText("Event wirklich löschen?"),
+            within(dialog).getByText(
+                i18n.t("deleteConfirmation.title"),
+            ),
         ).toBeInTheDocument();
 
         // Löschen bestätigen
         fireEvent.click(
-            within(dialog).getByRole("button", { name: "Löschen" }),
+            within(dialog).getByRole("button", {
+                name: i18n.t("deleteConfirmation.confirm"),
+            }),
         );
 
         await waitFor(() => {
@@ -209,7 +238,9 @@ describe("Profile integration", () => {
         });
 
         expect(
-            screen.getByText("Noch keine Events erstellt"),
+            screen.getByText(
+                i18n.t("profilePage.noOrganizedEvents"),
+            ),
         ).toBeInTheDocument();
 
         // Keine erneute Listenabfrage erforderlich
@@ -224,25 +255,33 @@ describe("Profile integration", () => {
 
         // Zum Teilnehmer-Tab wechseln
         fireEvent.click(
-            screen.getByRole("tab", { name: "Teilnehmer" }),
+            screen.getByRole("tab", {
+                name: i18n.t("profilePage.attendee"),
+            }),
         );
 
         await screen.findByText("Participating Test Event");
 
         // Dialog zum Verlassen des Events öffnen
         fireEvent.click(
-            screen.getByRole("button", { name: "Event verlassen" }),
+            screen.getByRole("button", {
+                name: i18n.t("leaveConfirmation.triggerTitle"),
+            }),
         );
 
         const dialog = screen.getByRole("alertdialog");
 
         expect(
-            within(dialog).getByText("Event verlassen?"),
+            within(dialog).getByText(
+                i18n.t("leaveConfirmation.title"),
+            ),
         ).toBeInTheDocument();
 
         // Verlassen bestätigen
         fireEvent.click(
-            within(dialog).getByRole("button", { name: "Verlassen" }),
+            within(dialog).getByRole("button", {
+                name: i18n.t("leaveConfirmation.confirm"),
+            }),
         );
 
         await waitFor(() => {
@@ -261,7 +300,9 @@ describe("Profile integration", () => {
         });
 
         expect(
-            screen.getByText("Noch keine Event-Zusagen"),
+            screen.getByText(
+                i18n.t("profilePage.noParticipatingEvents"),
+            ),
         ).toBeInTheDocument();
 
         // Keine erneute Listenabfrage erforderlich

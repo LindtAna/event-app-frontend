@@ -1,13 +1,13 @@
 import type { Event } from '@/types'
+import { useTranslation } from 'react-i18next'
+
+import { DeleteConfirmation } from './DeleteConfirmation'
+import { LeaveConfirmation } from './LeaveConfirmation'
+import { LocalizedLink } from './LocalizedLink'
 
 import owner from '@/assets/icons/ownership.svg'
 import attendee from '@/assets/icons/attendee.svg'
 import editIcon from '@/assets/icons/edit.svg'
-
-import { DeleteConfirmation } from './DeleteConfirmation'
-import { LeaveConfirmation } from './LeaveConfirmation'
-
-import { LocalizedLink } from './LocalizedLink'
 
 type CardProps = {
   event: Event
@@ -26,7 +26,16 @@ const Card = ({
   onEventDeleted,
   onEventLeft }: CardProps) => {
 
-  const formattedDate = new Date(event.startDateTime).toLocaleDateString('de-DE', {
+    const { t, i18n } = useTranslation()
+
+  const locale = i18n.language.startsWith('en')
+    ? 'en-US'
+    : i18n.language.startsWith('ru')
+      ? 'ru-RU'
+      : 'de-DE'
+
+
+  const formattedDate = new Date(event.startDateTime).toLocaleString(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -55,10 +64,12 @@ const Card = ({
           {/* edit */}
           <LocalizedLink
             to={`/events/${event.id}/update`}
-            title="Event bearbeiten"
+            title={t('card.editEvent')}
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 bg-dotted-pattern bg-cover bg-center border border-primary-500/40 shadow-sm backdrop-blur-sm transition-all hover:border-primary-500/80 hover:shadow-md hover:scale-105"
           >
-            <img src={editIcon} alt="Bearbeiten" width={20} height={20} />
+            <img src={editIcon}
+            alt={t('card.edit')}
+            width={20} height={20} />
           </LocalizedLink>
 
           {/* delete */}
@@ -96,8 +107,8 @@ const Card = ({
           {effectiveRole === 'owner' && (
             <img
               src={owner}
-              alt="Owner"
-              title="Owner"
+              alt={t('card.owner')}
+              title={t('card.owner')}
               className="h-7 w-auto object-contain select-none"
             />
           )}
@@ -105,8 +116,8 @@ const Card = ({
           {effectiveRole === 'attendee' && (
             <img
               src={attendee}
-              alt="Attendee"
-              title="Attendee"
+              alt={t('card.attendee')}
+              title={t('card.attendee')}
               className="h-7 w-auto object-contain select-none"
             />
           )}

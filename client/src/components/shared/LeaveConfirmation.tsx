@@ -1,8 +1,9 @@
 
 import { useState } from 'react'
-import leaveIcon from '@/assets/icons/leave.svg'
-import { leaveEvent } from '@/api/attendees'
+import { useTranslation } from 'react-i18next'
+
 import { useAuth } from '@/hooks/useAuth'
+import { leaveEvent } from '@/api/attendees'
 
 import {
   AlertDialog,
@@ -15,6 +16,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
+import leaveIcon from '@/assets/icons/leave.svg'
+
 type LeaveConfirmationProps = {
   eventId: number | string
   onEventLeft?: (eventId: number | string) => void
@@ -24,6 +27,7 @@ export const LeaveConfirmation = ({
   eventId,
   onEventLeft,
 }: LeaveConfirmationProps) => {
+  const { t } = useTranslation()
   const { user, accessToken } = useAuth()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -32,7 +36,7 @@ export const LeaveConfirmation = ({
 
   const handleLeave = async () => {
     if (!user || !accessToken) {
-      setError('Bitte melde dich erneut an.')
+      setError(t('leaveConfirmation.loginRequired'))
       return
     }
 
@@ -52,7 +56,7 @@ export const LeaveConfirmation = ({
       setError(
         err instanceof Error
           ? err.message
-          : 'Die Teilnahme konnte nicht storniert werden.'
+          : t('leaveConfirmation.genericError')
       )
     } finally {
       setIsLeaving(false)
@@ -73,8 +77,8 @@ export const LeaveConfirmation = ({
         <button
           type="button"
           className="cursor-pointer transition-opacity hover:opacity-75"
-          title="Event verlassen"
-          aria-label="Event verlassen"
+           title={t('leaveConfirmation.triggerTitle')}
+          aria-label={t('leaveConfirmation.triggerTitle')}
         >
           <img
             src={leaveIcon}
@@ -88,11 +92,11 @@ export const LeaveConfirmation = ({
       <AlertDialogContent className="bg-white">
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Event verlassen?
+             {t('leaveConfirmation.title')}
           </AlertDialogTitle>
 
           <AlertDialogDescription className="p-regular-16 text-grey-600">
-            Möchten Sie Ihre Teilnahme an dieser Veranstaltung wirklich stornieren?
+             {t('leaveConfirmation.description')}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -104,7 +108,7 @@ export const LeaveConfirmation = ({
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLeaving}>
-            Abbrechen
+             {t('leaveConfirmation.cancel')}
           </AlertDialogCancel>
 
           <button
@@ -113,7 +117,9 @@ export const LeaveConfirmation = ({
             disabled={isLeaving}
             className="inline-flex items-center justify-center rounded-md bg-secondary-dark px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLeaving ? 'Wird verlassen...' : 'Verlassen'}
+             {isLeaving
+              ? t('leaveConfirmation.leaving')
+              : t('leaveConfirmation.confirm')}
           </button>
         </AlertDialogFooter>
       </AlertDialogContent>

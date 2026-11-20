@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 
+import { useTranslation } from "react-i18next"
 import { LocalizedLink } from '@/components/shared/LocalizedLink'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -19,6 +20,8 @@ import infoIcon from '@/assets/icons/bio.svg'
 type TabType = 'teilnehmer' | 'ersteller'
 
 const Profile = () => {
+  const { t } = useTranslation()
+
   const { user: currentUser, accessToken, isLoading: isAuthLoading, } = useAuth()
 
   const currentUserId = currentUser?.id
@@ -44,7 +47,7 @@ const Profile = () => {
     !accessToken
 
   const displayError = isMissingAccessToken
-    ? 'Die Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.'
+    ? t("profilePage.sessionExpired")
     : hasCurrentUserData
       ? error
       : null
@@ -70,54 +73,54 @@ const Profile = () => {
   )
 
   useEffect(() => {
-  // Warten, bis die Authentifizierung wiederhergestellt wurde.
-  if (isAuthLoading || currentUserId === undefined || !accessToken) {
-    return
-  }
+    // Warten, bis die Authentifizierung wiederhergestellt wurde.
+    if (isAuthLoading || currentUserId === undefined || !accessToken) {
+      return
+    }
 
-  let cancelled = false
+    let cancelled = false
 
-  const fetchUserEvents = async () => {
-    setIsLoading(true)
-    setError(null)
+    const fetchUserEvents = async () => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const [organizedData, participatingData] = await Promise.all([
-        getOrganizedEvents(currentUserId, accessToken),
-        getEventsByAttendee(currentUserId, accessToken),
-      ])
+      try {
+        const [organizedData, participatingData] = await Promise.all([
+          getOrganizedEvents(currentUserId, accessToken),
+          getEventsByAttendee(currentUserId, accessToken),
+        ])
 
-      if (!cancelled) {
-        setOrganizedEvents(organizedData ?? [])
-        setParticipatingEvents(participatingData ?? [])
-        setLoadedUserId(currentUserId)
-      }
-    } catch (err) {
-      console.error('Fehler beim Laden der Events:', err)
+        if (!cancelled) {
+          setOrganizedEvents(organizedData ?? [])
+          setParticipatingEvents(participatingData ?? [])
+          setLoadedUserId(currentUserId)
+        }
+      } catch (err) {
+        console.error('Fehler beim Laden der Events:', err)
 
-      if (!cancelled) {
-        setOrganizedEvents([])
-        setParticipatingEvents([])
-        setLoadedUserId(currentUserId)
-        setError('Fehler beim Laden der Events.')
-      }
-    } finally {
-      if (!cancelled) {
-        setIsLoading(false)
+        if (!cancelled) {
+          setOrganizedEvents([])
+          setParticipatingEvents([])
+          setLoadedUserId(currentUserId)
+          setError(t("profilePage.loadError"))
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
       }
     }
-  }
 
-  void fetchUserEvents()
+    void fetchUserEvents()
 
-  return () => {
-    cancelled = true
-  }
-}, [currentUserId, accessToken, isAuthLoading])
+    return () => {
+      cancelled = true
+    }
+  }, [currentUserId, accessToken, isAuthLoading])
 
   if (!currentUser) return null
 
-  const userName = currentUser.name || `User #${currentUser.id}`
+  const userName = currentUser.name || t("profilePage.userFallback", { id: currentUser.id })
 
   const handleEventDeleted = (eventId: number | string) => {
     setOrganizedEvents((prevEvents) =>
@@ -139,10 +142,10 @@ const Profile = () => {
           <div className="flex flex-col sm:flex-row gap-6 md:gap-10 items-center sm:items-start">
             <LocalizedLink
               to="/profile/update"
-              title="Profil bearbeiten"
+              title={t("profilePage.editProfile")}
               className="md:hidden self-end hover:scale-105 transition-opacity"
             >
-              <img src={editIcon} alt="Bearbeiten" width={24} height={24} />
+              <img src={editIcon} alt={t("profilePage.edit")} width={24} height={24} />
             </LocalizedLink>
 
             {/* Avatar und Infos */}
@@ -155,22 +158,30 @@ const Profile = () => {
 
             {/* Benutzerdaten */}
             <div className="flex flex-col gap-4 text-center sm:text-left">
-              <h2 className="text-[24px] font-bold md:text-[30px]">Mein Profil</h2>
+
+              <h2 className="text-[24px] font-bold md:text-[30px]">
+                {t("profilePage.title")}</h2>
 
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-center sm:justify-start gap-3">
-                  <img src={userIcon} alt="Name" width={20} height={20} />
+                  <img src={userIcon}
+                    alt={t("profilePage.name")}
+                    width={20} height={20} />
                   <span className="p-medium-18 text-black">{currentUser.name}</span>
                 </div>
 
                 <div className="flex items-center justify-center sm:justify-start gap-3">
-                  <img src={mailIcon} alt="Email" width={20} height={20} />
+                  <img src={mailIcon}
+                    alt={t("profilePage.email")}
+                    width={20} height={20} />
                   <span className="p-medium-18 text-black">{currentUser.email}</span>
                 </div>
 
                 {currentUser.bio && (
                   <div className="flex items-center justify-center sm:justify-start gap-3">
-                    <img src={infoIcon} alt="Bio" width={20} height={20} />
+                    <img src={infoIcon}
+                      alt={t("profilePage.bio")}
+                      width={20} height={20} />
                     <span className="p-medium-18 text-black">{currentUser.bio}</span>
                   </div>
                 )}
@@ -181,8 +192,11 @@ const Profile = () => {
           {/* Bearbeiten-Button - Desktop */}
           <Button asChild variant="outline" className="hidden md:flex gap-2 bg-white hover:bg-primary/70 text-black border-primary-500/40">
             <LocalizedLink to="/profile/update">
-              <img src={editIcon} alt="Bearbeiten" width={16} height={16} />
-              Profil bearbeiten
+              <img src={editIcon}
+                alt={t("profilePage.edit")}
+                width={16} height={16}
+              />
+              {t("profilePage.editProfile")}
             </LocalizedLink>
           </Button>
         </div>
@@ -190,7 +204,8 @@ const Profile = () => {
 
       {/* Event-Liste - Tabs */}
       <section className="wrapper flex flex-col gap-4">
-        <h3 className="text-[24px] font-bold text-center md:text-start md:text-[28px]">Meine Events</h3>
+        <h3 className="text-[24px] font-bold text-center md:text-start md:text-[28px]">
+          {t("profilePage.myEvents")}</h3>
 
         {/* Tab-Navigation */}
         <div className="flex gap-8 border-b border-primary-500/40 pb-2">
@@ -203,7 +218,7 @@ const Profile = () => {
               : 'text-gray-500'
               }`}
           >
-            Teilnehmer
+            {t("profilePage.attendee")}
           </button>
           <button
             role="tab"
@@ -214,7 +229,7 @@ const Profile = () => {
               : 'text-gray-500'
               }`}
           >
-            Ersteller
+            {t("profilePage.owner")}
           </button>
         </div>
 
@@ -222,7 +237,7 @@ const Profile = () => {
         <div>
           {shouldShowLoading ? (
             <div className="flex-center min-h-[200px] text-gray-500 font-medium">
-              Events werden geladen...
+              {t("profilePage.loading")}
             </div>
           ) : displayError ? (
             <div className="flex-center min-h-[200px] text-red-500 font-medium">
@@ -231,8 +246,8 @@ const Profile = () => {
           ) : activeTab === 'teilnehmer' ? (
             <Collection
               data={visibleParticipatingEvents}
-              emptyTitle="Noch keine Event-Zusagen"
-              emptyStateSubtext="Sie nehmen derzeit an keinen Events teil."
+              emptyTitle={t("profilePage.noParticipatingEvents")}
+              emptyStateSubtext={t("profilePage.noParticipatingEventsDescription")}
               emptyStateShowButton={false}
               collectionType="My_Events"
               currentUserId={currentUser.id}
@@ -243,8 +258,8 @@ const Profile = () => {
           ) : (
             <Collection
               data={visibleOrganizedEvents}
-              emptyTitle="Noch keine Events erstellt"
-              emptyStateSubtext="Erstellen Sie jetzt Ihr erstes Event."
+              emptyTitle={t("profilePage.noOrganizedEvents")}
+              emptyStateSubtext={t("profilePage.noOrganizedEventsDescription")}
               emptyStateShowButton={true}
               collectionType="Events_Organized"
               currentUserId={currentUser.id}

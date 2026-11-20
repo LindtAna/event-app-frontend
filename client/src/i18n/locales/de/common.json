@@ -180,5 +180,59 @@
   "title": "Account erstellen",
   "descriptionFirstLine": "Die Registrierung ist einfach und kostenlos.",
   "descriptionSecondLine": "Fülle dazu das Formular aus, um zu beginnen."
+},
+"profilePage": {
+  "sessionExpired": "Die Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+  "loadError": "Fehler beim Laden der Events.",
+  "userFallback": "Benutzer Nr. {{id}}",
+  "editProfile": "Profil bearbeiten",
+  "edit": "Bearbeiten",
+  "title": "Mein Profil",
+  "name": "Name",
+  "email": "E-Mail",
+  "bio": "Biografie",
+  "myEvents": "Meine Events",
+  "attendee": "Teilnehmer",
+  "owner": "Ersteller",
+  "loading": "Events werden geladen...",
+  "noParticipatingEvents": "Noch keine Event-Zusagen",
+  "noParticipatingEventsDescription": "Sie nehmen derzeit an keinen Events teil.",
+  "noOrganizedEvents": "Noch keine Events erstellt",
+  "noOrganizedEventsDescription": "Erstellen Sie jetzt Ihr erstes Event."
+},
+"updateProfilePage": {
+  "loginRequired": "Bitte loggen Sie sich ein",
+  "title": "Profil bearbeiten"
+},
+"collection": {
+  "showMore": "Mehr anzeigen",
+  "createEvent": "Los geht’s!"
+},
+"card": {
+  "editEvent": "Event bearbeiten",
+  "edit": "Bearbeiten",
+  "owner": "Ersteller",
+  "attendee": "Teilnehmer"
+},
+"deleteConfirmation": {
+  "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+  "genericError": "Das Event konnte nicht gelöscht werden.",
+  "triggerTitle": "Event löschen",
+  "triggerAlt": "Löschen",
+  "title": "Event wirklich löschen?",
+  "description": "Diese Aktion kann nicht rückgängig gemacht werden. Das Event wird dauerhaft gelöscht.",
+  "cancel": "Abbrechen",
+  "deleting": "Wird gelöscht...",
+  "confirm": "Löschen"
+},
+"leaveConfirmation": {
+  "loginRequired": "Bitte melde dich erneut an.",
+  "genericError": "Die Teilnahme konnte nicht storniert werden.",
+  "triggerTitle": "Event verlassen",
+  "title": "Event verlassen?",
+  "description": "Möchtest du deine Teilnahme an dieser Veranstaltung wirklich stornieren?",
+  "cancel": "Abbrechen",
+  "leaving": "Wird verlassen...",
+  "confirm": "Verlassen"
 }
 }

@@ -1,6 +1,9 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
 import { deleteEvent } from '@/api/events'
 import { useAuth } from '@/hooks/useAuth'
+
 
 import {
   AlertDialog,
@@ -25,7 +28,9 @@ export const DeleteConfirmation = ({
   eventId, 
   onEventDeleted 
 }: DeleteConfirmationProps) => {
+  const { t } = useTranslation()
   const { accessToken } = useAuth()
+
   const [isDeleting, setIsDeleting] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -33,7 +38,7 @@ export const DeleteConfirmation = ({
     e.preventDefault()
 
     if (!accessToken) {
-      alert('Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.')
+      alert(t('deleteConfirmation.sessionExpired'))
       return
     }
 
@@ -56,29 +61,38 @@ export const DeleteConfirmation = ({
         <button
           type="button"
           className="cursor-pointer hover:opacity-75 transition-opacity"
-          title="Event löschen"
+          title={t('deleteConfirmation.triggerTitle')}
         >
-          <img src={deleteIcon} alt="Löschen" width={30} height={30} />
+          <img src={deleteIcon}
+          alt={t('deleteConfirmation.triggerAlt')}
+          width={30} height={30}
+          />
         </button>
       </AlertDialogTrigger>
 
       <AlertDialogContent className="bg-white">
         <AlertDialogHeader>
-          <AlertDialogTitle>Event wirklich löschen?</AlertDialogTitle>
+          <AlertDialogTitle>
+             {t('leaveConfirmation.title')}</AlertDialogTitle>
+             
           <AlertDialogDescription className="p-regular-16 text-red-500">
-            Diese Aktion kann nicht rückgängig gemacht werden. Das Event wird dauerhaft gelöscht.
-          </AlertDialogDescription>
+            {t('deleteConfirmation.title')}
+            </AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Abbrechen</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>
+            {t('deleteConfirmation.cancel')}
+            </AlertDialogCancel>
 
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeleting}
             className="bg-red-500 hover:bg-red-600"
           >
-            {isDeleting ? 'Wird gelöscht...' : 'Löschen'}
+            {isDeleting
+              ? t('deleteConfirmation.deleting')
+              : t('deleteConfirmation.confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
